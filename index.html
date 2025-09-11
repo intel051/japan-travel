@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -43,14 +43,12 @@
             <p class="text-gray-500 mt-1 text-sm">번역, 환율, 지하철 경로까지 한번에!</p>
         </header>
 
-
         <!-- 탭 네비게이션 -->
         <div class="flex border-b">
             <button data-tab="translator" class="tab-btn flex-1 p-4 font-semibold text-sm text-gray-500 border-b-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none active">번역</button>
             <button data-tab="exchange" class="tab-btn flex-1 p-4 font-semibold text-sm text-gray-500 border-b-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none">환율</button>
             <button data-tab="subway" class="tab-btn flex-1 p-4 font-semibold text-sm text-gray-500 border-b-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none">지하철</button>
         </div>
-
 
         <main class="p-6">
             <!-- 번역기 탭 -->
@@ -71,7 +69,6 @@
                     </div>
                 </div>
             </div>
-
 
             <!-- 환율 계산기 탭 -->
             <div id="exchange" class="tab-content">
@@ -116,11 +113,11 @@
                 <div class="space-y-4">
                     <div>
                         <label for="departure-station" class="block text-sm font-medium text-gray-700">출발역</label>
-                        <input type="text" id="departure-station" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="예: 시부야역">
+                        <input type="text" id="departure-station" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="예: 시부야">
                     </div>
                     <div>
                         <label for="arrival-station" class="block text-sm font-medium text-gray-700">도착역</label>
-                        <input type="text" id="arrival-station" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="예: 신주쿠역">
+                        <input type="text" id="arrival-station" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="예: 신주쿠">
                     </div>
                     <button id="search-route-button" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300 ease-in-out">
                         경로 검색하기
@@ -131,21 +128,17 @@
         </main>
     </div>
 
-
     <script type="module">
         // --- 탭 기능 로직 ---
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
 
-
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const tabId = button.dataset.tab;
 
-
                 tabButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
-
 
                 tabContents.forEach(content => {
                     content.classList.remove('active');
@@ -156,7 +149,6 @@
             });
         });
 
-
         // --- 번역기 로직 ---
         const translateButton = document.getElementById('translate-button');
         const koreanTextInput = document.getElementById('korean-text');
@@ -164,9 +156,7 @@
         const translateLoader = document.getElementById('translate-loader');
         const translateBtnText = document.getElementById('translate-btn-text');
 
-
         translateButton.addEventListener('click', handleTranslation);
-
 
         async function handleTranslation() {
             const koreanText = koreanTextInput.value.trim();
@@ -175,13 +165,12 @@
                 return;
             }
 
-
             showTranslateLoading(true);
-
 
             try {
                 const apiKey = "";
-                const apiUrl = `https://generativelace.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                // *** FIX: Corrected API endpoint from 'generativelace' to 'generativelanguage' ***
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
                 
                 const systemPrompt = "You are a helpful translator. Translate the given Korean text into natural-sounding Japanese.";
                 const payload = {
@@ -189,20 +178,20 @@
                     contents: [{ parts: [{ text: koreanText }] }],
                 };
 
-
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-
-                if (!response.ok) throw new Error(`API 요청 실패: ${response.statusText}`);
-
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    const errorMessage = errorData?.error?.message || response.statusText;
+                    throw new Error(`API 요청 실패: ${errorMessage}`);
+                }
 
                 const result = await response.json();
                 const candidate = result.candidates?.[0];
-
 
                 if (candidate?.content?.parts?.[0]?.text) {
                     japaneseTextOutput.textContent = candidate.content.parts[0].text;
@@ -210,15 +199,13 @@
                     throw new Error('번역 결과를 받아오지 못했습니다.');
                 }
 
-
             } catch (error) {
                 console.error('번역 중 오류 발생:', error);
-                japaneseTextOutput.textContent = '번역 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                japaneseTextOutput.textContent = `번역 중 오류가 발생했습니다: ${error.message}`;
             } finally {
                 showTranslateLoading(false);
             }
         }
-
 
         function showTranslateLoading(isLoading) {
             translateLoader.classList.toggle('hidden', !isLoading);
@@ -226,13 +213,11 @@
             translateButton.disabled = isLoading;
         }
 
-
         // --- 환율 계산기 로직 ---
         const jpyInput = document.getElementById('jpy-input');
         const krwInput = document.getElementById('krw-input');
         const rateInfoDiv = document.getElementById('rate-info');
         let jpyToKrwRate = null;
-
 
         async function fetchExchangeRate() {
             try {
@@ -245,7 +230,6 @@
                 const ratePer100Jpy = (jpyToKrwRate * 100).toFixed(2);
                 const updateTime = new Date(data.time_last_update_unix * 1000).toLocaleString('ko-KR');
 
-
                 rateInfoDiv.innerHTML = `현재 환율: 100엔 ≈ ${ratePer100Jpy}원<br>(업데이트: ${updateTime})`;
             } catch (error) {
                 console.error('환율 정보 로딩 실패:', error);
@@ -254,13 +238,11 @@
                 rateInfoDiv.innerHTML += '<br>예상 환율(100엔 ≈ 850원)로 계산합니다.';
             }
         }
-
-
+        
         let isUpdating = false;
         function updateConversion(source) {
             if (jpyToKrwRate === null || isUpdating) return;
             isUpdating = true;
-
 
             if (source === 'jpy') {
                 const jpyValue = jpyInput.value;
@@ -288,17 +270,14 @@
         
         fetchExchangeRate();
 
-
         // --- 지하철 경로 검색 로직 ---
         const departureInput = document.getElementById('departure-station');
         const arrivalInput = document.getElementById('arrival-station');
         const searchRouteButton = document.getElementById('search-route-button');
 
-
         searchRouteButton.addEventListener('click', () => {
             const departure = departureInput.value.trim();
             const arrival = arrivalInput.value.trim();
-
 
             if (!departure) {
                 departureInput.focus();
@@ -309,10 +288,11 @@
                 return;
             }
 
-
             const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(departure + ', Japan')}&destination=${encodeURIComponent(arrival + ', Japan')}&travelmode=transit`;
             window.open(googleMapsUrl, '_blank');
         });
     </script>
 </body>
 </html>
+
+
