@@ -80,7 +80,7 @@
         { "region": "kansai", "name": "카무쿠라", "name_jp": "どうとんぼり神座", "address_jp": "大阪府大阪市中央区道頓堀1-7-25", "prefecture": "오사카부", "city": "오사카시", "score": 3.65, "description": "프렌치 셰프 출신이 만든, 배추의 단맛이 우러난 부드럽고 건강한 맛의 라멘. 매일 먹어도 질리지 않는 맛입니다." },
         { "region": "kansai", "name": "하나미치", "name_jp": "みつか坊主 醸", "address_jp": "大阪府大阪市北区大淀南1-2-16", "prefecture": "오사카부", "city": "오사카시", "score": 3.62, "description": "된장(미소) 라멘 전문점. 다양한 종류의 된장을 블렌딩하여 만든 깊고 구수한 국물 맛이 일품입니다." },
         { "region": "kansai", "name": "마루타카 중화소바", "name_jp": "丸高中華そば", "address_jp": "和歌山県和歌山市友田町2-50", "prefecture": "와카야마현", "city": "와카야마시", "score": 3.59, "description": "와카야마 라멘의 특징인 돼지뼈 간장 스프의 원조격 가게 중 하나. 현지인들에게 오랫동안 사랑받아온 맛." },
-        { "region": "kansai", "name": "텐호", "name_jp": "天鳳", "address_jp": "奈良県奈良市餅飯殿町38-1", "prefecture": "나라현", "city": "나라시", "score": 3.55, "description": "나라를 대표하는, 배추와 돼지고기가 듬뿍 들어간 스태미너 라멘. 마늘과 고추기름의 풍미가 식욕을 돋웁니다." },
+        { "region": "kansai", "name": "텐호", "name_jp": "天鳳", "address_jp": "奈良県奈良市餅飯殿町38-1", "prefecture": "나라현", "city": "나라시", "score": 3.55, "description": "나라를 대표하는, 배추와 돼지고기가 듬뿍 들어간 스태미너 라멘. 마늘과 고추기름의 풍미가 식욕을 돋웁니다." }
     
     ],
     "tonkatsu": [
