@@ -5,17 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>일본 맛집 리스트</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Pretendard Font -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
     <style>
-        body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: #f3f4f6; /* bg-gray-100 */
-        }
+        body { font-family: 'Pretendard', sans-serif; background-color: #f3f4f6; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #c5c5c5; border-radius: 10px; }
@@ -25,9 +19,7 @@
             background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
             background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1em; padding-right: 2.5rem;
         }
-        .region-card {
-            transition: all 0.3s ease-in-out;
-        }
+        .region-card { transition: all 0.3s ease-in-out; }
     </style>
 </head>
 <body class="text-gray-800">
@@ -74,24 +66,25 @@
         <div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 opacity-0 custom-scrollbar"></div>
     </div>
     
-    <!-- 데이터 로딩 실패 시 보여줄 에러 메시지 -->
     <div id="error-message" class="hidden fixed top-5 right-5 bg-red-600 text-white py-3 px-5 rounded-lg shadow-xl z-[2000]">
         <p><strong class="font-bold">오류:</strong> 맛집 데이터(data.js)를 불러오지 못했습니다. 파일 이름과 경로를 확인해주세요.</p>
     </div>
     
-    <script src="./data.js"></script>
+    <!-- 
+      defer 속성을 추가했어요. 
+      HTML 문서를 모두 읽은 뒤에 스크립트를 실행시켜 안정성을 높여요.
+    -->
+    <script src="./data.js" defer></script>
 
     <script>
-        // DOMContentLoaded 이벤트를 사용해 HTML 문서가 모두 로드된 후 스크립트를 실행해요.
-        // 이렇게 하면 스크립트가 요소를 찾지 못하는 문제를 방지할 수 있어요.
+        // defer 속성 덕분에 DOMContentLoaded를 쓰지 않아도 안정적으로 작동해요.
+        // 하지만 만약을 위해 남겨두는 것도 좋은 방법이에요.
         document.addEventListener('DOMContentLoaded', () => {
 
-            // data.js가 정상적으로 로드되었는지 확인해요.
-            // allShops 변수가 없으면 에러 메시지를 표시하고 실행을 멈춰요.
             if (typeof allShops === 'undefined') {
                 console.error("치명적 오류: 'allShops' 변수를 찾을 수 없습니다. data.js 파일이 올바르게 로드되었는지 확인하세요.");
                 document.getElementById('error-message').classList.remove('hidden');
-                return; // 데이터가 없으면 더 이상 진행하지 않아요.
+                return;
             }
 
             const regionKeyMap = {
@@ -208,6 +201,5 @@
     </script>
 </body>
 </html>
-
 
 
