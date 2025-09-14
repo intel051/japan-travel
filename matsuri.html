@@ -45,26 +45,28 @@
                 font-size: 16px;
              }
         }
-        /* 상세 정보 패널 스타일 */
-        #details-panel {
+        /* 패널 공통 스타일 */
+        .panel {
             transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
             transform: translateY(100%);
-            touch-action: pan-y;
         }
-        #details-panel.open {
+        .panel.open {
             transform: translateY(0);
         }
         #backdrop {
             transition: opacity 0.4s ease;
         }
         @media (min-width: 1024px) {
-            #details-panel {
+            .panel {
                 transform: translateX(100%);
-                touch-action: auto;
             }
-            #details-panel.open {
+            .panel.open {
                 transform: translateX(0);
             }
+        }
+        /* 검색창 스타일 */
+        #search-modal {
+            transition: opacity 0.3s ease-in-out;
         }
     </style>
 </head>
@@ -72,81 +74,79 @@
     <div class="relative flex flex-col lg:flex-row w-full h-dvh overflow-hidden">
         <!-- 지도 섹션 -->
         <div class="flex-grow flex flex-col items-center justify-center p-4 lg:p-8 relative z-0">
-            <header class="text-center mb-4 lg:mb-8 flex-shrink-0">
-                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">일본 축제 지도</h1>
-                <p class="text-gray-400 mt-2 text-sm sm:text-base">궁금한 지역을 눌러 축제 정보를 확인하세요.</p>
+            <header class="w-full max-w-5xl mx-auto flex justify-between items-center text-center mb-4 lg:mb-8 flex-shrink-0">
+                <div class="w-10"></div> <!-- Spacer -->
+                <div class="flex-grow">
+                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">일본 축제 지도</h1>
+                    <p class="text-gray-400 mt-2 text-sm sm:text-base">궁금한 지역을 눌러 축제 정보를 확인하세요.</p>
+                </div>
+                <button id="search-open-btn" class="p-2 text-gray-400 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
             </header>
             <div id="japan-map-container" class="w-full flex-grow">
                 <svg id="japan-map-svg" viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Hokkaido -->
-                    <g id="hokkaido" class="region-group">
-                        <rect class="region-rect" x="100" y="10" width="120" height="70" rx="15"></rect>
-                        <text class="region-label" x="160" y="50">홋카이도</text>
-                    </g>
-                    <!-- Tohoku -->
-                    <g id="tohoku" class="region-group">
-                        <rect class="region-rect" x="150" y="95" width="100" height="60" rx="15"></rect>
-                        <text class="region-label" x="200" y="130">도호쿠</text>
-                    </g>
-                    <!-- Kanto -->
-                    <g id="kanto" class="region-group">
-                        <rect class="region-rect" x="160" y="170" width="90" height="70" rx="15"></rect>
-                        <text class="region-label" x="205" y="210">간토</text>
-                    </g>
-                    <!-- Chubu -->
-                     <g id="chubu" class="region-group">
-                        <rect class="region-rect" x="80" y="170" width="70" height="70" rx="15"></rect>
-                        <text class="region-label" x="115" y="210">주부</text>
-                    </g>
-                    <!-- Kansai -->
-                    <g id="kansai" class="region-group">
-                         <rect class="region-rect" x="70" y="255" width="90" height="60" rx="15"></rect>
-                        <text class="region-label" x="115" y="290">간사이</text>
-                    </g>
-                     <!-- Chugoku -->
-                    <g id="chugoku" class="region-group">
-                        <rect class="region-rect" x="10" y="255" width="50" height="80" rx="15"></rect>
-                        <text class="region-label" x="35" y="300">주고쿠</text>
-                    </g>
-                    <!-- Shikoku -->
-                    <g id="shikoku" class="region-group">
-                        <rect class="region-rect" x="70" y="330" width="90" height="50" rx="15"></rect>
-                        <text class="region-label" x="115" y="360">시코쿠</text>
-                    </g>
-                    <!-- Kyushu -->
-                    <g id="kyushu" class="region-group">
-                        <rect class="region-rect" x="10" y="350" width="50" height="60" rx="15"></rect>
-                        <text class="region-label" x="35" y="385">규슈</text>
-                    </g>
+                    <!-- Map regions SVG -->
+                    <g id="hokkaido" class="region-group"><rect class="region-rect" x="100" y="10" width="120" height="70" rx="15"></rect><text class="region-label" x="160" y="50">홋카이도</text></g>
+                    <g id="tohoku" class="region-group"><rect class="region-rect" x="150" y="95" width="100" height="60" rx="15"></rect><text class="region-label" x="200" y="130">도호쿠</text></g>
+                    <g id="kanto" class="region-group"><rect class="region-rect" x="160" y="170" width="90" height="70" rx="15"></rect><text class="region-label" x="205" y="210">간토</text></g>
+                    <g id="chubu" class="region-group"><rect class="region-rect" x="80" y="170" width="70" height="70" rx="15"></rect><text class="region-label" x="115" y="210">주부</text></g>
+                    <g id="kansai" class="region-group"><rect class="region-rect" x="70" y="255" width="90" height="60" rx="15"></rect><text class="region-label" x="115" y="290">간사이</text></g>
+                    <g id="chugoku" class="region-group"><rect class="region-rect" x="10" y="255" width="50" height="80" rx="15"></rect><text class="region-label" x="35" y="300">주고쿠</text></g>
+                    <g id="shikoku" class="region-group"><rect class="region-rect" x="70" y="330" width="90" height="50" rx="15"></rect><text class="region-label" x="115" y="360">시코쿠</text></g>
+                    <g id="kyushu" class="region-group"><rect class="region-rect" x="10" y="350" width="50" height="60" rx="15"></rect><text class="region-label" x="35" y="385">규슈</text></g>
                 </svg>
             </div>
         </div>
 
         <!-- Backdrop -->
-        <div id="backdrop" class="fixed inset-0 bg-black/70 z-10 opacity-0 pointer-events-none lg-hidden"></div>
+        <div id="backdrop" class="fixed inset-0 bg-black/70 z-10 opacity-0 pointer-events-none"></div>
 
         <!-- 상세 정보 패널 -->
-        <div id="details-panel" class="w-full h-[85%] lg:h-full lg:w-1-3 fixed bottom-0 left-0 lg:relative bg-stone-900/80 backdrop-blur-xl shadow-2xl rounded-t-3xl lg:rounded-none z-20">
-            <div id="panel-content" class="p-5 h-full overflow-y-auto relative">
-                <!-- Close button added for better user experience -->
-                <button id="close-panel-btn" class="absolute top-4 right-4 text-stone-500 hover:text-white transition-colors z-10 p-2 rounded-full bg-stone-800/50 hover:bg-stone-700/80">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+        <div id="details-panel" class="panel w-full h-[85%] lg:h-full lg:w-1/3 fixed bottom-0 left-0 lg:relative bg-stone-900/80 backdrop-blur-xl shadow-2xl rounded-t-3xl lg:rounded-none z-20">
+             <div class="p-5 h-full overflow-y-auto relative">
+                <button class="close-panel-btn absolute top-4 right-4 text-stone-500 hover:text-white transition-colors z-10 p-2 rounded-full bg-stone-800/50 hover:bg-stone-700/80">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
                 <div class="w-12 h-1.5 bg-stone-600 rounded-full mx-auto mb-4 lg:hidden cursor-grab"></div>
-                <div class="flex items-center mb-6 pt-8 lg:pt-0">
-                    <h2 id="region-name" class="text-2xl font-bold text-white">지역을 선택해주세요</h2>
-                </div>
+                <div class="flex items-center mb-6 pt-8 lg:pt-0"><h2 id="region-name" class="text-2xl font-bold text-white">지역을 선택해주세요</h2></div>
                 <div id="festival-list" class="space-y-6">
                     <div class="flex flex-col items-center justify-center h-64 text-stone-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                        <p class="mt-4">지도에서 지역을 선택하면</p>
-                        <p>축제 정보가 여기에 표시됩니다.</p>
+                        <p class="mt-4">지도에서 지역을 선택하면</p><p>축제 정보가 여기에 표시됩니다.</p>
                     </div>
                 </div>
             </div>
         </div>
+        
+        <!-- 검색 결과 패널 -->
+        <div id="search-results-panel" class="panel w-full h-[85%] lg:h-full lg:w-1/3 fixed bottom-0 left-0 lg:relative bg-stone-900/80 backdrop-blur-xl shadow-2xl rounded-t-3xl lg:rounded-none z-40">
+             <div class="p-5 h-full overflow-y-auto relative">
+                <button class="close-panel-btn absolute top-4 right-4 text-stone-500 hover:text-white transition-colors z-10 p-2 rounded-full bg-stone-800/50 hover:bg-stone-700/80">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <div class="w-12 h-1.5 bg-stone-600 rounded-full mx-auto mb-4 lg:hidden"></div>
+                <div class="flex items-center mb-6 pt-8 lg:pt-0"><h2 id="search-results-title" class="text-2xl font-bold text-white"></h2></div>
+                <div id="search-results-list" class="space-y-6"></div>
+            </div>
+        </div>
+
+        <!-- 검색 모달 -->
+        <div id="search-modal" class="fixed inset-0 bg-black/80 z-30 flex justify-center items-start pt-20 sm:items-center sm:pt-0 opacity-0 pointer-events-none">
+            <div class="bg-stone-900 rounded-xl p-6 w-full max-w-md mx-4 transform transition-all -translate-y-12">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-white">도시 이름으로 검색</h3>
+                    <button id="search-close-btn" class="p-1 text-gray-500 hover:text-white">&times;</button>
+                </div>
+                <form id="search-form" class="flex gap-2">
+                    <input type="text" id="search-input" placeholder="예: 도쿄, 오사카, 교토" class="w-full bg-stone-800 border border-stone-700 text-white rounded-md px-3 py-2 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none">
+                    <button type="submit" class="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-4 py-2 rounded-md">검색</button>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -155,44 +155,62 @@
             tohoku: { name: '도호쿠 (東北)', festivals: [ { month: 9, name: '가쿠노다테 마츠리', date: '9월 7일(일) ~ 9일(화)', city: '아키타현 센보쿠시', description: '거대한 수레 \'히키야마\'가 서로 격렬하게 부딪히는 장면이 압권인 축제로, 국가 중요무형민속문화재입니다.' }, { month: 10, name: '니혼마츠 제등 마츠리', date: '10월 4일(토) ~ 6일(월)', city: '후쿠시마현 니혼마츠시', description: '300개가 넘는 등불로 장식된 7대의 수레가 마을을 행진하며 환상적인 분위기를 자아내는 일본 3대 제등 마츠리 중 하나입니다.' }, { month: 12, name: '센다이 빛의 페이지전트', date: '12월 중순 ~ 12월 31일', city: '미야기현 센다이시', description: '센다이의 상징인 조젠지 거리의 느티나무 가로수가 수십만 개의 빛으로 둘러싸여 환상적인 빛의 터널을 만들어냅니다.' }, { month: 2, name: '요코테 가마쿠라 축제', date: '2월 15일(일) ~ 16일(월)', city: '아키타현 요코테시', description: '약 450년의 역사를 가진 눈 축제로, 눈으로 만든 작은 집 \'가마쿠라\' 안에서 아이들이 감주를 대접하는 따뜻하고 정겨운 축제입니다.' } ] },
             kanto: { name: '간토 (関東)', festivals: [ { month: 10, name: '가와고에 마츠리', date: '10월 18일(토) ~ 19일(일)', city: '사이타마현 가와고에시', description: '에도 시대의 모습을 간직한 거리를 화려한 수레가 행진하는 축제로, 국가 중요무형민속문화재입니다.' }, { month: 10, name: '아시카가 플라워 파크 "빛의 꽃의 정원"', date: '10월 중순 ~ 2월 중순', city: '도치기현 아시카가시', description: '일본 3대 일루미네이션 중 하나로, 500만개가 넘는 전구로 공원 전체를 장식하여 동화 같은 풍경을 연출합니다.'}, { month: 11, name: '요미우리랜드 주얼루미네이션', date: '10월 중순 ~ 4월 초순', city: '도쿄도 이나기시', description: '세계적인 조명 디자이너가 설계한 보석 같은 불빛들이 놀이공원 전체를 화려하게 물들이는 인기 일루미네이션입니다.'}, { month: 11, name: '롯폰기 힐즈 일루미네이션', date: '11월 초순 ~ 12월 25일', city: '도쿄도 미나토구', description: '게야키자카 거리를 수십만 개의 LED가 하얗고 푸른빛으로 물들여, 도쿄 타워와 함께 도시적인 야경을 연출합니다.'}, { month: 11, name: '도리노이치', date: '11월 중 (닭의 날)', city: '도쿄도 아사쿠사 등', description: '사업 번창과 행운을 기원하며 복을 부르는 장식품 \'구마데(복조리)\'를 파는 활기 넘치는 시장입니다.'}, { month: 12, name: '치치부 요마츠리', date: '12월 2일(화) ~ 3일(수)', city: '사이타마현 치치부시', description: '일본 3대 히키야마 마츠리 중 하나로, 겨울 밤하늘을 수놓는 불꽃과 화려한 수레가 압권입니다. (유네스코 무형문화유산)' }, { month: 1, name: '도쿄 소방 출정식', date: '1월 6일(화) 예정', city: '도쿄도 오다이바', description: '새해를 맞아 소방관들이 에도 시대의 기술과 현대적인 소방 훈련을 선보이는 화려한 퍼레이드와 시연을 펼칩니다.' }, { month: 2, name: '유시마 텐진 매화 축제', date: '2월 초순 ~ 3월 초순', city: '도쿄도 분쿄구', description: '학문의 신을 모시는 유서 깊은 신사에서 약 300그루의 매화나무가 꽃을 피워 봄의 시작을 알립니다.'} ] },
             chubu: { name: '주부 (中部)', festivals: [ { month: 9, name: '세토모노 마츠리', date: '9월 13일(토) ~ 14일(일)', city: '아이치현 세토시', description: '일본 최대 규모의 도자기 축제로, 다양한 도자기를 저렴하게 구매할 수 있습니다.' }, { month: 10, name: '다카야마 아키 마츠리', date: '10월 9일(목) ~ 10일(금)', city: '기후현 다카야마시', description: '화려하고 정교한 축제용 수레 \'야타이\'가 거리를 행진하며, 밤에는 등불을 밝혀 환상적인 분위기를 연출합니다.' }, { month: 10, name: '나바나노사토 일루미네이션', date: '10월 중순 ~ 6월 초순', city: '미에현 구와나시', description: '일본 최대 규모의 화려한 일루미네이션. 빛의 터널과 거대한 파노라마는 압도적인 아름다움을 선사합니다.' }, { month: 1, name: '노자와 온천 불축제', date: '1월 15일(목)', city: '나가노현 노자와 온천', description: '일본 3대 불축제 중 하나로, 거대한 목조 신전을 태우며 마을의 액운을 막고 풍요를 기원하는 격렬하고 장엄한 축제입니다.' }, { month: 2, name: '시라카와고 라이트업', date: '1월 중순 ~ 2월 중순 (주말)', city: '기후현 시라카와고', description: '세계문화유산인 갓쇼즈쿠리 마을이 눈 속에 파묻혀 조명을 받아 동화 같은 풍경을 자아냅니다. (예약 필수)'} ] },
-            kansai: { name: '간사이 (関西)', festivals: [ { month: 9, name: '기시와다 단지리 마츠리', date: '9월 13일(토) ~ 14일(일)', city: '오사카부 기시와다시', description: '약 4톤의 거대한 수레 \'단지리\'가 빠른 속도로 거리를 질주하는 박진감 넘치는 축제입니다.' }, { month: 10, name: '지다이 마츠리', date: '10월 22일(수)', city: '교토부 교토시', description: '교토 1100년 역사를 시대별로 재현한 대규모 가장 행렬이 하이라이트입니다.' }, { month: 11, name: '오사카 빛의 향연 (미도스지 일루미네이션)', date: '11월 초순 ~ 12월 31일', city: '오사카부 오사카시', description: '오사카의 중심 도로인 미도스지 약 4km 구간이 화려한 빛으로 물드는, 세계 기록에 등재된 빛의 거리입니다.' }, { month: 12, name: '가스가 와카미야 온마츠리', date: '12월 15일(월) ~ 18일(목)', city: '나라현 나라시', description: '880년 이상 이어진 전통 깊은 축제로, 일본의 고대 예능과 풍속을 엿볼 수 있습니다.' }, { month: 1, name: '도카 에비스', date: '1월 9일(금) ~ 11일(일)', city: '오사카부 오사카시', description: '\'에벳상\'이라 불리는 행운의 신을 모시는 축제로, 한 해의 사업 번창을 기원하는 사람들로 인산인해를 이룹니다.' }, { month: 1, name: '와카쿠사 야마야키', date: '1월 넷째 주 토요일', city: '나라현 나라시', description: '나라의 밤하늘을 붉게 물들이며 고대 도시의 산 전체를 태우는 장관을 연출하는 불 축제입니다. 불꽃놀이도 함께 즐길 수 있습니다.' }, { month: 2, name: '세츠분 마츠리', date: '2월 3일(화) 전후', city: '교토 야사카 신사 등', description: '봄을 맞이하며 액운을 쫓는 \'마메마키(콩 뿌리기)\' 행사가 각지의 신사와 절에서 열립니다. 게이샤들이 콩을 뿌리는 모습은 교토의 명물입니다.' } ] },
+            kansai: { name: '간사이 (関西)', festivals: [ { month: 9, name: '기시와다 단지리 마츠리', date: '9월 13일(토) ~ 14일(일)', city: '오사카부 기시와다시', description: '약 4톤의 거대한 수레 \'단지리\'가 빠른 속도로 거리를 질주하는 박진감 넘치는 축제입니다.' }, { month: 10, name: '지다이 마츠리', date: '10월 22일(수)', city: '교토부 교토시', description: '교토 1100년 역사를 시대별로 재현한 대규모 가장 행렬이 하이라이트입니다.' }, { month: 11, name: '오사카 빛의 향연 (미도스지 일루미네이션)', date: '11월 초순 ~ 12월 31일', city: '오사카부 오사카시', description: '오사카의 중심 도로인 미도스지 약 4km 구간이 화려한 빛으로 물드는, 세계 기록에 등재된 빛의 거리입니다.' }, { month: 12, name: '가스가 와카미야 온마츠리', date: '12월 15일(월) ~ 18일(목)', city: '나라현 나라시', description: '880년 이상 이어진 전통 깊은 축제로, 일본의 고대 예능과 풍속을 엿볼 수 있습니다.' }, { month: 1, name: '도카 에비스', date: '1월 9일(금) ~ 11일(일)', city: '오사카부 오사카시', description: '\'에벳상\'이라 불리는 행운의 신을 모시는 축제로, 한 해의 사업 번창을 기원하는 사람들로 인산인해를 이룹니다.' }, { month: 1, name: '와카쿠사 야마야키', date: '1월 넷째 주 토요일', city: '나라현 나라시', description: '나라의 밤하늘을 붉게 물들이며 고대 도시의 산 전체를 태우는 장관을 연출하는 불 축제입니다. 불꽃놀이도 함께 즐길 수 있습니다.' }, { month: 2, name: '세츠분 마츠리', date: '2월 3일(화) 전후', city: '교토부 교토시', description: '봄을 맞이하며 액운을 쫓는 \'마메마키(콩 뿌리기)\' 행사가 각지의 신사와 절에서 열립니다. 게이샤들이 콩을 뿌리는 모습은 교토의 명물입니다.' } ] },
             chugoku: { name: '주고쿠 (中国)', festivals: [ { month: 10, name: '마츠에 스이토로', date: '9월 하순 ~ 10월 중순', city: '시마네현 마츠에시', description: '마츠에 성 주변 해자를 따라 수백 개의 등불이 빛을 밝히는 물의 도시 특유의 낭만적인 축제입니다.' }, { month: 11, name: '히로시마 드리미네이션', date: '11월 중순 ~ 1월 초순', city: '히로시마현 히로시마시', description: '평화의 메시지를 담아 히로시마 평화 대로를 중심으로 약 140만 개의 전구가 도시를 따뜻한 빛으로 감싸는 행사입니다.' }, { month: 2, name: '사이다이지 에요 (하다카 마츠리)', date: '2월 셋째 주 토요일', city: '오카야마현 오카야마시', description: '일본 3대 기제(奇祭) 중 하나로, 수천 명의 훈도시 차림 남성들이 행운을 가져다주는 신성한 나뭇조각 \'신기\'를 쟁탈하기 위해 격렬한 몸싸움을 벌입니다.' } ] },
             shikoku: { name: '시코쿠 (四国)', festivals: [ { month: 10, name: '니이하마 다이코 마츠리', date: '10월 16일(목) ~ 18일(토)', city: '에히메현 니이하마시', description: '일본 3대 싸움 축제 중 하나로, 금실로 화려하게 장식된 거대한 태고 수레 \'다이코다이\'를 남자들이 격렬하게 부딪히는 박진감 넘치는 축제입니다.' }, { month: 11, name: '사누키 만노 공원 윈터 판타지', date: '11월 하순 ~ 1월 초순', city: '가가와현 만노초', description: '시코쿠 최대 규모의 국영 공원에서 펼쳐지는 일루미네이션으로, 광대한 부지를 활용한 다채로운 빛의 연출이 특징입니다.' } ] },
             kyushu: { name: '규슈 & 오키나와', festivals: [ { month: 9, name: '호조야', date: '9월 12일(금) ~ 18일(목)', city: '후쿠오카현 후쿠오카시', description: '하코자키궁에서 열리는 하카타 3대 축제 중 하나로, 천년 이상의 역사를 자랑하며 모든 생명의 소중함을 기리는 축제입니다. 수많은 노점이 늘어서 볼거리와 먹거리가 풍부합니다.' }, { month: 10, name: '하우스텐보스 "빛의 왕국"', date: '10월 하순 ~ 5월 초순', city: '나가사키현 사세보시', description: '세계 최대 1,300만 개의 전구가 빛나는 압도적인 스케일의 일루미네이션. 매년 새로운 테마로 방문객을 맞이합니다.'}, { month: 10, name: '나가사키 쿤치', date: '10월 7일(화) ~ 9일(목)', city: '나가사키현 나가사키시', description: '일본, 중국, 네덜란드 문화가 융합된 독특하고 이국적인 공연을 볼 수 있습니다. (유네스코 무형문화유산)' }, { month: 1, name: '타마세세리', date: '1월 3일(토)', city: '후쿠오카현 후쿠오카시', description: '하코자키궁에서 열리는 축제로, 육지팀과 바다팀으로 나뉜 훈도시 차림의 남성들이 풍년과 풍어를 기원하며 나무 공을 격렬하게 쟁탈합니다.'}, { month: 2, name: '나가사키 랜턴 페스티벌', date: '1월 하순 ~ 2월 초순', city: '나가사키현 나가사키시', description: '중국의 춘절을 축하하는 축제로, 도시 전체가 15,000개가 넘는 화려한 중국식 등불로 장식되어 환상적인 분위기를 연출합니다.'} ] }
         };
 
+        // DOM Elements
         const detailsPanel = document.getElementById('details-panel');
-        const panelContent = document.getElementById('panel-content');
         const regionNameEl = document.getElementById('region-name');
         const festivalListEl = document.getElementById('festival-list');
         const backdrop = document.getElementById('backdrop');
-        const closePanelBtn = document.getElementById('close-panel-btn');
         const regionGroups = document.querySelectorAll('.region-group');
+        const closePanelBtns = document.querySelectorAll('.close-panel-btn');
+        
+        // Search Elements
+        const searchOpenBtn = document.getElementById('search-open-btn');
+        const searchModal = document.getElementById('search-modal');
+        const searchModalContent = searchModal.querySelector('div');
+        const searchCloseBtn = document.getElementById('search-close-btn');
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-input');
+        const searchResultsPanel = document.getElementById('search-results-panel');
+        const searchResultsTitle = document.getElementById('search-results-title');
+        const searchResultsList = document.getElementById('search-results-list');
 
-        let touchStartY = 0;
-        let currentY = 0;
         let isPanelOpen = false;
-        let isDragging = false;
 
-        const openPanel = (regionId) => {
-            const regionData = festivalData[regionId];
-            if (!regionData || regionData.festivals.length === 0) {
-                return;
-            };
-
+        const openPanel = (panel, backdrop = true) => {
             isPanelOpen = true;
-            regionGroups.forEach(group => group.querySelector('.region-rect').classList.remove('selected'));
-            document.getElementById(regionId).querySelector('.region-rect').classList.add('selected');
+            panel.classList.add('open');
+            if(backdrop) {
+                showBackdrop();
+            }
+        };
 
-            regionNameEl.textContent = regionData.name;
-            festivalListEl.innerHTML = '';
-            
-            const festivalsByMonth = regionData.festivals.reduce((acc, f) => ({...acc, [f.month]: [...(acc[f.month] || []), f]}), {});
-            
-            // 월 정렬 로직 (1, 2월은 12월 뒤로)
+        const closeAllPanels = () => {
+            isPanelOpen = false;
+            detailsPanel.classList.remove('open');
+            searchResultsPanel.classList.remove('open');
+            hideBackdrop();
+            regionGroups.forEach(group => group.querySelector('.region-rect').classList.remove('selected'));
+        };
+
+        const showBackdrop = () => backdrop.classList.remove('opacity-0', 'pointer-events-none');
+        const hideBackdrop = () => backdrop.classList.add('opacity-0', 'pointer-events-none');
+
+        const renderFestivals = (container, festivals) => {
+            container.innerHTML = '';
+            if (festivals.length === 0) {
+                 container.innerHTML = `<div class="bg-stone-800/50 p-6 rounded-lg text-center text-stone-400">해당 조건의 축제가 없습니다.</div>`;
+                 return;
+            }
+
+            const festivalsByMonth = festivals.reduce((acc, f) => ({...acc, [f.month]: [...(acc[f.month] || []), f]}), {});
             Object.keys(festivalsByMonth).sort((a, b) => {
-                const monthA = parseInt(a, 10);
-                const monthB = parseInt(b, 10);
+                const monthA = parseInt(a, 10), monthB = parseInt(b, 10);
                 const sortA = monthA < 9 ? monthA + 12 : monthA;
                 const sortB = monthB < 9 ? monthB + 12 : monthB;
                 return sortA - sortB;
@@ -209,62 +227,13 @@
                                     <span>📅 ${f.date}</span>
                                 </div>
                                 <p class="text-stone-300 mt-3 text-sm leading-relaxed">${f.description}</p>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                festivalListEl.innerHTML += monthHtml;
+                            </div>`).join('')}
+                    </div>`;
+                container.innerHTML += monthHtml;
             });
-
-            detailsPanel.classList.add('open');
-            backdrop.classList.remove('opacity-0', 'pointer-events-none');
-            panelContent.scrollTop = 0;
         };
 
-        const closePanel = () => {
-            if (!isPanelOpen) return;
-            isPanelOpen = false;
-            detailsPanel.classList.remove('open');
-            backdrop.classList.add('opacity-0', 'pointer-events-none');
-            regionGroups.forEach(group => group.querySelector('.region-rect').classList.remove('selected'));
-        };
-        
-        const handleTouchStart = (e) => {
-            if (!isPanelOpen || window.innerWidth >= 1024) return;
-            if (panelContent.scrollTop === 0 && e.target.closest('.cursor-grab')) {
-                isDragging = true;
-                touchStartY = e.touches[0].clientY;
-                detailsPanel.style.transition = 'none';
-            } else {
-                isDragging = false;
-            }
-        };
-
-        const handleTouchMove = (e) => {
-            if (!isDragging) return;
-            const touchY = e.touches[0].clientY;
-            const deltaY = touchY - touchStartY;
-            
-            if (deltaY > 0) {
-                currentY = deltaY;
-                detailsPanel.style.transform = `translateY(${currentY}px)`;
-            }
-        };
-
-        const handleTouchEnd = () => {
-            if (!isDragging) return;
-            
-            isDragging = false;
-            detailsPanel.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
-            
-            if (currentY > 100) {
-                closePanel();
-            } else {
-                detailsPanel.style.transform = '';
-            }
-            currentY = 0;
-        };
-
+        // Event Listeners for Region Panel
         regionGroups.forEach(group => {
             const regionId = group.id;
             const rect = group.querySelector('.region-rect');
@@ -274,19 +243,60 @@
                 rect.classList.add('no-festivals');
             }
             group.addEventListener('click', () => {
+                if (rect.classList.contains('no-festivals')) return;
+                
                 if (rect.classList.contains('selected')) {
-                    closePanel();
+                    closeAllPanels();
                 } else {
-                    openPanel(regionId);
+                    closeAllPanels();
+                    const regionData = festivalData[regionId];
+                    regionGroups.forEach(g => g.querySelector('.region-rect').classList.remove('selected'));
+                    rect.classList.add('selected');
+                    regionNameEl.textContent = regionData.name;
+                    renderFestivals(festivalListEl, regionData.festivals);
+                    openPanel(detailsPanel);
                 }
             });
         });
+
+        // Event Listeners for Closing Panels
+        closePanelBtns.forEach(btn => btn.addEventListener('click', closeAllPanels));
+        backdrop.addEventListener('click', closeAllPanels);
         
-        closePanelBtn.addEventListener('click', closePanel);
-        backdrop.addEventListener('click', closePanel);
-        detailsPanel.addEventListener('touchstart', handleTouchStart, { passive: true });
-        detailsPanel.addEventListener('touchmove', handleTouchMove, { passive: true });
-        detailsPanel.addEventListener('touchend', handleTouchEnd, { passive: true });
+        // Event Listeners for Search
+        searchOpenBtn.addEventListener('click', () => {
+            searchModal.classList.remove('opacity-0', 'pointer-events-none');
+            searchModalContent.classList.remove('-translate-y-12');
+            searchInput.focus();
+        });
+
+        const closeSearchModal = () => {
+            searchModal.classList.add('opacity-0', 'pointer-events-none');
+            searchModalContent.classList.add('-translate-y-12');
+        };
+
+        searchCloseBtn.addEventListener('click', closeSearchModal);
+        searchModal.addEventListener('click', (e) => {
+            if(e.target === searchModal) closeSearchModal();
+        });
+
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (!query) return;
+
+            const allFestivals = Object.values(festivalData).flatMap(region => region.festivals);
+            const results = allFestivals.filter(f => f.city.includes(query));
+
+            closeSearchModal();
+            closeAllPanels();
+
+            searchResultsTitle.textContent = `'${query}' 검색 결과`;
+            renderFestivals(searchResultsList, results);
+            openPanel(searchResultsPanel);
+            
+            searchInput.value = '';
+        });
     </script>
 </body>
 </html>
