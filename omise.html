@@ -22,6 +22,10 @@
         .region-card { transition: all 0.3s ease-in-out; }
     </style>
     
+    <!-- 
+      1. data.js를 먼저 불러오라고 브라우저에게 알려줘요.
+      defer 속성은 HTML 문서를 다 읽은 후에 스크립트를 실행시켜서 오류를 방지하는 가장 확실한 방법이에요.
+    -->
     <script src="./data.js" defer></script>
 </head>
 <body class="text-gray-800">
@@ -43,9 +47,6 @@
 
         <main id="region-selection">
             <h2 class="text-xl font-bold text-gray-800 mb-4 text-center">지역을 선택하세요</h2>
-            <!-- 
-              버튼 스타일을 HTML에 직접 추가해서 페이지 로딩 시 디자인이 깨지지 않도록 수정했어요.
-            -->
             <div class="grid grid-cols-12 gap-2 sm:gap-4 max-w-2xl mx-auto">
                 <div class="col-start-5 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white" data-region-key="hokkaido">홋카이도</div>
                 <div class="col-start-6 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white" data-region-key="tohoku">도호쿠</div>
@@ -58,120 +59,159 @@
             </div>
         </main>
         
-        <section id="shop-list-view" class="hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h2 id="list-title" class="text-xl md:text-2xl font-bold text-gray-800"></h2>
-                <button id="back-to-regions-btn" class="px-3 py-1.5 text-sm bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 transition-colors">지역 다시 선택</button>
-            </div>
-            <div id="shop-list-content" class="space-y-4 bg-white p-4 rounded-xl shadow-md"></div>
-        </section>
+        <section id="shop-list-view" class="hidden"></section>
     </div>
 
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[1000] hidden">
-        <div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 opacity-0 custom-scrollbar"></div>
-    </div>
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[1000] hidden"></div>
     
-    <div id="error-message" class="hidden fixed top-5 right-5 bg-red-600 text-white py-3 px-5 rounded-lg shadow-xl z-[2000] transition-opacity duration-300">
+    <div id="error-message" class="hidden fixed top-5 right-5 bg-red-600 text-white py-3 px-5 rounded-lg shadow-xl z-[2000]">
         <p><strong class="font-bold">오류:</strong> 맛집 데이터(data.js)를 불러오지 못했습니다. 파일 이름과 경로를 확인해주세요.</p>
     </div>
 
+    <!-- 
+      2. 핵심 기능 스크립트를 HTML 문서 맨 아래로 옮겼어요.
+      이렇게 하면 화면 요소가 모두 준비된 상태에서 스크립트가 실행돼요.
+    -->
     <script>
+        // HTML 문서의 모든 요소가 준비되면, 이 안의 코드가 실행돼요.
         document.addEventListener('DOMContentLoaded', () => {
-            let checkCounter = 0;
-            const interval = setInterval(() => {
-                checkCounter++;
-                if (typeof allShops !== 'undefined') {
-                    clearInterval(interval);
-                    initializeApp();
-                } else if (checkCounter > 30) {
-                    clearInterval(interval);
-                    console.error("치명적 오류: 'allShops' 변수를 찾을 수 없습니다. data.js 파일이 올바르게 로드되었는지 확인하세요.");
-                    document.getElementById('error-message').classList.remove('hidden');
-                }
-            }, 100);
+            
+            // data.js 파일이 잘 도착해서 allShops 변수가 있는지 확인해요.
+            if (typeof allShops === 'undefined') {
+                console.error("치명적 오류: 'allShops' 변수를 찾을 수 없습니다. data.js 파일이 올바르게 로드되었는지, 파일 이름이 정확한지, 캐시가 남아있는지 확인하세요.");
+                document.getElementById('error-message').classList.remove('hidden');
+                return; // 데이터가 없으면 앱 실행을 중단해요.
+            }
 
-            function initializeApp() {
-                const regionKeyMap = {
+            // --- 여기부터는 데이터가 성공적으로 로드되었을 때만 실행돼요 ---
+            const app = {
+                elements: {
+                    foodTypeSelect: document.getElementById('food-type-select'),
+                    regionSelection: document.getElementById('region-selection'),
+                    shopListView: document.getElementById('shop-list-view'),
+                    modal: document.getElementById('modal'),
+                },
+                state: {
+                    currentRegionKey: null,
+                },
+                regionKeyMap: {
                     hokkaido: '홋카이도', tohoku: '도호쿠', kanto: '간토', chubu: '주부',
                     kansai: '간사이', chugoku: '주고쿠', shikoku: '시코쿠', kyushu: '규슈·오키나와'
-                };
-                const foodTypeSelect = document.getElementById('food-type-select');
-                const regionSelection = document.getElementById('region-selection');
-                const shopListView = document.getElementById('shop-list-view');
-                const shopListContent = document.getElementById('shop-list-content');
-                const listTitle = document.getElementById('list-title');
-                const backToRegionsBtn = document.getElementById('back-to-regions-btn');
-                const modal = document.getElementById('modal');
-                const modalContent = document.getElementById('modal-content');
-                let currentRegionKey = null;
+                },
 
-                function openModal(shop, rank) {
-                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name + ' ' + shop.address_jp)}`;
-                    modalContent.innerHTML = `
-                        <div class="p-6">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <p class="text-sm font-semibold text-red-500 mb-1">#${rank}위</p>
-                                    <h2 class="text-2xl font-bold text-gray-900">${shop.name}</h2>
-                                    <p class="text-sm text-gray-500 mt-1">${shop.prefecture} ${shop.city}</p>
+                init() {
+                    this.addEventListeners();
+                },
+
+                addEventListeners() {
+                    document.querySelectorAll('.region-card').forEach(card => {
+                        card.addEventListener('click', () => this.showShopList(card.dataset.regionKey));
+                    });
+                    this.elements.foodTypeSelect.addEventListener('change', () => {
+                        if (this.state.currentRegionKey) {
+                            this.showShopList(this.state.currentRegionKey);
+                        }
+                    });
+                    this.elements.modal.addEventListener('click', (e) => {
+                        if (e.target === this.elements.modal) this.closeModal();
+                    });
+                },
+
+                showShopList(regionKey) {
+                    this.state.currentRegionKey = regionKey;
+                    const foodType = this.elements.foodTypeSelect.value;
+                    const regionName = this.regionKeyMap[regionKey];
+                    const foodTypeName = { 'tsukemen': '츠케멘', 'ramen': '라멘', 'tonkatsu': '돈까스' }[foodType];
+                    
+                    let shops = (allShops[foodType] || []).filter(s => s.region === regionKey);
+                    shops.sort((a, b) => b.score - a.score);
+
+                    let shopListHTML = shops.length === 0 
+                        ? `<p class="text-center text-gray-500 p-4">해당 지역의 맛집 정보가 없습니다.</p>`
+                        : shops.map((shop, index) => this.createShopItemHTML(shop, index + 1)).join('');
+
+                    this.elements.shopListView.innerHTML = `
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl md:text-2xl font-bold text-gray-800">${regionName} ${foodTypeName} 맛집 목록</h2>
+                            <button id="back-to-regions-btn" class="px-3 py-1.5 text-sm bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 transition-colors">지역 다시 선택</button>
+                        </div>
+                        <div class="space-y-4 bg-white p-4 rounded-xl shadow-md">${shopListHTML}</div>
+                    `;
+
+                    this.elements.shopListView.querySelector('#back-to-regions-btn').addEventListener('click', () => this.showRegionSelection());
+                    this.elements.shopListView.querySelectorAll('.shop-list-item').forEach((item, index) => {
+                        item.addEventListener('click', () => this.openModal(shops[index], index + 1));
+                    });
+                    
+                    this.elements.regionSelection.classList.add('hidden');
+                    this.elements.shopListView.classList.remove('hidden');
+                },
+                
+                showRegionSelection() {
+                    this.elements.shopListView.classList.add('hidden');
+                    this.elements.regionSelection.classList.remove('hidden');
+                    this.state.currentRegionKey = null;
+                },
+
+                createShopItemHTML(shop, rank) {
+                    return `
+                        <div class="shop-list-item p-4 rounded-lg cursor-pointer transition-all border hover:bg-gray-100 hover:shadow-sm">
+                            <div class="flex items-center gap-4">
+                                <div class="flex-shrink-0 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">${rank}</div>
+                                <div class="flex-grow">
+                                    <h3 class="font-semibold text-gray-800">${shop.name}</h3>
+                                    <p class="text-sm text-gray-500">${shop.prefecture} ${shop.city}</p>
                                 </div>
-                                <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                            </div>
-                            <div class="mt-4 border-t pt-4">
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-yellow-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg></span>
-                                    <p class="text-lg font-bold text-gray-800">${shop.score} <span class="text-sm font-normal text-gray-500">/ 타베로그</span></p>
-                                </div>
-                                <p class="mt-3 text-gray-700 leading-relaxed">${shop.description}</p>
-                                <div class="mt-4 border-t pt-4">
-                                    <h3 class="text-sm font-semibold text-gray-600">주소 (일본어)</h3>
-                                    <p class="text-gray-800 mt-1">${shop.address_jp}</p>
-                                    <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="block w-full text-center mt-4 px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition">Google 지도로 보기</a>
+                                <div class="flex items-center text-sm font-bold text-yellow-500">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                    ${shop.score}
                                 </div>
                             </div>
                         </div>`;
-                    modal.classList.remove('hidden');
-                    setTimeout(() => modalContent.classList.remove('scale-95', 'opacity-0'), 10);
-                    modalContent.querySelector('#close-modal-btn').addEventListener('click', closeModal);
-                }
-                function closeModal() {
-                    modalContent.classList.add('scale-95', 'opacity-0');
-                    setTimeout(() => modal.classList.add('hidden'), 300);
-                }
-                
-                function showShopList(regionKey) {
-                    currentRegionKey = regionKey;
-                    const foodType = foodTypeSelect.value;
-                    const regionName = regionKeyMap[regionKey];
-                    const foodTypeName = { 'tsukemen': '츠케멘', 'ramen': '라멘', 'tonkatsu': '돈까스' }[foodType];
-                    let shops = (allShops[foodType] || []).filter(s => s.region === regionKey);
-                    shops.sort((a, b) => b.score - a.score);
-                    listTitle.textContent = `${regionName} ${foodTypeName} 맛집 목록`;
-                    shopListContent.innerHTML = '';
-                    if (shops.length === 0) {
-                        shopListContent.innerHTML = `<p class="text-center text-gray-500 p-4">해당 지역의 맛집 정보가 없습니다.</p>`;
-                    } else {
-                        shops.forEach((shop, index) => {
-                            const rank = index + 1;
-                            const shopEl = document.createElement('div');
-                            shopEl.className = 'shop-list-item p-4 mb-2 rounded-lg cursor-pointer transition-all border hover:bg-gray-100 hover:shadow-sm';
-                            shopEl.innerHTML = `<div class="flex items-center gap-4"><div class="flex-shrink-0 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">${rank}</div><div class="flex-grow"><h3 class="font-semibold text-gray-800">${shop.name}</h3><p class="text-sm text-gray-500">${shop.prefecture} ${shop.city}</p></div><div class="flex items-center text-sm font-bold text-yellow-500"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>${shop.score}</div></div>`;
-                            shopEl.addEventListener('click', () => openModal(shop, rank));
-                            shopListContent.appendChild(shopEl);
-                        });
-                    }
-                    regionSelection.classList.add('hidden');
-                    shopListView.classList.remove('hidden');
-                }
+                },
 
-                document.querySelectorAll('.region-card').forEach(card => {
-                    card.addEventListener('click', () => showShopList(card.dataset.regionKey));
-                });
-                
-                foodTypeSelect.addEventListener('change', () => { if (currentRegionKey) { showShopList(currentRegionKey); } });
-                backToRegionsBtn.addEventListener('click', () => { shopListView.classList.add('hidden'); regionSelection.classList.remove('hidden'); currentRegionKey = null; });
-                modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-            }
+                openModal(shop, rank) {
+                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name + ' ' + shop.address_jp)}`;
+                    this.elements.modal.innerHTML = `
+                        <div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 opacity-0 custom-scrollbar">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-sm font-semibold text-red-500 mb-1">#${rank}위</p>
+                                        <h2 class="text-2xl font-bold text-gray-900">${shop.name}</h2>
+                                        <p class="text-sm text-gray-500 mt-1">${shop.prefecture} ${shop.city}</p>
+                                    </div>
+                                    <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                                </div>
+                                <div class="mt-4 border-t pt-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-yellow-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg></span>
+                                        <p class="text-lg font-bold text-gray-800">${shop.score} <span class="text-sm font-normal text-gray-500">/ 타베로그</span></p>
+                                    </div>
+                                    <p class="mt-3 text-gray-700 leading-relaxed">${shop.description}</p>
+                                    <div class="mt-4 border-t pt-4">
+                                        <h3 class="text-sm font-semibold text-gray-600">주소 (일본어)</h3>
+                                        <p class="text-gray-800 mt-1">${shop.address_jp}</p>
+                                        <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="block w-full text-center mt-4 px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition">Google 지도로 보기</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    this.elements.modal.classList.remove('hidden');
+                    setTimeout(() => this.elements.modal.querySelector('#modal-content').classList.remove('scale-95', 'opacity-0'), 10);
+                    this.elements.modal.querySelector('#close-modal-btn').addEventListener('click', () => this.closeModal());
+                },
+
+                closeModal() {
+                    const modalContent = this.elements.modal.querySelector('#modal-content');
+                    if (modalContent) {
+                        modalContent.classList.add('scale-95', 'opacity-0');
+                        setTimeout(() => this.elements.modal.classList.add('hidden'), 300);
+                    }
+                },
+            };
+
+            app.init();
         });
     </script>
 </body>
