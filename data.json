@@ -128,6 +128,7 @@
         { "region": "kanto", "name": "카메키", "name_jp": "亀㐂", "address_jp": "千葉県船橋市本町2-27-20", "prefecture": "치바현", "city": "후나바시시", "score": 3.65, "description": "치바현 후나바시의 인기 스시점. 신선한 해산물을 사용한 스시와 요리로 높은 평가를 받는다." },
         { "region": "kanto", "name": "카이텐스시 토리톤 도쿄 소라마치점", "name_jp": "回転寿し トリトン 東京ソラマチ店", "address_jp": "東京都墨田区押上1-1-2 東京スカイツリータウン ソラマチ 6F", "prefecture": "도쿄도", "city": "스미다구", "score": 3.62, "description": "홋카이도에서 온 또 다른 인기 회전초밥. 크고 신선한 네타로 유명하며 스카이트리 관광 후 들르기 좋다." },
         { "region": "kanto", "name": "스시 오오노", "name_jp": "鮨 おおの", "address_jp": "埼玉県さいたま市大宮区仲町1-103-2", "prefecture": "사이타마현", "city": "사이타마시", "score": 3.61, "description": "사이타마현 오미야를 대표하는 스시 명점. 차분한 분위기에서 고품질의 스시를 즐길 수 있다." },
+        
     { "region": "kansai", "name": "스시요시", "name_jp": "鮨 よし", "address_jp": "大阪府大阪市北区曽根崎新地1-2-14", "prefecture": "오사카부", "city": "오사카시", "score": 4.45, "description": "세계가 주목하는 오사카 스시야, 독창적인 퍼포먼스와 츠마미로 예약이 매우 어렵습니다." },
     { "region": "kansai", "name": "하라쇼", "name_jp": "原正", "address_jp": "大阪府大阪市福島区福島1-1-48", "prefecture": "오사카부", "city": "오사카시", "score": 4.38, "description": "오사카 대표 정통 스시, 밥과 재료의 완벽한 조화로 최고봉이라 불립니다." },
     { "region": "kansai", "name": "스시 마츠모토", "name_jp": "鮨 まつもと", "address_jp": "京都府京都市東山区祇園町南側570-123", "prefecture": "교토부", "city": "교토시", "score": 4.11, "description": "교토 기온의 톱클래스 명점, 섬세하고 품격 있는 교토 스타일 스시를 선보입니다." },
