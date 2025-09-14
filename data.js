@@ -221,4 +221,3 @@ const allShops = {
     </script>
 </body>
 </html>
-
