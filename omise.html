@@ -11,7 +11,6 @@
     <style>
         body { 
             font-family: 'Pretendard', sans-serif; 
-            /* 다크모드 전환 시 깜빡임 방지를 위해 배경색 전환 효과 추가 */
             transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
         }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
@@ -34,7 +33,7 @@
         .region-card, #theme-toggle { transition: all 0.3s ease-in-out; }
     </style>
     <script>
-        // 페이지 로드 시 FOUC(Flash of Unstyled Content) 방지를 위해 head에 스크립트 추가
+        // 페이지 로드 시 깜빡임(FOUC) 방지를 위해 head에 스크립트 배치
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         } else {
@@ -49,7 +48,7 @@
             <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">일본 맛집 리스트</h1>
             <p class="mt-2 text-md text-gray-600 dark:text-gray-400">원하는 지역을 선택하거나 직접 검색해보세요.</p>
             <button id="theme-toggle" class="absolute top-0 right-0 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-900">
-                <!-- 아이콘은 JS로 제어 -->
+                <!-- 아이콘은 JS로 제어됩니다 -->
             </button>
         </header>
         
@@ -118,14 +117,14 @@
         <main id="region-selection">
             <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 text-center">지역을 선택하세요</h2>
             <div class="grid grid-cols-12 gap-2 sm:gap-4 max-w-2xl mx-auto">
-                <div class="col-start-5 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white" data-region-key="hokkaido">홋카이도</div>
-                <div class="col-start-6 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white" data-region-key="tohoku">도호쿠</div>
-                <div class="col-start-3 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white" data-region-key="chubu">주부</div>
-                <div class="col-start-7 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white" data-region-key="kanto">간토</div>
-                <div class="col-start-2 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white" data-region-key="chugoku">주고쿠</div>
-                <div class="col-start-6 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white" data-region-key="kansai">간사이</div>
-                <div class="col-start-4 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white" data-region-key="shikoku">시코쿠</div>
-                <div class="col-start-1 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white" data-region-key="kyushu">규슈·오키나와</div>
+                <div class="col-start-5 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="hokkaido">홋카이도</div>
+                <div class="col-start-6 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="tohoku">도호쿠</div>
+                <div class="col-start-3 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="chubu">주부</div>
+                <div class="col-start-7 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="kanto">간토</div>
+                <div class="col-start-2 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="chugoku">주고쿠</div>
+                <div class="col-start-6 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="kansai">간사이</div>
+                <div class="col-start-4 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="shikoku">시코쿠</div>
+                <div class="col-start-1 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="kyushu">규슈·오키나와</div>
             </div>
         </main>
         
@@ -140,28 +139,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // ▼▼▼ 다크모드 로직 추가 ▼▼▼
-            const themeToggleBtn = document.getElementById('theme-toggle');
-            const sunIcon = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
-            const moonIcon = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`;
-            
-            const updateThemeIcon = () => {
-                themeToggleBtn.innerHTML = document.documentElement.classList.contains('dark') ? sunIcon : moonIcon;
-            };
-
-            themeToggleBtn.addEventListener('click', () => {
-                document.documentElement.classList.toggle('dark');
-                if (document.documentElement.classList.contains('dark')) {
-                    localStorage.theme = 'dark';
-                } else {
-                    localStorage.theme = 'light';
-                }
-                updateThemeIcon();
-            });
-
-            updateThemeIcon(); // 초기 아이콘 설정
-            // ▲▲▲ 다크모드 로직 종료 ▲▲▲
-
             let allShops = null;
 
             try {
@@ -182,6 +159,11 @@
                     regionSelection: document.getElementById('region-selection'),
                     shopListView: document.getElementById('shop-list-view'),
                     modal: document.getElementById('modal'),
+                    themeToggleBtn: document.getElementById('theme-toggle'), // 테마 버튼 추가
+                },
+                icons: {
+                    sun: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`,
+                    moon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`,
                 },
                 state: { 
                     currentShops: [],
@@ -193,42 +175,46 @@
                     kansai: '간사이', chugoku: '주고쿠', shikoku: '시코쿠', kyushu: '규슈·오키나와'
                 },
                 foodTypeNameMap: {
-                    'ramen': '라멘', 'tsukemen': '츠케멘', 'soba': '소바', 'udon': '우동',
-                    'sushi': '스시', 'sashimi_seafood': '회・해산물 요리', 'donburi': '돈부리 (덮밥)', 'tonkatsu': '돈까스',
-                    'tempura': '덴푸라', 'unagi': '장어', 'yakitori': '야키토리', 'sukiyaki_shabu': '스키야키・샤브샤브',
-                    'okonomiyaki_takoyaki': '오코노미야키・타코야키', 'oden': '오뎅', 'kaiseki': '가이세키 (코스 요리)',
-                    'yakiniku': '야키니쿠', 'horumon': '호르몬', 'steak_hamburg': '스테이크・햄버그',
-                    'pasta': '파스타', 'pizza': '피자', 'french': '프랑스 요리', 'italian': '이탈리아 요리',
-                    'curry': '카레', 'chinese': '중화요리', 'korean': '한국 요리', 'ethnic': '아시아・에스닉',
-                    'izakaya': '이자카야', 'bar': '바・다이닝 바',
-                    'cafe': '카페', 'sweets': '디저트・스위츠', 'bread': '빵'
+                    'ramen': '라멘', 'tsukemen': '츠케멘', 'soba': '소바', 'udon': '우동', 'sushi': '스시', 'sashimi_seafood': '회・해산물 요리', 'donburi': '돈부리 (덮밥)', 'tonkatsu': '돈까스', 'tempura': '덴푸라', 'unagi': '장어', 'yakitori': '야키토리', 'sukiyaki_shabu': '스키야키・샤브샤브', 'okonomiyaki_takoyaki': '오코노미야키・타코야키', 'oden': '오뎅', 'kaiseki': '가이세키 (코스 요리)', 'yakiniku': '야키니쿠', 'horumon': '호르몬', 'steak_hamburg': '스테이크・햄버그', 'pasta': '파스타', 'pizza': '피자', 'french': '프랑스 요리', 'italian': '이탈리아 요리', 'curry': '카레', 'chinese': '중화요리', 'korean': '한국 요리', 'ethnic': '아시아・에스닉', 'izakaya': '이자카야', 'bar': '바・다이닝 바', 'cafe': '카페', 'sweets': '디저트・스위츠', 'bread': '빵'
                 },
 
                 init() {
                     this.addEventListeners();
+                    this.updateThemeIcon(); // 초기 테마 아이콘 설정
+                },
+
+                updateThemeIcon() {
+                    this.elements.themeToggleBtn.innerHTML = document.documentElement.classList.contains('dark') ? this.icons.sun : this.icons.moon;
                 },
 
                 addEventListeners() {
+                    // 테마 토글 이벤트
+                    this.elements.themeToggleBtn.addEventListener('click', () => {
+                        document.documentElement.classList.toggle('dark');
+                        localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+                        this.updateThemeIcon();
+                    });
+
+                    // 지역 선택 이벤트
                     document.querySelectorAll('.region-card').forEach(card => {
                         card.addEventListener('click', () => this.handleRegionSelect(card.dataset.regionKey));
                     });
                     
+                    // 검색 이벤트
                     this.elements.searchBtn.addEventListener('click', () => this.handleSearch());
                     this.elements.searchInput.addEventListener('keyup', (e) => {
                         if (e.key === 'Enter') this.handleSearch();
                     });
 
+                    // 음식 종류 변경 이벤트
                     this.elements.foodTypeSelect.addEventListener('change', () => {
                         if (this.elements.regionSelection.classList.contains('hidden')) {
-                            if (this.state.currentSearchTerm !== null) {
-                                this.handleSearch();
-                            } 
-                            else if (this.state.currentRegionKey !== null) {
-                                this.handleRegionSelect(this.state.currentRegionKey);
-                            }
+                            if (this.state.currentSearchTerm !== null) this.handleSearch();
+                            else if (this.state.currentRegionKey !== null) this.handleRegionSelect(this.state.currentRegionKey);
                         }
                     });
 
+                    // 모달 닫기 이벤트
                     this.elements.modal.addEventListener('click', (e) => {
                         if (e.target === this.elements.modal) this.closeModal();
                     });
@@ -237,36 +223,30 @@
                 handleRegionSelect(regionKey) {
                     this.state.currentRegionKey = regionKey;
                     this.state.currentSearchTerm = null;
-
                     const foodType = this.elements.foodTypeSelect.value;
                     const regionName = this.regionKeyMap[regionKey];
                     const foodTypeName = this.foodTypeNameMap[foodType];
-                    
                     const shops = (allShops[foodType] || []).filter(s => s.region === regionKey);
                     const title = `${regionName} ${foodTypeName} 맛집 목록`;
-                    
                     this.displayShopList(shops, title);
                 },
 
                 handleSearch() {
                     const searchTerm = this.elements.searchInput.value.trim();
-                    const foodType = this.elements.foodTypeSelect.value;
-                    const foodTypeName = this.foodTypeNameMap[foodType];
-
                     if (!searchTerm) return;
                     
                     this.state.currentSearchTerm = searchTerm;
                     this.state.currentRegionKey = null;
-
+                    const foodType = this.elements.foodTypeSelect.value;
+                    const foodTypeName = this.foodTypeNameMap[foodType];
                     const lowerCaseSearchTerm = searchTerm.toLowerCase();
-                    const shops = (allShops[foodType] || []).filter(shop => {
-                        return (shop.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
-                                shop.name_jp?.toLowerCase().includes(lowerCaseSearchTerm) ||
-                                shop.prefecture?.toLowerCase().includes(lowerCaseSearchTerm) ||
-                                shop.city?.toLowerCase().includes(lowerCaseSearchTerm) ||
-                                shop.address_jp?.toLowerCase().includes(lowerCaseSearchTerm));
-                    });
-
+                    const shops = (allShops[foodType] || []).filter(shop => 
+                        (shop.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
+                         shop.name_jp?.toLowerCase().includes(lowerCaseSearchTerm) ||
+                         shop.prefecture?.toLowerCase().includes(lowerCaseSearchTerm) ||
+                         shop.city?.toLowerCase().includes(lowerCaseSearchTerm) ||
+                         shop.address_jp?.toLowerCase().includes(lowerCaseSearchTerm))
+                    );
                     const title = `'${searchTerm}' ${foodTypeName} 검색 결과`;
                     this.displayShopList(shops, title);
                 },
@@ -274,7 +254,6 @@
                 displayShopList(shops, title) {
                     shops.sort((a, b) => b.score - a.score);
                     this.state.currentShops = shops;
-
                     const shopListHTML = shops.length === 0 
                         ? `<p class="text-center text-gray-500 dark:text-gray-400 p-4">맛집 정보가 없습니다. 다른 키워드로 검색해보세요.</p>`
                         : shops.map((shop, index) => this.createShopItemHTML(shop, index + 1)).join('');
@@ -284,8 +263,7 @@
                             <h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">${title}</h2>
                             <button id="back-to-regions-btn" class="px-3 py-1.5 text-sm bg-gray-600 dark:bg-gray-700 text-white font-semibold rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors">초기화면으로</button>
                         </div>
-                        <div class="space-y-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">${shopListHTML}</div>
-                    `;
+                        <div class="space-y-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">${shopListHTML}</div>`;
 
                     this.elements.shopListView.querySelector('#back-to-regions-btn').addEventListener('click', () => this.showRegionSelection());
                     this.elements.shopListView.querySelectorAll('.shop-list-item').forEach((item, index) => {
@@ -300,7 +278,6 @@
                     this.elements.shopListView.classList.add('hidden');
                     this.elements.regionSelection.classList.remove('hidden');
                     this.elements.searchInput.value = '';
-                    
                     this.state.currentShops = [];
                     this.state.currentRegionKey = null;
                     this.state.currentSearchTerm = null;
@@ -347,4 +324,5 @@
     </script>
 </body>
 </html>
+
 
