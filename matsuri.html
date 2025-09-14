@@ -1,0 +1,304 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>일본 마츠리 지도</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+            background-color: #0c0a09; /* 더 깊은 다크 모드 배경 */
+            overscroll-behavior: none; /* iOS 스와이프 시 배경 스croll 방지 */
+        }
+        /* 지도 스타일 */
+        #japan-map-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: auto;
+        }
+        .region-rect {
+            transition: fill 0.2s ease-in-out, transform 0.2s ease-in-out;
+            stroke: #44403c;
+            stroke-width: 1.5;
+            cursor: pointer;
+        }
+        .has-festivals { fill: #3f3f46; }
+        .has-festivals:hover { fill: #818cf8; }
+        .no-festivals { fill: #1c1917; cursor: not-allowed; }
+        .region-rect.selected { 
+            fill: #a78bfa; 
+            transform: scale(1.05);
+            transform-origin: center;
+        }
+        .region-label {
+            font-size: 14px;
+            fill: #e7e5e4;
+            pointer-events: none;
+            text-anchor: middle;
+            font-weight: 600;
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+             .region-label {
+                font-size: 16px;
+             }
+        }
+        /* 상세 정보 패널 스타일 */
+        #details-panel {
+            transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            transform: translateY(100%);
+            touch-action: pan-y;
+        }
+        #details-panel.open {
+            transform: translateY(0);
+        }
+        #backdrop {
+            transition: opacity 0.4s ease;
+        }
+        @media (min-width: 1024px) {
+            #details-panel {
+                transform: translateX(100%);
+                touch-action: auto;
+            }
+            #details-panel.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-200 antialiased">
+    <div class="relative flex flex-col lg:flex-row w-full h-dvh overflow-hidden">
+        <!-- 지도 섹션 -->
+        <div class="flex-grow flex flex-col items-center justify-center p-4 lg:p-8 relative z-0">
+            <header class="text-center mb-4 lg:mb-8 flex-shrink-0">
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">일본 마츠리 지도</h1>
+                <p class="text-gray-400 mt-2 text-sm sm:text-base">궁금한 지역을 눌러 축제 정보를 확인하세요.</p>
+            </header>
+            <div id="japan-map-container" class="w-full flex-grow">
+                <svg id="japan-map-svg" viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Hokkaido -->
+                    <g id="hokkaido" class="region-group">
+                        <rect class="region-rect" x="100" y="10" width="120" height="70" rx="15"></rect>
+                        <text class="region-label" x="160" y="50">홋카이도</text>
+                    </g>
+                    <!-- Tohoku -->
+                    <g id="tohoku" class="region-group">
+                        <rect class="region-rect" x="150" y="95" width="100" height="60" rx="15"></rect>
+                        <text class="region-label" x="200" y="130">도호쿠</text>
+                    </g>
+                    <!-- Kanto -->
+                    <g id="kanto" class="region-group">
+                        <rect class="region-rect" x="160" y="170" width="90" height="70" rx="15"></rect>
+                        <text class="region-label" x="205" y="210">간토</text>
+                    </g>
+                    <!-- Chubu -->
+                     <g id="chubu" class="region-group">
+                        <rect class="region-rect" x="80" y="170" width="70" height="70" rx="15"></rect>
+                        <text class="region-label" x="115" y="210">주부</text>
+                    </g>
+                    <!-- Kansai -->
+                    <g id="kansai" class="region-group">
+                         <rect class="region-rect" x="70" y="255" width="90" height="60" rx="15"></rect>
+                        <text class="region-label" x="115" y="290">간사이</text>
+                    </g>
+                     <!-- Chugoku -->
+                    <g id="chugoku" class="region-group">
+                        <rect class="region-rect" x="10" y="255" width="50" height="80" rx="15"></rect>
+                        <text class="region-label" x="35" y="300">주고쿠</text>
+                    </g>
+                    <!-- Shikoku -->
+                    <g id="shikoku" class="region-group">
+                        <rect class="region-rect" x="70" y="330" width="90" height="50" rx="15"></rect>
+                        <text class="region-label" x="115" y="360">시코쿠</text>
+                    </g>
+                    <!-- Kyushu -->
+                    <g id="kyushu" class="region-group">
+                        <rect class="region-rect" x="10" y="350" width="50" height="60" rx="15"></rect>
+                        <text class="region-label" x="35" y="385">규슈</text>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+
+        <!-- Backdrop -->
+        <div id="backdrop" class="fixed inset-0 bg-black/70 z-10 opacity-0 pointer-events-none lg:hidden"></div>
+
+
+        <!-- 상세 정보 패널 -->
+        <div id="details-panel" class="w-full h-[85%] lg:h-full lg:w-1/3 fixed bottom-0 left-0 lg:relative bg-stone-900/80 backdrop-blur-xl shadow-2xl rounded-t-3xl lg:rounded-none z-20">
+            <div id="panel-content" class="p-5 h-full overflow-y-auto relative">
+                <!-- Close button added for better user experience -->
+                <button id="close-panel-btn" class="absolute top-4 right-4 text-stone-500 hover:text-white transition-colors z-10 p-2 rounded-full bg-stone-800/50 hover:bg-stone-700/80">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                <div class="w-12 h-1.5 bg-stone-600 rounded-full mx-auto mb-4 lg:hidden cursor-grab"></div>
+                <div class="flex items-center mb-6 pt-8 lg:pt-0">
+                    <h2 id="region-name" class="text-2xl font-bold text-white">지역을 선택해주세요</h2>
+                </div>
+                <div id="festival-list" class="space-y-6">
+                    <div class="flex flex-col items-center justify-center h-64 text-stone-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        <p class="mt-4">지도에서 지역을 선택하면</p>
+                        <p>축제 정보가 여기에 표시됩니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const festivalData = {
+            hokkaido: { name: '홋카이도 (北海道)', festivals: [ { month: 9, name: '삿포로 어텀 페스트', date: '9월 초순 ~ 9월 하순', city: '홋카이도 삿포로시', description: '홋카이도 각지의 제철 음식과 특산품이 오도리 공원에 모이는 일본 최대급의 음식 축제입니다.' }, { month: 11, name: '삿포로 화이트 일루미네이션', date: '11월 하순 ~ 3월 중순', city: '홋카이도 삿포로시', description: '오도리 공원을 중심으로 수십만 개의 전구가 삿포로의 겨울밤을 로맨틱하게 물들이는 빛의 축제입니다.' } ] },
+            tohoku: { name: '도호쿠 (東北)', festivals: [ { month: 9, name: '가쿠노다테 마츠리', date: '9월 7일(일) ~ 9일(화)', city: '아키타현 센보쿠시', description: '거대한 수레 \'히키야마\'가 서로 격렬하게 부딪히는 장면이 압권인 축제로, 국가 중요무형민속문화재입니다.' }, { month: 10, name: '니혼마츠 제등 마츠리', date: '10월 4일(토) ~ 6일(월)', city: '후쿠시마현 니혼마츠시', description: '300개가 넘는 등불로 장식된 7대의 수레가 마을을 행진하며 환상적인 분위기를 자아내는 일본 3대 제등 마츠리 중 하나입니다.' }, { month: 12, name: '센다이 빛의 페이지전트', date: '12월 중순 ~ 12월 31일', city: '미야기현 센다이시', description: '센다이의 상징인 조젠지 거리의 느티나무 가로수가 수십만 개의 빛으로 둘러싸여 환상적인 빛의 터널을 만들어냅니다.' } ] },
+            kanto: { name: '간토 (関東)', festivals: [ { month: 10, name: '가와고에 마츠리', date: '10월 18일(토) ~ 19일(일)', city: '사이타마현 가와고에시', description: '에도 시대의 모습을 간직한 거리를 화려한 수레가 행진하는 축제로, 국가 중요무형민속문화재입니다.' }, { month: 11, name: '하치오지 이초 마츠리', date: '11월 중순', city: '도쿄도 하치오지시', description: '약 4km의 은행나무 가로수길이 노랗게 물드는 장관을 배경으로 열리는 아름다운 축제입니다.' }, { month: 12, name: '치치부 요마츠리', date: '12월 2일(화) ~ 3일(수)', city: '사이타마현 치치부시', description: '일본 3대 히키야마 마츠리 중 하나로, 겨울 밤하늘을 수놓는 불꽃과 화려한 수레가 압권입니다. (유네스코 무형문화유산)' }, { month: 1, name: '도쿄 소방 출정식', date: '1월 6일(화) 예정', city: '도쿄도 오다이바', description: '새해를 맞아 소방관들이 에도 시대의 기술과 현대적인 소방 훈련을 선보이는 화려한 퍼레이드와 시연을 펼칩니다.' } ] },
+            chubu: { name: '주부 (中部)', festivals: [ { month: 9, name: '세토모노 마츠리', date: '9월 13일(토) ~ 14일(일)', city: '아이치현 세토시', description: '일본 최대 규모의 도자기 축제로, 다양한 도자기를 저렴하게 구매할 수 있습니다.' }, { month: 10, name: '다카야마 아키 마츠리', date: '10월 9일(목) ~ 10일(금)', city: '기후현 다카야마시', description: '화려하고 정교한 축제용 수레 \'야타이\'가 거리를 행진하며, 밤에는 등불을 밝혀 환상적인 분위기를 연출합니다.' }, { month: 1, name: '노자와 온천 불축제', date: '1월 15일(목)', city: '나가노현 노자와 온천', description: '일본 3대 불축제 중 하나로, 거대한 목조 신전을 태우며 마을의 액운을 막고 풍요를 기원하는 격렬하고 장엄한 축제입니다.' } ] },
+            kansai: { name: '간사이 (関西)', festivals: [ { month: 9, name: '기시와다 단지리 마츠리', date: '9월 13일(토) ~ 14일(일)', city: '오사카부 기시와다시', description: '약 4톤의 거대한 수레 \'단지리\'가 빠른 속도로 거리를 질주하는 박진감 넘치는 축제입니다.' }, { month: 10, name: '지다이 마츠리', date: '10월 22일(수)', city: '교토부 교토시', description: '교토 1100년 역사를 시대별로 재현한 대규모 가장 행렬이 하이라이트입니다.' }, { month: 10, name: '구라마노 히마츠리', date: '10월 22일(수)', city: '교토부 교토시', description: '수백 명의 남성들이 거대한 횃불을 들고 구라마 마을을 행진하는 교토 3대 기제 중 하나입니다.' }, { month: 11, name: '아라시야마 모미지 마츠리', date: '11월 둘째 주 일요일', city: '교토부 교토시', description: '단풍 명소 아라시야마에서 헤이안 시대 귀족들의 뱃놀이를 재현하는 우아한 축제입니다.' }, { month: 12, 'name': '고베 루미나리에', date: '12월 초순 ~ 중순', city: '효고현 고베시', description: '한신 대지진 희생자를 추모하고 도시의 부흥을 기원하는 빛의 축제로, 화려하고 장엄한 빛의 예술 작품을 볼 수 있습니다.'}, { month: 1, name: '도카 에비스', date: '1월 9일(금) ~ 11일(일)', city: '오사카부 오사카시', description: '\'에벳상\'이라 불리는 행운의 신을 모시는 축제로, 한 해의 사업 번창을 기원하는 사람들로 인산인해를 이룹니다.' } ] },
+            chugoku: { name: '주고쿠 (中国)', festivals: [ { month: 10, name: '마츠에 스이토로', date: '9월 하순 ~ 10월 중순', city: '시마네현 마츠에시', description: '마츠에 성 주변 해자를 따라 수백 개의 등불이 빛을 밝히는 물의 도시 특유의 낭만적인 축제입니다.' }, { month: 11, name: '오노미치 벳차 마츠리', date: '11월 1일(토) ~ 3일(월)', city: '히로시마현 오노미치시', description: '사자, 텐구 등 기이한 가면을 쓴 사람들이 축복의 채찍으로 사람들을 때리며 무병장수를 기원하는 독특한 축제입니다.' } ] },
+            shikoku: { name: '시코쿠 (四国)', festivals: [ { month: 10, name: '니이하마 다이코 마츠리', date: '10월 16일(목) ~ 18일(토)', city: '에히메현 니이하마시', description: '일본 3대 싸움 축제 중 하나로, 금실로 화려하게 장식된 거대한 태고 수레 \'다이코다이\'를 남자들이 격렬하게 부딪히는 박진감 넘치는 축제입니다.' }, { month: 10, name: '사이죠 마츠리', date: '10월 중순', city: '에히메현 사이죠시', description: '100대가 넘는 화려한 수레 \'단지리\'와 \'미코시\'가 강변에 모이는 모습이 장관인 에도 시대부터 이어진 축제입니다.' } ] },
+            kyushu: { name: '규슈 & 오키나와', festivals: [ { month: 10, name: '나가사키 쿤치', date: '10월 7일(화) ~ 9일(목)', city: '나가사키현 나가사키시', description: '일본, 중국, 네덜란드 문화가 융합된 독특하고 이국적인 공연을 볼 수 있습니다. (유네스코 무형문화유산)' }, { month: 11, name: '가라쓰 쿤치', date: '11월 2일(일) ~ 4일(화)', city: '사가현 가라쓰시', description: '물고기, 사자 등 다양한 모양의 거대한 수레 \'히키야마\'가 거리를 행진하는 활기찬 축제입니다. (유네스코 무형문화유산)' }, { month: 12, name: '오키나와 평화의 빛', date: '12월 중순 ~ 1월 초', city: '오키나와현 이토만시', description: '오키나와 전투 희생자를 추모하고 평화를 기원하며 평화기념공원을 수십만 개의 빛으로 밝히는 행사입니다.'} ] }
+        };
+
+
+        const detailsPanel = document.getElementById('details-panel');
+        const panelContent = document.getElementById('panel-content');
+        const regionNameEl = document.getElementById('region-name');
+        const festivalListEl = document.getElementById('festival-list');
+        const backdrop = document.getElementById('backdrop');
+        const closePanelBtn = document.getElementById('close-panel-btn');
+        const regionGroups = document.querySelectorAll('.region-group');
+
+
+        let touchStartY = 0;
+        let currentY = 0;
+        let isPanelOpen = false;
+        let isDragging = false;
+
+
+        const openPanel = (regionId) => {
+            const regionData = festivalData[regionId];
+            if (!regionData || regionData.festivals.length === 0) return;
+
+
+            isPanelOpen = true;
+            regionGroups.forEach(group => group.querySelector('.region-rect').classList.remove('selected'));
+            document.getElementById(regionId).querySelector('.region-rect').classList.add('selected');
+
+
+            regionNameEl.textContent = regionData.name;
+            festivalListEl.innerHTML = '';
+            
+            const festivalsByMonth = regionData.festivals.reduce((acc, f) => ({...acc, [f.month]: [...(acc[f.month] || []), f]}), {});
+            
+            // Custom sort: 1월(January)이 12월(December) 뒤에 오도록 정렬
+            Object.keys(festivalsByMonth).sort((a, b) => {
+                const monthA = a === '1' ? 13 : parseInt(a, 10);
+                const monthB = b === '1' ? 13 : parseInt(b, 10);
+                return monthA - monthB;
+            }).forEach(month => {
+                const monthHtml = `
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold border-b-2 border-stone-700 pb-2 mb-4 text-violet-300">${month === '1' ? '2026년 1월' : `${month}월`}</h3>
+                        ${festivalsByMonth[month].map(f => `
+                            <div class="bg-stone-800/50 p-4 rounded-lg mb-4">
+                                <h4 class="text-lg font-bold text-white">${f.name}</h4>
+                                <div class="flex flex-wrap items-center text-sm text-stone-400 mt-2 gap-x-4 gap-y-1">
+                                    <span>📍 ${f.city}</span>
+                                    <span>📅 ${f.date}</span>
+                                </div>
+                                <p class="text-stone-300 mt-3 text-sm leading-relaxed">${f.description}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                festivalListEl.innerHTML += monthHtml;
+            });
+
+
+            detailsPanel.classList.add('open');
+            backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            panelContent.scrollTop = 0; // 패널 열 때 스크롤 상단으로 초기화
+        };
+
+
+        const closePanel = () => {
+            if (!isPanelOpen) return;
+            isPanelOpen = false;
+            detailsPanel.classList.remove('open');
+            backdrop.classList.add('opacity-0', 'pointer-events-none');
+            regionGroups.forEach(group => group.querySelector('.region-rect').classList.remove('selected'));
+        };
+        
+        const handleTouchStart = (e) => {
+            if (!isPanelOpen || window.innerWidth >= 1024) return;
+            // 스크롤이 맨 위에 있고, 드래그 핸들 근처에서 터치 시작했을 때만
+            if (panelContent.scrollTop === 0 && e.target.closest('.cursor-grab')) {
+                isDragging = true;
+                touchStartY = e.touches[0].clientY;
+                detailsPanel.style.transition = 'none';
+            } else {
+                isDragging = false;
+            }
+        };
+
+
+        const handleTouchMove = (e) => {
+            if (!isDragging) return;
+            const touchY = e.touches[0].clientY;
+            const deltaY = touchY - touchStartY;
+            
+            // 아래로만 드래그 허용
+            if (deltaY > 0) {
+                currentY = deltaY;
+                detailsPanel.style.transform = `translateY(${currentY}px)`;
+            }
+        };
+
+
+        const handleTouchEnd = () => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            detailsPanel.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
+            
+            // 100px 이상 내렸으면 닫기
+            if (currentY > 100) {
+                closePanel();
+            } else {
+                 // 아니면 원래 위치로
+                detailsPanel.style.transform = '';
+            }
+            currentY = 0;
+        };
+
+
+        regionGroups.forEach(group => {
+            const regionId = group.id;
+            const rect = group.querySelector('.region-rect');
+            if (festivalData[regionId] && festivalData[regionId].festivals.length > 0) {
+                rect.classList.add('has-festivals');
+            } else {
+                rect.classList.add('no-festivals');
+            }
+            group.addEventListener('click', () => {
+                if (rect.classList.contains('selected')) {
+                    closePanel();
+                } else {
+                    openPanel(regionId);
+                }
+            });
+        });
+        
+        closePanelBtn.addEventListener('click', closePanel);
+        backdrop.addEventListener('click', closePanel);
+        detailsPanel.addEventListener('touchstart', handleTouchStart, { passive: true });
+        detailsPanel.addEventListener('touchmove', handleTouchMove, { passive: true });
+        detailsPanel.addEventListener('touchend', handleTouchEnd, { passive: true });
+    </script>
+</body>
+</html>
