@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -83,14 +84,12 @@
             </div>
             <div>
                 <label for="search-input" class="block text-sm font-medium text-gray-700 mb-2">2. 맛집 검색</label>
-                <!-- ▼▼▼ 수정된 부분: flex-col sm:flex-row 추가로 반응형 레이아웃 구현 ▼▼▼ -->
                 <div class="flex flex-col sm:flex-row gap-2">
                     <input type="text" id="search-input" placeholder="도시 또는 가게 이름으로 검색 (예: 도쿄)" class="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 transition">
                     <button id="search-btn" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 transition flex-shrink-0 flex items-center justify-center">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </button>
                 </div>
-                <!-- ▲▲▲ 수정된 부분 ▲▲▲ -->
             </div>
         </div>
 
@@ -140,7 +139,13 @@
                     shopListView: document.getElementById('shop-list-view'),
                     modal: document.getElementById('modal'),
                 },
-                state: { currentShops: [] },
+                // ▼▼▼ 수정된 부분: 현재 상태를 기억하기 위한 변수 추가 ▼▼▼
+                state: { 
+                    currentShops: [],
+                    currentRegionKey: null,
+                    currentSearchTerm: null
+                },
+                // ▲▲▲ 수정된 부분 ▲▲▲
                 regionKeyMap: {
                     hokkaido: '홋카이도', tohoku: '도호쿠', kanto: '간토', chubu: '주부',
                     kansai: '간사이', chugoku: '주고쿠', shikoku: '시코쿠', kyushu: '규슈·오키나와'
@@ -171,9 +176,21 @@
                         if (e.key === 'Enter') this.handleSearch();
                     });
 
+                    // ▼▼▼ 수정된 부분: 음식 종류 변경 시 로직 수정 ▼▼▼
                     this.elements.foodTypeSelect.addEventListener('change', () => {
-                        this.elements.regionSelection.classList.contains('hidden') && this.handleSearch();
+                        // 목록이 화면에 보이는 경우에만 동작
+                        if (this.elements.regionSelection.classList.contains('hidden')) {
+                            // 마지막 행동이 '검색'이었다면, 같은 검색어로 다시 검색
+                            if (this.state.currentSearchTerm !== null) {
+                                this.handleSearch();
+                            } 
+                            // 마지막 행동이 '지역 선택'이었다면, 같은 지역 목록을 다시 로드
+                            else if (this.state.currentRegionKey !== null) {
+                                this.handleRegionSelect(this.state.currentRegionKey);
+                            }
+                        }
                     });
+                    // ▲▲▲ 수정된 부분 ▲▲▲
 
                     this.elements.modal.addEventListener('click', (e) => {
                         if (e.target === this.elements.modal) this.closeModal();
@@ -181,6 +198,11 @@
                 },
 
                 handleRegionSelect(regionKey) {
+                    // ▼▼▼ 수정된 부분: 현재 상태(지역 선택)를 기억 ▼▼▼
+                    this.state.currentRegionKey = regionKey;
+                    this.state.currentSearchTerm = null;
+                    // ▲▲▲ 수정된 부분 ▲▲▲
+
                     const foodType = this.elements.foodTypeSelect.value;
                     const regionName = this.regionKeyMap[regionKey];
                     const foodTypeName = this.foodTypeNameMap[foodType];
@@ -192,21 +214,28 @@
                 },
 
                 handleSearch() {
+                    const searchTerm = this.elements.searchInput.value.trim();
                     const foodType = this.elements.foodTypeSelect.value;
-                    const searchTerm = this.elements.searchInput.value.trim().toLowerCase();
                     const foodTypeName = this.foodTypeNameMap[foodType];
 
+                    // 검색어가 없으면 아무 동작도 하지 않음
                     if (!searchTerm) return;
+                    
+                    // ▼▼▼ 수정된 부분: 현재 상태(검색)를 기억 ▼▼▼
+                    this.state.currentSearchTerm = searchTerm;
+                    this.state.currentRegionKey = null;
+                    // ▲▲▲ 수정된 부분 ▲▲▲
 
+                    const lowerCaseSearchTerm = searchTerm.toLowerCase();
                     const shops = (allShops[foodType] || []).filter(shop => {
-                        return (shop.name?.toLowerCase().includes(searchTerm) ||
-                                shop.name_jp?.toLowerCase().includes(searchTerm) ||
-                                shop.prefecture?.toLowerCase().includes(searchTerm) ||
-                                shop.city?.toLowerCase().includes(searchTerm) ||
-                                shop.address_jp?.toLowerCase().includes(searchTerm));
+                        return (shop.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
+                                shop.name_jp?.toLowerCase().includes(lowerCaseSearchTerm) ||
+                                shop.prefecture?.toLowerCase().includes(lowerCaseSearchTerm) ||
+                                shop.city?.toLowerCase().includes(lowerCaseSearchTerm) ||
+                                shop.address_jp?.toLowerCase().includes(lowerCaseSearchTerm));
                     });
 
-                    const title = `'${this.elements.searchInput.value}' ${foodTypeName} 검색 결과`;
+                    const title = `'${searchTerm}' ${foodTypeName} 검색 결과`;
                     this.displayShopList(shops, title);
                 },
                 
@@ -239,7 +268,12 @@
                     this.elements.shopListView.classList.add('hidden');
                     this.elements.regionSelection.classList.remove('hidden');
                     this.elements.searchInput.value = '';
+                    
+                    // ▼▼▼ 수정된 부분: 상태 초기화 ▼▼▼
                     this.state.currentShops = [];
+                    this.state.currentRegionKey = null;
+                    this.state.currentSearchTerm = null;
+                    // ▲▲▲ 수정된 부분 ▲▲▲
                 },
 
                 createShopItemHTML(shop, rank) {
