@@ -122,7 +122,6 @@
         { "region": "kanto", "name": "카메키", "name_jp": "亀㐂", "address_jp": "千葉県船橋市本町2-27-20", "prefecture": "치바현", "city": "후나바시시", "score": 3.65, "description": "치바현 후나바시의 인기 스시점. 신선한 해산물을 사용한 스시와 요리로 높은 평가를 받는다." },
         { "region": "kanto", "name": "카이텐스시 토리톤 도쿄 소라마치점", "name_jp": "回転寿し トリトン 東京ソラマチ店", "address_jp": "東京都墨田区押上1-1-2 東京スカイツリータウン ソラマチ 6F", "prefecture": "도쿄도", "city": "스미다구", "score": 3.62, "description": "홋카이도에서 온 또 다른 인기 회전초밥. 크고 신선한 네타로 유명하며 스카이트리 관광 후 들르기 좋다." },
         { "region": "kanto", "name": "스시 오오노", "name_jp": "鮨 おおの", "address_jp": "埼玉県さいたま市大宮区仲町1-103-2", "prefecture": "사이타마현", "city": "사이타마시", "score": 3.61, "description": "사이타마현 오미야를 대표하는 스시 명점. 차분한 분위기에서 고품질의 스시를 즐길 수 있다." },
-        
     { "region": "kansai", "name": "스시요시", "name_jp": "鮨 よし", "address_jp": "大阪府大阪市北区曽根崎新地1-2-14", "prefecture": "오사카부", "city": "오사카시", "score": 4.45, "description": "세계가 주목하는 오사카 스시야, 독창적인 퍼포먼스와 츠마미로 예약이 매우 어렵습니다." },
     { "region": "kansai", "name": "하라쇼", "name_jp": "原正", "address_jp": "大阪府大阪市福島区福島1-1-48", "prefecture": "오사카부", "city": "오사카시", "score": 4.38, "description": "오사카 대표 정통 스시, 밥과 재료의 완벽한 조화로 최고봉이라 불립니다." },
     { "region": "kansai", "name": "스시 마츠모토", "name_jp": "鮨 まつもと", "address_jp": "京都府京都市東山区祇園町南側570-123", "prefecture": "교토부", "city": "교토시", "score": 4.11, "description": "교토 기온의 톱클래스 명점, 섬세하고 품격 있는 교토 스타일 스시를 선보입니다." },
@@ -136,6 +135,26 @@
     { "region": "hokkaido", "name": "카이텐스시 토피 마루야마점", "name_jp": "回転すし トップ", "address_jp": "北海道札幌市中央区北一条西24-4-1", "prefecture": "홋카이도", "city": "삿포로시", "score": 3.72, "description": "홋카이도 제철 재료를 저렴하게 맛보는 삿포로 인기 회전초밥, 현지인 추천 맛집입니다." },
     { "region": "hokkaido", "name": "네무로 하나마루 JR타워 스텔라플레이스점", "name_jp": "根室花まる JRタワーステラプレイス店", "address_jp": "北海道札幌市中央区北5条西2丁目", "prefecture": "홋카이도", "city": "삿포로시", "score": 3.68, "description": "네무로항 직송 재료를 사용하는 인기 회전초밥, 삿포로역과 연결되어 접근성이 좋습니다." },
     { "region": "hokkaido", "name": "하코다테 칸타로 고료카쿠 공원점", "name_jp": "函館 函太郎 五稜郭公園店", "address_jp": "北海道函館市五稜郭町25-17", "prefecture": "홋카이도", "city": "하코다테시", "score": 3.65, "description": "하코다테에서 시작된 고품질 회전초밥, 고료카쿠 관광 후 들르기 좋은 맛집입니다." }    
-     ]
+     ],
+
+    "udon": [
+  {"region": "kanto", "name": "우동 마루카", "name_jp": "うどん 丸香", "address_jp": "東京都千代田区神田小川町3-16-1", "prefecture": "도쿄도", "city": "치요다구", "score": 3.86, "google_score": 4.4, "description": "카가와현의 본고장 사누키 우동을 맛볼 수 있는 도쿄 최고 인기점. 쫄깃하고 탄력 있는 면발과 향긋한 이리코(멸치) 국물이 특징입니다."},
+  {"region": "kanto", "name": "무라야마 만게츠 우동", "name_jp": "村山 満月うどん", "address_jp": "東京都武蔵村山市三ツ藤1-3-1", "prefecture": "도쿄도", "city": "무사시무라야마시", "score": 3.84, "google_score": 4.3, "description": "도쿄에서 가장 유명한 무사시노 우동 전문점. 간장 베이스의 진한 츠케지루에 쫄깃하고 두꺼운 면을 찍어 먹는 스타일입니다."},
+  {"region": "kanto", "name": "테우치 우동 스미타", "name_jp": "手打うどん すみた", "address_jp": "東京都北区志茂1-2-19", "prefecture": "도쿄도", "city": "키타구", "score": 3.80, "google_score": 4.3, "description": "면의 달인이라 불리는 주인이 직접 만드는 수타 우동. 매끄럽고 목 넘김이 좋은 면발과 깊은 맛의 국물이 일품입니다."},
+  {"region": "kanto", "name": "사누키 우동 이와이", "name_jp": "讃岐うどん いわい", "address_jp": "東京都北区上十条3-28-7", "prefecture": "도쿄도", "city": "키타구", "score": 3.73, "google_score": 4.3, "description": "정통 사누키 우동을 고집하는 가게. 특히 튀김 퀄리티가 높아, 바삭한 튀김과 함께 즐기는 우동이 인기입니다."},
+  {"region": "kanto", "name": "KAMAYOSHI", "name_jp": "KAMAYOSHI", "address_jp": "東京都千代田区神田須田町1-14-1", "prefecture": "도쿄도", "city": "치요다구", "score": 3.72, "google_score": 4.5, "description": "우동과 이탈리안을 융합한 독창적인 메뉴를 선보이는 곳. 카르보나라 우동, 토마토 우동 등 새로운 맛을 경험할 수 있습니다."},
+  {"region": "kanto", "name": "우동 신", "name_jp": "うどん 慎", "address_jp": "東京都渋谷区代々木2-20-16", "prefecture": "도쿄도", "city": "시부야구", "score": 3.71, "google_score": 4.4, "description": "주문 즉시 면을 자르고 삶는 '키리타테', '유데타테' 방식으로 신선한 우동을 제공합니다. 버터와 명란이 들어간 창작 우동도 인기 메뉴입니다."},
+  {"region": "kanto", "name": "사누키 우동 우사", "name_jp": "讃岐うどん 紆羅", "address_jp": "東京都豊島区池袋2-19-3", "prefecture": "도쿄도", "city": "토시마구", "score": 3.70, "google_score": 4.4, "description": "이케부쿠로의 숨겨진 사누키 우동 맛집. 면의 쫄깃함과 국물의 밸런스가 뛰어나 현지인들에게 사랑받는 곳입니다."},
+  {"region": "kanto", "name": "지카세이 사누키 우동 토 니쿠 진자 다이몬 텐", "name_jp": "自家製さぬきうどんと肉 甚三 大門店", "address_jp": "東京都港区芝大門2-6-10", "prefecture": "도쿄도", "city": "미나토구", "score": 3.70, "google_score": 4.4, "description": "자가제면 사누키 우동과 고기 요리를 함께 즐길 수 있는 곳. 점심에는 우동, 저녁에는 이자카야로 운영됩니다."},
+  {"region": "kanto", "name": "테우치 우동 하세가와", "name_jp": "手打ちうどん 長谷川", "address_jp": "東京都練馬区東大泉4-1-8", "prefecture": "도쿄도", "city": "네리마구", "score": 3.70, "google_score": 4.2, "description": "무사시노 우동의 또 다른 강자. 거칠지만 밀가루의 풍미가 살아있는 면과 진한 육수가 특징이며, 양이 푸짐하기로 유명합니다."},
+  {"region": "kanto", "name": "TOKYO LIGHT BLUE HONGO-3", "name_jp": "TOKYO LIGHT BLUE HONGO-3", "address_jp": "東京都文京区本郷3-3-3", "prefecture": "도쿄도", "city": "분쿄구", "score": 3.69, "google_score": 4.5, "description": "세련된 카페 같은 분위기에서 즐기는 우동. 국물이 없는 '아부라 우동' 스타일의 메뉴가 인기이며, 다양한 토핑을 조합해 먹는 재미가 있습니다."},
+  {"region": "kanto", "name": "네즈 우동", "name_jp": "根津うどん", "address_jp": "東京都文京区根津1-23-16", "prefecture": "도쿄도", "city": "분쿄구", "score": 3.68, "google_score": 4.2, "description": "옛 정취가 느껴지는 가게에서 맛보는 수타 우동. 부드러우면서도 탄력 있는 면발이 특징이며, 튀김과 함께 먹는 '카시와텐'이 대표 메뉴입니다."},
+  {"region": "kanto", "name": "멘치라시", "name_jp": "麺散", "address_jp": "東京都渋谷区神宮前6-13-5", "prefecture": "도쿄도", "city": "시부야구", "score": 3.67, "google_score": 4.2, "description": "오모테산도에 위치한 트렌디한 우동 가게. 명란과 크림, 버터가 어우러진 '카마타마' 우동이 시그니처 메뉴로 젊은 층에게 인기가 많습니다."},
+  {"region": "kanto", "name": "고다이메 하나야마 우동 긴자 텐", "name_jp": "五代目 花山うどん 銀座店", "address_jp": "東京都中央区銀座3-14-13", "prefecture": "도쿄도", "city": "츄오구", "score": 3.66, "google_score": 4.3, "description": "군마현의 명물 '히모카와' 우동 전문점. 5cm가 넘는 넓적하고 얇은 면이 특징이며, 부드러운 식감과 독특한 비주얼로 유명합니다."},
+  {"region": "kanto", "name": "고다이메 하나야마 우동 니혼바시 텐", "name_jp": "五代目 花山うどん 日本橋店", "address_jp": "東京都中央区日本橋2-10-12", "prefecture": "도쿄도", "city": "츄오구", "score": 3.65, "google_score": 4.3, "description": "넓적한 '히모카와' 우동으로 유명한 하나야마 우동의 니혼바시 지점. 긴자점과 함께 도쿄에서 독특한 우동을 맛보려는 사람들로 붐빕니다."},
+  {"region": "kanto", "name": "키리무기야 진로쿠", "name_jp": "切麦や 甚六", "address_jp": "東京都新宿区新宿1-17-1", "prefecture": "도쿄도", "city": "신주쿠구", "score": 3.64, "google_score": 4.3, "description": "신주쿠교엔 근처의 인기 우동집. 저녁에는 우동과 함께 다양한 안주와 주류를 즐길 수 있는 '우동 이자카야'로 운영됩니다."},
+  {"region": "kanto", "name": "우동 야마초", "name_jp": "うどん山長", "address_jp": "東京都渋谷区恵比寿1-1-5", "prefecture": "도쿄도", "city": "시부야구", "score": 3.62, "google_score": 4.2, "description": "에비스에 위치한 세련된 분위기의 우동 가게. 가츠오부시 전문점이 운영하여 국물 맛이 깊고 풍부하기로 정평이 나 있습니다."}
+    ]
+
 }
 
