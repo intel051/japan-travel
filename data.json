@@ -329,7 +329,22 @@
   {"region": "kanto", "name": "카마쿠라 카이센 이자카야 UMI", "name_jp": "鎌倉海鮮居酒屋 UMI", "address_jp": "神奈川県鎌倉市御成町11-4", "prefecture": "가나가와현", "city": "가마쿠라시", "score": 3.53, "google_score": 4.4, "description": "현지 사가미만에서 잡은 생선과 가마쿠라 야채를 사용하는 세련된 이자카야예요. 신선한 사시미와 함께 해산물을 활용한 창작 요리들이 인기 있어요."},
   {"region": "kanto", "name": "이소마루수이산 요코하마니시구치점", "name_jp": "磯丸水産 横浜西口店", "address_jp": "神奈川県横浜市西区南幸2-9-1", "prefecture": "가나가와현", "city": "요코하마시", "score": 3.51, "google_score": 3.7, "description": "24시간 운영하는 대형 해산물 이자카야 체인이에요. 테이블에서 직접 구워 먹는 조개구이가 명물이며, 언제든지 신선한 사시미와 해산물 덮밥을 즐길 수 있어요."}
 
-    ]
+    ],
+
+    "donburi" : [
+  {"region": "kanto", "name": "츠지한", "name_jp": "つじ半", "address_jp": "東京都中央区日本橋3-1-15", "prefecture": "도쿄도", "city": "주오구", "score": 3.78, "google_score": 4.3, "description": "해산물을 산처럼 쌓아주는 '제이타쿠동' 하나로 엄청난 인기를 끈 가게예요. 마지막에 도미 육수를 부어 오차즈케로 먹는 것이 특징이며, 항상 긴 웨이팅이 있어요."},
+  {"region": "kanto", "name": "이모야", "name_jp": "伊古屋", "address_jp": "東京都新宿区西新宿1-14-3", "prefecture": "도쿄도", "city": "신주쿠구", "score": 3.75, "google_score": 4.5, "description": "신주쿠의 숨은 맛집으로, 숯불에 구운 최상급 닭고기와 계란을 올린 '오야코동'이 명물이에요. 닭고기의 불맛과 부드러운 계란의 조화가 훌륭해요."},
+  {"region": "kanto", "name": "긴자 와비진", "name_jp": "銀座 涉谷", "address_jp": "東京都中央区銀座7-6-5", "prefecture": "도쿄도", "city": "주오구", "score": 3.72, "google_score": 4.4, "description": "점심 한정으로 제공되는 '가츠동'이 매우 유명한 고급 일식 가게예요. 두툼한 돈까스와 특제 소스, 부드러운 계란이 어우러진 프리미엄 가츠동을 맛볼 수 있어요."},
+  {"region": "kanto", "name": "카츠동야 즈이초", "name_jp": "かつどん屋 瑞兆", "address_jp": "東京都渋谷区宇田川町41-26", "prefecture": "도쿄도", "city": "시부야구", "score": 3.71, "google_score": 4.4, "description": "시부야에 위치한 가츠동 전문점으로, 계란으로 덮지 않고 밥 위에 돈까스와 소스를 올리고 그 위에 계란 후라이를 얹어주는 독특한 스타일이에요. 바삭한 식감이 살아있어요."},
+  {"region": "kanto", "name": "타레한", "name_jp": "たれ半", "address_jp": "東京都中央区日本橋室町2-1-1 三井2号館 B1F", "prefecture": "도쿄도", "city": "주오구", "score": 3.68, "google_score": 4.3, "description": "아나고(붕장어) 덮밥 전문점이에요. 부드럽게 익힌 아나고와 짭짤달콤한 특제 소스가 밥과 아주 잘 어울려요. 텐동(튀김덮밥)도 함께 판매해요."},
+  {"region": "kanto", "name": "아키하바라 모토무라 규카츠", "name_jp": "牛かつもと村 秋葉原店", "address_jp": "東京都千代田区外神田1-15-18 奥山ビル B1F", "prefecture": "도쿄도", "city": "지요다구", "score": 3.67, "google_score": 4.4, "description": "규카츠(소고기까스) 덮밥으로 유명한 체인점의 본점이에요. 레어로 튀겨진 규카츠를 개인 화로에 취향대로 구워 밥과 함께 먹는 스타일로 큰 인기를 끌고 있어요."},
+  {"region": "kanto", "name": "토리츠네 시젠도", "name_jp": "鳥つね自然洞", "address_jp": "東京都千代田区外神田5-5-2", "prefecture": "도쿄도", "city": "지요다구", "score": 3.67, "google_score": 4.1, "description": "1911년에 창업한 닭 요리 전문점으로, 진하고 부드러운 '오야코동'의 명가로 꼽혀요. 점심에는 특상 오야코동을 맛보려는 손님들로 항상 붐벼요."},
+  {"region": "kanto", "name": "니혼바시 텐동 카네코한노스케 본점", "name_jp": "日本橋 天丼 金子半之助 本店", "address_jp": "東京都中央区日本橋室町1-11-15", "prefecture": "도쿄도", "city": "주오구", "score": 3.66, "google_score": 4.3, "description": "그릇 밖으로 튀어나올 만큼 푸짐한 튀김이 올라간 '에도마에 텐동'으로 유명한 곳이에요. 붕장어, 새우, 오징어 등 다양한 튀김을 맛볼 수 있으며 웨이팅이 길기로 유명해요."},
+  {"region": "kanto", "name": "신주쿠 와비진", "name_jp": "新宿 割烹 中嶋", "address_jp": "東京都新宿区新宿3-32-5 日原ビル B1F", "prefecture": "도쿄도", "city": "신주쿠구", "score": 3.65, "google_score": 4.3, "description": "미슐랭 1스타를 받은 고급 일식집이지만, 점심에는 정어리(이와시)를 이용한 매우 저렴하고 맛있는 덮밥과 정식을 제공해요. 가성비 최고의 점심으로 명성이 높아요."},
+  {"region": "kanto", "name": "사케토 이쿠라토 와타시.", "name_jp": "鮭といくらとわたし。", "address_jp": "東京都渋谷区道玄坂2-29-1 SHIBUYA109 B2F", "prefecture": "도쿄도", "city": "시부야구", "score": 3.58, "google_score": 4.2, "description": "이름처럼 연어와 연어알(이쿠라) 덮밥을 전문으로 하는 가게예요. 신선한 연어와 반짝이는 이쿠라가 듬뿍 올라간 덮밥은 비주얼과 맛 모두 훌륭해요."},
+  {"region": "kanto", "name": "부타다이가쿠", "name_jp": "豚大学", "address_jp": "東京都港区新橋2-16-1 ニュー新橋ビル 1F", "prefecture": "도쿄도", "city": "미나토구", "score": 3.56, "google_score": 4.2, "description": "신바시의 샐러리맨들에게 큰 인기를 끄는 부타동(돼지고기 덮밥) 전문점이에요. 숯불에 구운 돼지고기를 푸짐하게 올려주며, 양을 선택할 수 있어요."},
+  {"region": "kanto", "name": "긴자 시시부", "name_jp": "銀座 しし部", "address_jp": "東京都中央区銀座4-3-7 華僑ビル 1F", "prefecture": "도쿄도", "city": "주오구", "score": 3.55, "google_score": 4.4, "description": "히츠마부시(장어덮밥)처럼 여러 가지 방법으로 즐길 수 있는 소고기 덮밥 '규마부시' 전문점이에요. 최고급 흑우를 사용한 고기 맛이 일품이에요."}
+]
 
 }
 
