@@ -5,7 +5,6 @@
     <title>일본 맛집 리스트</title>
     
     <script>
-      // 이 스크립트는 반드시 tailwind.css 스크립트보다 먼저 와야 합니다.
       tailwind.config = {
         darkMode: 'class',
       }
@@ -38,7 +37,6 @@
         .region-card, #theme-toggle { transition: all 0.3s ease-in-out; }
     </style>
     <script>
-        // 페이지 로드 시 깜빡임(FOUC) 방지를 위해 head에 스크립트 배치
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         } else {
@@ -50,8 +48,9 @@
 
     <div class="container mx-auto p-4 max-w-4xl">
         <header class="text-center mb-6 relative">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white dark:text-red-500">일본 맛집 리스트</h1>
-            
+            <a href="#" onclick="location.reload(); return false;" class="inline-block">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white dark:text-red-500">일본 맛집 리스트</h1>
+            </a>
             <p class="mt-2 text-md text-gray-600 dark:text-gray-400">원하는 지역을 선택하거나 직접 검색해보세요.</p>
             <button id="theme-toggle" class="absolute top-0 right-0 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-900">
                 </button>
@@ -61,6 +60,7 @@
             <div>
                 <label for="food-type-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">1. 음식 종류 선택</label>
                 <select id="food-type-select" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 transition cursor-pointer bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-50">
+                    <option value="all">-- 전체 --</option>
                     <optgroup label="🍜 면류">
                         <option value="ramen">라멘</option>
                         <option value="tsukemen">츠케멘</option>
@@ -188,7 +188,7 @@
                     kansai: '간사이', chugoku: '주고쿠', shikoku: '시코쿠', kyushu: '규슈·오키나와'
                 },
                 foodTypeNameMap: {
-                    'ramen': '라멘', 'tsukemen': '츠케멘', 'soba': '소바', 'udon': '우동', 'sushi': '스시', 'sashimi_seafood': '회・해산물 요리', 'donburi': '돈부리 (덮밥)', 'tonkatsu': '돈까스', 'tempura': '덴푸라', 'unagi': '장어', 'yakitori': '야키토리', 'sukiyaki_shabu': '스키야키・샤브샤브', 'okonomiyaki_takoyaki': '오코노미야키・타코야키', 'oden': '오뎅', 'kaiseki': '가이세키 (코스 요리)', 'yakiniku': '야키니쿠', 'horumon': '호르몬', 'steak_hamburg': '스테이크・햄버그', 'pasta': '파스타', 'pizza': '피자', 'french': '프랑스 요리', 'italian': '이탈리아 요리', 'curry': '카레', 'chinese': '중화요리', 'korean': '한국 요리', 'ethnic': '아시아・에스닉', 'izakaya': '이자카야', 'bar': '바・다이닝 바', 'cafe': '카페', 'sweets': '디저트・스위츠', 'bread': '빵'
+                    'all': '전체', 'ramen': '라멘', 'tsukemen': '츠케멘', 'soba': '소바', 'udon': '우동', 'sushi': '스시', 'sashimi_seafood': '회・해산물 요리', 'donburi': '돈부리 (덮밥)', 'tonkatsu': '돈까스', 'tempura': '덴푸라', 'unagi': '장어', 'yakitori': '야키토리', 'sukiyaki_shabu': '스키야키・샤브샤브', 'okonomiyaki_takoyaki': '오코노미야키・타코야키', 'oden': '오뎅', 'kaiseki': '가이세키 (코스 요리)', 'yakiniku': '야키니쿠', 'horumon': '호르몬', 'steak_hamburg': '스테이크・햄버그', 'pasta': '파스타', 'pizza': '피자', 'french': '프랑스 요리', 'italian': '이탈리아 요리', 'curry': '카레', 'chinese': '중화요리', 'korean': '한국 요리', 'ethnic': '아시아・에스닉', 'izakaya': '이자카야', 'bar': '바・다이닝 바', 'cafe': '카페', 'sweets': '디저트・스위츠', 'bread': '빵'
                 },
 
                 init() { this.addEventListeners(); },
@@ -204,12 +204,26 @@
                     });
                     this.elements.modal.addEventListener('click', (e) => { if (e.target === this.elements.modal) this.closeModal(); });
                 },
+                
+                // ▼▼▼ 수정된 부분: '전체' 보기를 위한 로직 추가 ▼▼▼
+                getShops(foodType, filterFn) {
+                    if (foodType === 'all') {
+                        let allShopsInType = [];
+                        for (const key in allShops) {
+                            allShopsInType = allShopsInType.concat(allShops[key].filter(filterFn));
+                        }
+                        return allShopsInType;
+                    } else {
+                        return (allShops[foodType] || []).filter(filterFn);
+                    }
+                },
 
                 handleRegionSelect(regionKey) {
                     this.state.currentRegionKey = regionKey; this.state.currentSearchTerm = null;
                     const foodType = this.elements.foodTypeSelect.value;
-                    const shops = (allShops[foodType] || []).filter(s => s.region === regionKey);
-                    this.displayShopList(shops, `${this.regionKeyMap[regionKey]} ${this.foodTypeNameMap[foodType]} 맛집 목록`);
+                    const shops = this.getShops(foodType, s => s.region === regionKey);
+                    const titleFoodType = this.foodTypeNameMap[foodType] || '맛집';
+                    this.displayShopList(shops, `${this.regionKeyMap[regionKey]} ${titleFoodType} 목록`);
                 },
 
                 handleSearch() {
@@ -218,11 +232,13 @@
                     this.state.currentSearchTerm = searchTerm; this.state.currentRegionKey = null;
                     const foodType = this.elements.foodTypeSelect.value;
                     const lowerCaseSearchTerm = searchTerm.toLowerCase();
-                    const shops = (allShops[foodType] || []).filter(shop => 
+                    const shops = this.getShops(foodType, shop => 
                         Object.values(shop).some(val => String(val).toLowerCase().includes(lowerCaseSearchTerm))
                     );
-                    this.displayShopList(shops, `'${searchTerm}' ${this.foodTypeNameMap[foodType]} 검색 결과`);
+                    const titleFoodType = this.foodTypeNameMap[foodType] || '맛집';
+                    this.displayShopList(shops, `'${searchTerm}' ${titleFoodType} 검색 결과`);
                 },
+                // ▲▲▲ 수정된 부분 ▲▲▲
                 
                 displayShopList(shops, title) {
                     shops.sort((a, b) => b.score - a.score);
