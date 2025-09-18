@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>맛집 검색기</title>
+    <title>🍣맛집 검색기</title>
     <style>
         /* Pretendard 폰트 불러오기 */
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
@@ -440,33 +440,39 @@
                     if (map) {
                        map.setCenter(results[0].geometry.location);
                     }
-                    fetchPlaces(results[0].geometry.location, `${keyword} in ${region}`);
+                    fetchPlaces(results[0].geometry.location, `${keyword} in ${region}`, 500);
                 } else {
                     document.getElementById('results-list').innerHTML = `<li class="message">'${region}'을(를) 찾을 수 없습니다.</li>`;
                 }
             });
         }
 
-        function fetchPlaces(location, query) {
-            allPlaces = [];
+        function fetchPlaces(location, query, reviewThreshold) {
+            let placesForThisSearch = [];
             const request = { query, location, radius: 50000 };
             
             const processPage = (results, status, pagination) => {
                 if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                    allPlaces = allPlaces.concat(results.filter(p => p.rating >= 4.1 && p.user_ratings_total >= 500 && p.place_id));
-                    
-                    if (pagination && pagination.hasNextPage) {
-                        setTimeout(() => pagination.nextPage(), 2000);
+                    placesForThisSearch = placesForThisSearch.concat(results.filter(p => p.rating >= 4.1 && p.user_ratings_total >= reviewThreshold && p.place_id));
+                }
+
+                if (pagination && pagination.hasNextPage) {
+                    setTimeout(() => pagination.nextPage(), 2000);
+                } else { 
+                    if (placesForThisSearch.length <= 5 && reviewThreshold === 500) {
+                        document.getElementById('results-list').innerHTML = `<li class="message">결과가 적어 리뷰 100개 이상 기준으로 재검색합니다...</li>`;
+                        fetchPlaces(location, query, 100); 
                     } else {
-                        document.getElementById('sort-buttons').style.display = 'flex';
+                        allPlaces = placesForThisSearch;
+                        document.getElementById('sort-buttons').style.display = allPlaces.length > 0 ? 'flex' : 'none';
                         renderList('rating');
                     }
-                } else if (allPlaces.length === 0 && (!pagination || !pagination.hasNextPage)) {
-                     document.getElementById('results-list').innerHTML = `<li class="message">조건에 맞는 맛집을 찾지 못했습니다.</li>`;
-                } else if (status === google.maps.places.PlacesServiceStatus.REQUEST_DENIED) {
-                    window.gm_authFailure();
-                } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS && allPlaces.length === 0){
-                     document.getElementById('results-list').innerHTML = `<li class="message">조건에 맞는 맛집을 찾지 못했습니다.</li>`;
+                    
+                    if (status === google.maps.places.PlacesServiceStatus.REQUEST_DENIED) {
+                        window.gm_authFailure();
+                    } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS && allPlaces.length === 0){
+                         document.getElementById('results-list').innerHTML = `<li class="message">조건에 맞는 맛집을 찾지 못했습니다.</li>`;
+                    }
                 }
             };
             service.textSearch(request, processPage);
@@ -487,7 +493,11 @@
 
             const resultsList = clearMarkersAndList();
             if (allPlaces.length === 0) {
-                 resultsList.innerHTML = `<li class="message">검색 결과가 없습니다.</li>`;
+                 if (document.querySelector('#results-list .message')?.textContent.includes('재검색')) {
+                    // 재검색 메시지가 이미 있다면, 최종 결과 없다는 메시지로 덮어쓰지 않도록 함
+                 } else {
+                    resultsList.innerHTML = `<li class="message">검색 결과가 없습니다.</li>`;
+                 }
                  return;
             }
             allPlaces.forEach(place => {
