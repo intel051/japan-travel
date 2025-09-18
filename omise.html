@@ -1,328 +1,673 @@
 <!DOCTYPE html>
-<html lang="ko" class=""> <head>
+<html lang="ko">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>일본 맛집 리스트</title>
-    
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-      }
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-
+    <title>맛집 검색기</title>
     <style>
-        body { 
-            font-family: 'Pretendard', sans-serif; 
-            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        /* Pretendard 폰트 불러오기 */
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+        /* 기본 스타일 및 레이아웃 */
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* 전체 페이지 스크롤 방지 */
         }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c5c5c5; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+            display: flex;
+            background-color: #f0f2f5;
+            color: #333d4b;
+        }
+        #map {
+            height: 100%;
+            width: 65%;
+            background-color: #e5e8eb;
+        }
+        #sidebar {
+            width: 35%;
+            height: 100%;
+            background-color: white;
+            padding: 24px;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
         
-        html.dark .custom-scrollbar::-webkit-scrollbar-track { background: #374151; }
-        html.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #6b7280; }
-        html.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        /* 헤더 및 검색 폼 */
+        .search-header { flex-shrink: 0; }
+        .search-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #191f28;
+            margin: 0 0 8px 0;
+        }
+        .search-header p {
+            font-size: 15px;
+            color: #6b7684;
+            margin: 0 0 24px 0;
+        }
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .search-form input {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            font-family: 'Pretendard', sans-serif;
+            transition: border-color 0.2s;
+        }
+        .search-form input::placeholder { color: #adb5bd; }
+        .search-form input:focus {
+            outline: none;
+            border-color: #3182f6;
+        }
+        .search-form button {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background-color: #3182f6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .search-form button:hover { background-color: #1b64da; }
 
-        select {
-            -webkit-appearance: none; -moz-appearance: none; appearance: none;
-            background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1em; padding-right: 2.5rem;
-            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="%23374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+        /* 보기 전환 버튼 */
+        .view-toggle-buttons {
+            display: flex;
+            background-color: #f2f4f6;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 16px;
         }
-        html.dark select {
-            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="%23d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+        .view-toggle-buttons button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            background-color: transparent;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4e5968;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
         }
-        .region-card, #theme-toggle { transition: all 0.3s ease-in-out; }
-    </style>
-    <script>
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
+        .view-toggle-buttons button.active {
+            background-color: white;
+            color: #3182f6;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-    </script>
-</head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-
-    <div class="container mx-auto p-4 max-w-4xl">
-        <header class="text-center mb-6 relative">
-            <a href="#" onclick="location.reload(); return false;" class="inline-block">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white dark:text-red-500">일본 맛집 리스트</h1>
-            </a>
-            <p class="mt-2 text-md text-gray-600 dark:text-gray-400">원하는 지역을 선택하거나 직접 검색해보세요.</p>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-500">AI 기반 데이터이므로 부정확한 정보가 포함될 수 있습니다.</p>
-            <button id="theme-toggle" class="absolute top-0 right-0 p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-900">
-                </button>
-        </header>
         
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-6 space-y-4">
-            <div>
-                <label for="food-type-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">1. 음식 종류 선택</label>
-                <select id="food-type-select" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 transition cursor-pointer bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-50">
-                    <option value="all">-- 전체 --</option>
-                    <optgroup label="🍜 면류">
-                        <option value="ramen">라멘</option>
-                        <option value="tsukemen">츠케멘</option>
-                        <option value="soba">소바</option>
-                        <option value="udon">우동</option>
-                    </optgroup>
-                    <optgroup label="🍣 일식">
-                        <option value="sushi">스시</option>
-                        <option value="sashimi_seafood">회・해산물 요리</option>
-                        <option value="donburi">돈부리 (덮밥)</option>
-                        <option value="tonkatsu">돈까스</option>
-                        <option value="tempura">덴푸라</option>
-                        <option value="unagi">장어</option>
-                        <option value="yakitori">야키토리</option>
-                        <option value="sukiyaki_shabu">스키야키・샤브샤브</option>
-                        <option value="okonomiyaki_takoyaki">오코노미야키・타코야키</option>
-                        <option value="oden">오뎅</option>
-                        <option value="kaiseki">가이세키 (코스 요리)</option>
-                    </optgroup>
-                    <optgroup label="🥩 고기 요리">
-                        <option value="yakiniku">야키니쿠</option>
-                        <option value="horumon">호르몬</option>
-                        <option value="steak_hamburg">스테이크・햄버그</option>
-                    </optgroup>
-                    <optgroup label="🍝 양식">
-                        <option value="pasta">파스타</option>
-                        <option value="pizza">피자</option>
-                        <option value="french">프랑스 요리</option>
-                        <option value="italian">이탈리아 요리</option>
-                    </optgroup>
-                    <optgroup label="🌶️ 아시아・기타">
-                        <option value="curry">카레</option>
-                        <option value="chinese">중화요리</option>
-                        <option value="korean">한국 요리</option>
-                        <option value="ethnic">아시아・에스닉</option>
-                    </optgroup>
-                    <optgroup label="🍻 술집">
-                         <option value="izakaya">이자카야</option>
-                         <option value="bar">바・다이닝 바</option>
-                    </optgroup>
-                    <optgroup label="☕️ 카페・디저트">
-                        <option value="cafe">카페</option>
-                        <option value="sweets">디저트・스위츠</option>
-                        <option value="bread">빵</option>
-                    </optgroup>
-                </select>
-            </div>
-            <div>
-                <label for="search-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">2. 맛집 검색</label>
-                <div class="flex flex-col sm:flex-row gap-2">
-                    <input type="text" id="search-input" placeholder="도시 또는 가게 이름으로 검색 (예: 도쿄)" class="flex-grow px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 transition bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-50 placeholder-gray-400 dark:placeholder-gray-500">
-                    <button id="search-btn" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 transition flex-shrink-0 flex items-center justify-center">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <main id="region-selection">
-            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 text-center">지역을 선택하세요</h2>
-            <div class="grid grid-cols-12 gap-2 sm:gap-4 max-w-2xl mx-auto">
-                <div class="col-start-5 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="hokkaido">삿포로<br>(홋카이도)</div>
-                <div class="col-start-6 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="tohoku">센다이<br>(도호쿠)</div>
-                <div class="col-start-3 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="chubu">나고야<br>(주부)</div>
-                <div class="col-start-7 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="kanto">도쿄<br>(간토)</div>
-                <div class="col-start-2 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="chugoku">히로시마<br>(주고쿠)</div>
-                <div class="col-start-6 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="kansai">오사카<br>교토<br>(간사이)</div>
-                <div class="col-start-4 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="shikoku">마츠야마<br>다카마츠<br>(시코쿠)</div>
-                <div class="col-start-1 col-span-4 region-card p-4 sm:p-6 rounded-xl shadow-md text-center font-bold text-lg sm:text-xl cursor-pointer transition-all duration-300 bg-white dark:bg-gray-700 hover:shadow-lg hover:scale-105 hover:bg-red-500 hover:text-white dark:hover:text-white" data-region-key="kyushu">후쿠오카<br>(규슈)<br>오키나와</div>
-            </div>
-        </main>
+        /* 정렬 버튼 */
+        #sort-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+        #sort-buttons button {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #e5e8eb;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #4e5968;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+        #sort-buttons button:hover { background-color: #f2f4f6; }
+        #sort-buttons button.active {
+            background-color: #e8f3ff;
+            color: #3182f6;
+            border-color: #3182f6;
+            font-weight: 700;
+        }
         
-        <section id="shop-list-view" class="hidden"></section>
-    </div>
+        /* 맛집 리스트 (토스 스타일) */
+        #results-container { flex-grow: 1; overflow-y: auto; }
+        #results-list { list-style-type: none; padding: 0; margin: 0; }
+        #results-list li {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #results-list li:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        .place-content { flex-grow: 1; overflow: hidden; margin-right: 12px;}
+        .place-name {
+            font-weight: 700;
+            font-size: 17px;
+            color: #191f28;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .place-details {
+            font-size: 14px;
+            color: #4e5968;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .rating-star { color: #ffc107; }
+        .price-level { color: #6b7684; font-weight: 600; }
+        .place-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;}
+        .action-button {
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid #e5e8eb;
+            background-color: #f9fafb;
+            color: #4e5968;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            text-decoration: none;
+            text-align: center;
+        }
+        .action-button:hover { background-color: #f2f4f6; }
+        .save-button.saved {
+            background-color: #e8f3ff;
+            color: #3182f6;
+            border-color: #d1e5fe;
+        }
+        .message {
+            padding: 40px 20px;
+            text-align: center;
+            font-size: 16px;
+            color: #868e96;
+            background-color: transparent !important;
+        }
+        .message:hover { transform: none; box-shadow: none; }
+        
+        /* Modal 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 12px; right: 12px;
+            background: #f0f2f5;
+            border: none;
+            border-radius: 50%;
+            width: 32px; height: 32px;
+            font-size: 20px;
+            line-height: 32px;
+            cursor: pointer;
+            color: #6b7684;
+        }
+        #modal-place-details .place-name { font-size: 22px; white-space: normal; }
+        #modal-place-details .place-details { white-space: normal; }
+        #modal-place-details .review-section-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: #191f28;
+            margin-top: 20px;
+            margin-bottom: 4px;
+        }
+         #modal-place-details .review-section-subheader {
+            font-size: 13px;
+            color: #868e96;
+            margin-bottom: 12px;
+        }
+        #modal-place-details .review {
+            margin-top: 12px; padding-top: 12px;
+            border-top: 1px solid #e5e8eb;
+        }
+        #modal-place-details .review:first-of-type {
+             border-top: none; padding-top: 0;
+        }
+        #modal-place-details .review p { margin: 4px 0; font-size: 14px; color: #4e5968; }
+        #modal-place-details .review strong { font-size: 13px; color: #191f28; }
+        #modal-place-details .action-button {
+            display: block; margin-top: 20px;
+            background-color: #3182f6; color: white;
+            font-size: 16px; padding: 12px;
+        }
 
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-[1000] hidden"></div>
-    
-    <div id="error-message" class="hidden fixed top-5 right-5 bg-red-600 text-white py-3 px-5 rounded-lg shadow-xl z-[2000]">
-        <p><strong class="font-bold">오류:</strong> 맛집 데이터(data.json)를 불러오지 못했습니다.</p>
-    </div>
+        /* 모바일 뷰 스위치 */
+        #mobile-view-switch {
+            display: none;
+        }
 
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const themeToggleBtn = document.getElementById('theme-toggle');
-            const sunIcon = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
-            const moonIcon = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`;
-
-            const updateIcon = () => {
-                themeToggleBtn.innerHTML = document.documentElement.classList.contains('dark') ? sunIcon : moonIcon;
-            };
-
-            themeToggleBtn.addEventListener('click', () => {
-                document.documentElement.classList.toggle('dark');
-                localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-                updateIcon();
-            });
-
-            updateIcon();
-
-            let allShops = null;
-            try {
-                const response = await fetch('./data.json');
-                if (!response.ok) { throw new Error(`HTTP error! status: ${response.status}`); }
-                allShops = await response.json();
-            } catch (error) {
-                console.error("맛집 데이터를 불러오는 데 실패했습니다:", error);
-                document.getElementById('error-message').classList.remove('hidden');
-                return;
+        /* 반응형 디자인 (모바일) */
+        @media (max-width: 768px) {
+            body { 
+                flex-direction: column-reverse; /* 지도를 위로 */
+                height: 100vh; /* 모바일 화면 높이 고정 */
+            } 
+            #sidebar {
+                width: 100%;
+                height: 60%; /* 사이드바 높이 60% */
+                padding: 16px;
+                box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+                transition: height 0.3s ease;
+            }
+            #map { 
+                width: 100%; 
+                height: 40%; /* 지도 높이 40% */
+                flex-shrink: 0;
+                transition: height 0.3s ease;
+            }
+            .search-header h1 { font-size: 20px; }
+            .search-header p { font-size: 14px; margin-bottom: 16px; }
+            .search-form { flex-direction: column; gap: 8px; }
+            .search-form input, .search-form button { font-size: 15px; }
+            #results-list li { padding: 14px; }
+            .place-name { font-size: 15px; }
+            .place-details { font-size: 12px; }
+            .place-actions { flex-direction: row; }
+            .action-button { font-size: 12px; padding: 5px 10px; }
+            
+            /* 모바일 뷰 스위치 활성화 */
+            #mobile-view-switch {
+                display: flex;
+                background-color: #f2f4f6;
+                border-radius: 8px;
+                padding: 4px;
+                margin-bottom: 16px;
+            }
+            #mobile-view-switch button {
+                flex: 1; padding: 8px; border: none; background-color: transparent;
+                border-radius: 6px; font-size: 14px; font-weight: 600;
+                color: #4e5968; cursor: pointer; transition: background-color 0.2s, color 0.2s;
+            }
+            #mobile-view-switch button.active {
+                background-color: white; color: #3182f6; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             }
 
-            const app = {
-                elements: {
-                    foodTypeSelect: document.getElementById('food-type-select'),
-                    searchInput: document.getElementById('search-input'),
-                    searchBtn: document.getElementById('search-btn'),
-                    regionSelection: document.getElementById('region-selection'),
-                    shopListView: document.getElementById('shop-list-view'),
-                    modal: document.getElementById('modal'),
-                },
-                state: { 
-                    currentShops: [], currentRegionKey: null, currentSearchTerm: null
-                },
-                regionKeyMap: {
-                    hokkaido: '홋카이도', tohoku: '도호쿠', kanto: '간토', chubu: '주부',
-                    kansai: '간사이', chugoku: '주고쿠', shikoku: '시코쿠', kyushu: '규슈·오키나와'
-                },
-                foodTypeNameMap: {
-                    'all': '전체', 'ramen': '라멘', 'tsukemen': '츠케멘', 'soba': '소바', 'udon': '우동', 'sushi': '스시', 'sashimi_seafood': '회・해산물 요리', 'donburi': '돈부리 (덮밥)', 'tonkatsu': '돈까스', 'tempura': '덴푸라', 'unagi': '장어', 'yakitori': '야키토리', 'sukiyaki_shabu': '스키야키・샤브샤브', 'okonomiyaki_takoyaki': '오코노미야키・타코야키', 'oden': '오뎅', 'kaiseki': '가이세키 (코스 요리)', 'yakiniku': '야키니쿠', 'horumon': '호르몬', 'steak_hamburg': '스테이크・햄버그', 'pasta': '파스타', 'pizza': '피자', 'french': '프랑스 요리', 'italian': '이탈리아 요리', 'curry': '카레', 'chinese': '중화요리', 'korean': '한국 요리', 'ethnic': '아시아・에스닉', 'izakaya': '이자카야', 'bar': '바・다이닝 바', 'cafe': '카페', 'sweets': '디저트・스위츠', 'bread': '빵'
-                },
+            /* 목록만 보기 모드 */
+            body.list-only-view #map {
+                display: none;
+            }
+            body.list-only-view #sidebar {
+                height: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div class="search-header">
+            <h1>맛집 검색</h1>
+            <p>도시와 음식 종류를 입력해 최고의 맛집을 찾아보세요.</p>
+            <div class="search-form">
+                <input type="text" id="region-input" placeholder="도시 (예: 도쿄)">
+                <input type="text" id="keyword-input" placeholder="음식 (예: 라멘)">
+                <button id="search-button">검색</button>
+            </div>
+             <div id="mobile-view-switch">
+                <button id="show-map-list" class="active">지도+목록</button>
+                <button id="show-list-only">목록만 보기</button>
+            </div>
+             <div class="view-toggle-buttons">
+                <button id="view-search-results" class="active">검색 결과</button>
+                <button id="view-saved-list">저장 목록</button>
+            </div>
+        </div>
+        <div id="sort-buttons" style="display: none;">
+            <button id="sortByRating" class="active">평점 높은순</button>
+            <button id="sortByReviews">리뷰 많은순</button>
+        </div>
+        <div id="results-container">
+            <ul id="results-list">
+                <li class="message">검색을 시작해주세요.</li>
+            </ul>
+        </div>
+    </div>
+    <div id="map"></div>
 
-                init() { this.addEventListeners(); },
+    <div id="details-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button id="modal-close-button" class="modal-close-button">&times;</button>
+            <div id="modal-place-details"></div>
+        </div>
+    </div>
 
-                addEventListeners() {
-                    document.querySelectorAll('.region-card').forEach(card => card.addEventListener('click', () => this.handleRegionSelect(card.dataset.regionKey)));
-                    this.elements.searchBtn.addEventListener('click', () => this.handleSearch());
-                    this.elements.searchInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') this.handleSearch(); });
-                    this.elements.foodTypeSelect.addEventListener('change', () => {
-                        if (!this.elements.regionSelection.classList.contains('hidden')) return;
-                        if (this.state.currentSearchTerm !== null) this.handleSearch();
-                        else if (this.state.currentRegionKey !== null) this.handleRegionSelect(this.state.currentRegionKey);
-                    });
-                    this.elements.modal.addEventListener('click', (e) => { if (e.target === this.elements.modal) this.closeModal(); });
-                },
-                
-                // ▼▼▼ 수정된 부분: '전체' 보기를 위한 로직 추가 ▼▼▼
-                getShops(foodType, filterFn) {
-                    if (foodType === 'all') {
-                        let allShopsInType = [];
-                        for (const key in allShops) {
-                            allShopsInType = allShopsInType.concat(allShops[key].filter(filterFn));
-                        }
-                        return allShopsInType;
-                    } else {
-                        return (allShops[foodType] || []).filter(filterFn);
-                    }
-                },
+    <script>
+        let map, service, geocoder;
+        let markers = [];
+        let allPlaces = [];
+        let savedPlaces = [];
+        let currentView = 'search';
 
-                handleRegionSelect(regionKey) {
-                    this.state.currentRegionKey = regionKey; this.state.currentSearchTerm = null;
-                    const foodType = this.elements.foodTypeSelect.value;
-                    const shops = this.getShops(foodType, s => s.region === regionKey);
-                    const titleFoodType = this.foodTypeNameMap[foodType] || '맛집';
-                    this.displayShopList(shops, `${this.regionKeyMap[regionKey]} ${titleFoodType} 목록`);
-                },
+        window.gm_authFailure = () => {
+            document.body.innerHTML = `<div style="padding: 20px; text-align: center; height: 100%; box-sizing: border-box;">
+                <strong style="color: #D32F2F;">Google Maps API 키 오류</strong><br><br>
+                API 키가 유효하지 않거나, Google Cloud 프로젝트에서 결제가 활성화되지 않았을 수 있습니다. API 키와 결제 설정을 다시 확인해주세요.
+            </div>`;
+        };
 
-                handleSearch() {
-                    const searchTerm = this.elements.searchInput.value.trim();
-                    if (!searchTerm) return;
-                    this.state.currentSearchTerm = searchTerm; this.state.currentRegionKey = null;
-                    const foodType = this.elements.foodTypeSelect.value;
-                    const lowerCaseSearchTerm = searchTerm.toLowerCase();
-                    const shops = this.getShops(foodType, shop => 
-                        Object.values(shop).some(val => String(val).toLowerCase().includes(lowerCaseSearchTerm))
-                    );
-                    const titleFoodType = this.foodTypeNameMap[foodType] || '맛집';
-                    this.displayShopList(shops, `'${searchTerm}' ${titleFoodType} 검색 결과`);
-                },
-                // ▲▲▲ 수정된 부분 ▲▲▲
-                
-                displayShopList(shops, title) {
-                    shops.sort((a, b) => b.score - a.score);
-                    this.state.currentShops = shops;
-                    const shopListHTML = shops.length === 0 
-                        ? `<p class="text-center text-gray-500 dark:text-gray-400 p-4">맛집 정보가 없습니다.</p>`
-                        : shops.map((shop, i) => this.createShopItemHTML(shop, i + 1)).join('');
-                    this.elements.shopListView.innerHTML = `
-                        <div class="flex flex-wrap gap-2 justify-between items-center mb-4">
-                            <h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-gray-100">${title}</h2>
-                            <button id="back-to-regions-btn" class="px-3 py-1.5 text-sm bg-gray-600 dark:bg-gray-700 text-white font-semibold rounded-md hover:bg-gray-700 dark:hover:bg-gray-600">초기화면으로</button>
-                        </div>
-                        <div class="space-y-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">${shopListHTML}</div>`;
-                    this.elements.shopListView.querySelector('#back-to-regions-btn').addEventListener('click', () => this.showRegionSelection());
-                    this.elements.shopListView.querySelectorAll('.shop-list-item').forEach((item, index) => item.addEventListener('click', () => this.openModal(this.state.currentShops[index], index + 1)));
-                    this.elements.regionSelection.classList.add('hidden');
-                    this.elements.shopListView.classList.remove('hidden');
-                },
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 35.6895, lng: 139.6917 },
+                zoom: 12,
+                disableDefaultUI: true,
+                zoomControl: true,
+            });
+            service = new google.maps.places.PlacesService(map);
+            geocoder = new google.maps.Geocoder();
 
-                showRegionSelection() {
-                    this.elements.shopListView.classList.add('hidden');
-                    this.elements.regionSelection.classList.remove('hidden');
-                    this.elements.searchInput.value = '';
-                    this.state.currentShops = []; this.state.currentRegionKey = null; this.state.currentSearchTerm = null;
-                },
-
-                createShopItemHTML(shop, rank) {
-                    return `<div class="shop-list-item p-4 rounded-lg cursor-pointer transition-all border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"><div class="flex items-center gap-4"><div class="flex-shrink-0 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">${rank}</div><div class="flex-grow"><h3 class="font-semibold text-gray-800 dark:text-gray-100">${shop.name}</h3><p class="text-sm text-gray-500 dark:text-gray-400">${shop.prefecture} ${shop.city}</p></div><div class="flex items-center text-sm font-bold text-yellow-500"><svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>${shop.score}</div></div></div>`;
-                },
-
-                openModal(shop, rank) {
-                    const queryName = shop.name_jp || shop.name;
-                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queryName + ' ' + shop.address_jp)}`;
-                    this.elements.modal.innerHTML = `
-                        <div id="modal-content" class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 opacity-0 custom-scrollbar">
-                            <div class="p-6">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="text-sm font-semibold text-red-500 mb-1">#${rank}위</p>
-                                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">${shop.name}</h2>
-                                        <p class="text-md text-gray-600 dark:text-gray-400">${shop.name_jp || ''}</p>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${shop.prefecture} ${shop.city}</p>
-                                    </div>
-                                    <button id="close-modal-btn" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
-                                </div>
-                                <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="text-yellow-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg></span>
-                                            <p class="text-lg font-bold text-gray-800 dark:text-gray-100">${shop.score} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">/ 타베로그</span></p>
-                                        </div>
-                                        ${shop.google_score ? `
-                                        <div class="flex items-center space-x-2">
-                                            <span class="text-blue-500"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg></span>
-                                            <p class="text-lg font-bold text-gray-800 dark:text-gray-100">${shop.google_score} <span class="text-sm font-normal text-gray-500 dark:text-gray-400">/ 구글</span></p>
-                                        </div>` : ''}
-                                    </div>
-                                    <p class="mt-3 text-gray-700 dark:text-gray-300 leading-relaxed">${shop.description}</p>
-                                    <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                                        <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-400">주소 (일본어)</h3>
-                                        <p class="text-gray-800 dark:text-gray-200 mt-1">${shop.address_jp}</p>
-                                        <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="block w-full text-center mt-4 px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition">Google 지도로 보기</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`;
-                    this.elements.modal.classList.remove('hidden');
-                    setTimeout(() => { this.elements.modal.querySelector('#modal-content').classList.remove('scale-95', 'opacity-0'); }, 10);
-                    this.elements.modal.querySelector('#close-modal-btn').addEventListener('click', () => this.closeModal());
-                },
-
-                closeModal() {
-                    const modalContent = this.elements.modal.querySelector('#modal-content');
-                    if (!modalContent) return;
-                    modalContent.classList.add('scale-95', 'opacity-0');
-                    setTimeout(() => { this.elements.modal.classList.add('hidden'); }, 300);
-                },
-            };
+            loadSavedPlaces();
+            document.getElementById('search-button').addEventListener('click', startSearch);
+            document.getElementById('sortByRating').addEventListener('click', () => renderList('rating'));
+            document.getElementById('sortByReviews').addEventListener('click', () => renderList('reviews'));
+            document.getElementById('view-search-results').addEventListener('click', () => switchView('search'));
+            document.getElementById('view-saved-list').addEventListener('click', () => switchView('saved'));
+            document.getElementById('results-list').addEventListener('click', handleListClick);
             
-            app.init();
-        });
+            // Modal
+            document.getElementById('modal-close-button').addEventListener('click', hideModal);
+            document.getElementById('details-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'details-modal') hideModal();
+            });
+
+            // Mobile view switch
+            document.getElementById('show-list-only').addEventListener('click', () => setMobileView('list'));
+            document.getElementById('show-map-list').addEventListener('click', () => setMobileView('map'));
+        }
+
+        function setMobileView(view) {
+            if (window.innerWidth > 768) return;
+
+            const body = document.body;
+            const showListOnlyBtn = document.getElementById('show-list-only');
+            const showMapListBtn = document.getElementById('show-map-list');
+
+            if (view === 'list') {
+                body.classList.add('list-only-view');
+                showListOnlyBtn.classList.add('active');
+                showMapListBtn.classList.remove('active');
+            } else {
+                body.classList.remove('list-only-view');
+                showListOnlyBtn.classList.remove('active');
+                showMapListBtn.classList.add('active');
+                setTimeout(() => google.maps.event.trigger(map, 'resize'), 300);
+            }
+        }
+
+        function startSearch() {
+            const region = document.getElementById('region-input').value;
+            const keyword = document.getElementById('keyword-input').value;
+
+            if (!region || !keyword) {
+                alert("도시와 음식 종류를 모두 입력해주세요.");
+                return;
+            }
+            switchView('search', true);
+            clearResults();
+            document.getElementById('results-list').innerHTML = `<li class="message">검색 중...</li>`;
+            
+            geocoder.geocode({ 'address': region }, (results, status) => {
+                if (status === 'OK') {
+                    map.setCenter(results[0].geometry.location);
+                    fetchPlaces(results[0].geometry.location, `${keyword} in ${region}`);
+                } else {
+                    document.getElementById('results-list').innerHTML = `<li class="message">'${region}'을(를) 찾을 수 없습니다.</li>`;
+                }
+            });
+        }
+
+        function fetchPlaces(location, query) {
+            allPlaces = [];
+            const request = { query, location, radius: 50000 };
+            
+            const processPage = (results, status, pagination) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                    allPlaces = allPlaces.concat(results.filter(p => p.rating >= 4.1 && p.user_ratings_total >= 500 && p.place_id));
+                    
+                    if (pagination && pagination.hasNextPage) {
+                        setTimeout(() => pagination.nextPage(), 2000);
+                    } else {
+                        document.getElementById('sort-buttons').style.display = 'flex';
+                        renderList('rating');
+                    }
+                } else if (allPlaces.length === 0 && (!pagination || !pagination.hasNextPage)) {
+                     document.getElementById('results-list').innerHTML = `<li class="message">조건에 맞는 맛집을 찾지 못했습니다.</li>`;
+                } else if (status === google.maps.places.PlacesServiceStatus.REQUEST_DENIED) {
+                    window.gm_authFailure();
+                } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS && allPlaces.length === 0){
+                     document.getElementById('results-list').innerHTML = `<li class="message">조건에 맞는 맛집을 찾지 못했습니다.</li>`;
+                }
+            };
+            service.textSearch(request, processPage);
+        }
+        
+        function formatPriceLevel(level) {
+            if (level == null || level === 0) return '';
+            return '· ' + '$'.repeat(level);
+        }
+
+        function renderList(sortBy) {
+            if (currentView !== 'search') return;
+            document.getElementById('sortByRating').classList.toggle('active', sortBy === 'rating');
+            document.getElementById('sortByReviews').classList.toggle('active', sortBy === 'reviews');
+
+            if (sortBy === 'rating') allPlaces.sort((a, b) => b.rating - a.rating || b.user_ratings_total - a.user_ratings_total);
+            else if (sortBy === 'reviews') allPlaces.sort((a, b) => b.user_ratings_total - a.user_ratings_total || b.rating - a.rating);
+
+            const resultsList = clearMarkersAndList();
+            if (allPlaces.length === 0) {
+                 resultsList.innerHTML = `<li class="message">검색 결과가 없습니다.</li>`;
+                 return;
+            }
+            allPlaces.forEach(place => {
+                resultsList.appendChild(createPlaceElement(place));
+                createMarker(place);
+            });
+        }
+
+        function renderSavedList() {
+            const resultsList = clearMarkersAndList();
+            if (savedPlaces.length === 0) {
+                resultsList.innerHTML = `<li class="message">저장된 맛집이 없습니다.</li>`;
+                return;
+            }
+            savedPlaces.forEach(place => {
+                resultsList.appendChild(createPlaceElement(place));
+                createMarker(place);
+            });
+        }
+
+        function createPlaceElement(place) {
+            const isSaved = isPlaceSaved(place.place_id);
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}`;
+            const listItem = document.createElement("li");
+            listItem.dataset.placeId = place.place_id;
+
+            listItem.innerHTML = `
+                <div class="place-content">
+                    <div class="place-name">${place.name}</div>
+                    <div class="place-details">
+                        <span class="rating-star">★</span> 
+                        <strong>${place.rating}</strong> 
+                        <span>/ 5.0 (${place.user_ratings_total.toLocaleString()}개)</span>
+                        <span class="price-level">${formatPriceLevel(place.price_level)}</span>
+                    </div>
+                    <div class="place-details">${place.formatted_address}</div>
+                </div>
+                <div class="place-actions">
+                     <button class="action-button save-button ${isSaved ? 'saved' : ''}">${currentView === 'saved' ? '삭제' : (isSaved ? '저장됨' : '저장')}</button>
+                     <a href="${googleMapsUrl}" target="_blank" class="action-button">지도 보기</a>
+                </div>`;
+            return listItem;
+        }
+        
+        function createMarker(place) {
+            if (!place.geometry || !place.geometry.location) return;
+            const marker = new google.maps.Marker({ map, position: place.geometry.location, title: place.name });
+            markers.push({ marker, placeId: place.place_id });
+            google.maps.event.addListener(marker, "click", () => showModal(place.place_id));
+        }
+        
+        function handleListClick(event) {
+            const placeItem = event.target.closest('li[data-place-id]');
+            if (!placeItem) return;
+            
+            const placeId = placeItem.dataset.placeId;
+            if (event.target.matches('.save-button')) {
+                toggleSavePlace(placeId);
+            } else if (!event.target.closest('a')) {
+                showModal(placeId);
+            }
+        }
+
+        function showModal(placeId) {
+            const place = allPlaces.find(p => p.place_id === placeId) || savedPlaces.find(p => p.place_id === placeId);
+            if (!place) return;
+
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('modal-place-details');
+            modalContent.innerHTML = `<div><strong>${place.name}</strong><br>리뷰를 불러오는 중...</div>`;
+            modal.style.display = 'flex';
+
+            service.getDetails({ placeId: place.place_id, fields: ['review'] }, (placeDetails, status) => {
+                let content = `
+                    <div class="place-name">${place.name}</div>
+                    <div class="place-details">
+                        <span class="rating-star">★</span> 
+                        <strong>${place.rating}</strong> 
+                        <span>/ 5.0 (${place.user_ratings_total.toLocaleString()}개)</span>
+                        <span class="price-level">${formatPriceLevel(place.price_level)}</span>
+                    </div>
+                    <div class="place-details" style="margin-top: 4px;">${place.formatted_address}</div>`;
+                
+                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}`;
+
+                content += `<div class="review-section-header">최신 리뷰</div>`;
+                if (status === google.maps.places.PlacesServiceStatus.OK && placeDetails && placeDetails.reviews && placeDetails.reviews.length > 0) {
+                    placeDetails.reviews.slice(0, 3).forEach(review => {
+                        content += `<div class="review">
+                                        <p>"${review.text.substring(0, 100)}${review.text.length > 100 ? '...' : ''}"</p>
+                                        <strong>- ${review.author_name} (${review.rating} ★)</strong>
+                                    </div>`;
+                    });
+                } else {
+                     content += `<div class="review-section-subheader">리뷰가 없거나 불러올 수 없어요.</div>`;
+                }
+                
+                content += `<div class="review-section-subheader" style="margin-top: 12px; border-top: 1px solid #e5e8eb; padding-top: 12px;">대표 메뉴 정보는 제공되지 않아요. 리뷰를 참고해 보세요!</div>`
+                content += `<a href="${googleMapsUrl}" target="_blank" class="action-button">Google 지도에서 열기</a>`;
+                modalContent.innerHTML = content;
+            });
+        }
+
+        function hideModal() {
+            document.getElementById('details-modal').style.display = 'none';
+        }
+        
+        function switchView(view, forceSearch = false) {
+            if (currentView === view && !forceSearch) return;
+            currentView = view;
+            document.getElementById('view-search-results').classList.toggle('active', view === 'search');
+            document.getElementById('view-saved-list').classList.toggle('active', view === 'saved');
+            
+            if (view === 'search') {
+                document.getElementById('sort-buttons').style.display = 'flex';
+                renderList(document.querySelector('#sort-buttons button.active').id.includes('Rating') ? 'rating' : 'reviews');
+            } else {
+                document.getElementById('sort-buttons').style.display = 'none';
+                renderSavedList();
+            }
+        }
+
+        function loadSavedPlaces() {
+            savedPlaces = JSON.parse(localStorage.getItem('savedPlaces') || '[]');
+        }
+        
+        function updateSavedPlacesStorage() {
+            localStorage.setItem('savedPlaces', JSON.stringify(savedPlaces));
+        }
+
+        function isPlaceSaved(placeId) {
+            return savedPlaces.some(p => p.place_id === placeId);
+        }
+
+        function toggleSavePlace(placeId) {
+            const placeIndexInSaved = savedPlaces.findIndex(p => p.place_id === placeId);
+
+            if (placeIndexInSaved > -1) {
+                savedPlaces.splice(placeIndexInSaved, 1);
+            } else {
+                const placeToAdd = allPlaces.find(p => p.place_id === placeId);
+                if (placeToAdd) savedPlaces.push(placeToAdd);
+            }
+            updateSavedPlacesStorage();
+            
+            if (currentView === 'saved') {
+                renderSavedList();
+            } else {
+                const button = document.querySelector(`#results-list li[data-place-id="${placeId}"] .save-button`);
+                if (button) {
+                    const isNowSaved = placeIndexInSaved === -1;
+                    button.classList.toggle('saved', isNowSaved);
+                    button.textContent = isNowSaved ? '저장됨' : '저장';
+                }
+            }
+        }
+
+        function clearResults() {
+            allPlaces = [];
+            document.getElementById('sort-buttons').style.display = 'none';
+            clearMarkersAndList();
+        }
+
+        function clearMarkersAndList() {
+            const list = document.getElementById("results-list");
+            list.innerHTML = "";
+            if (markers) markers.forEach(m => m.marker.setMap(null));
+            markers = [];
+            return list;
+        }
+
+    </script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBtbz039wQKzOjm_sSOxDhgnPkSClueL-U&libraries=places,geocoding&callback=initMap">
     </script>
 </body>
 </html>
+
