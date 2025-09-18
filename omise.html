@@ -396,10 +396,15 @@
             document.getElementById('view-saved-list').addEventListener('click', () => switchView('saved'));
             document.getElementById('results-list').addEventListener('click', handleListClick);
             
-            // Modal
-            document.getElementById('modal-close-button').addEventListener('click', hideModal);
+            // Modal 뒤로가기 및 닫기 이벤트 처리
+            document.getElementById('modal-close-button').addEventListener('click', () => history.back());
             document.getElementById('details-modal').addEventListener('click', (e) => {
-                if (e.target.id === 'details-modal') hideModal();
+                if (e.target.id === 'details-modal') history.back();
+            });
+            window.addEventListener('popstate', () => {
+                if (window.location.hash !== '#details') {
+                    document.getElementById('details-modal').style.display = 'none';
+                }
             });
 
             // Filters toggle
@@ -554,6 +559,7 @@
             const modalContent = document.getElementById('modal-place-details');
             modalContent.innerHTML = `<div><strong>${place.name}</strong><br>리뷰를 불러오는 중...</div>`;
             modal.style.display = 'flex';
+            history.pushState(null, '', '#details'); // 모달 히스토리 추가
 
             service.getDetails({ placeId: place.place_id, fields: ['review'] }, (placeDetails, status) => {
                 let content = `
@@ -584,10 +590,6 @@
                 content += `<a href="${googleMapsUrl}" target="_blank" class="action-button">Google 지도에서 열기</a>`;
                 modalContent.innerHTML = content;
             });
-        }
-
-        function hideModal() {
-            document.getElementById('details-modal').style.display = 'none';
         }
         
         function switchView(view, forceSearch = false) {
