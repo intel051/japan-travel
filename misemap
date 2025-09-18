@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도쿄 평점 높은 가게 검색</title>
+    <style>
+        /* 기본 스타일 설정 */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+        #map {
+            height: 100%;
+            width: 65%;
+            background-color: #e9ecef; /* 지도 로딩 전 배경색 */
+        }
+        #sidebar {
+            width: 35%;
+            height: 100%;
+            overflow-y: auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 5px;
+        }
+        p {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        li:hover {
+            background-color: #f1f3f5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .place-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #343a40;
+        }
+        .place-details {
+            font-size: 0.85rem;
+            color: #495057;
+            margin-top: 5px;
+        }
+        .rating-star {
+            color: #fcc419;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 가게 정보가 표시될 사이드바 -->
+    <div id="sidebar">
+        <h1>도쿄 맛집 리스트</h1>
+        <p>평점 4.5 이상 & 리뷰 500개 이상인 곳만 표시됩니다.</p>
+        <ul id="results-list"></ul>
+    </div>
+    <!-- 지도가 표시될 영역 -->
+    <div id="map"></div>
+
+    <script>
+        let map;
+        let service;
+        let infowindow;
+        const tokyo = { lat: 35.6895, lng: 139.6917 };
+        const markers = [];
+
+        // Google Maps API 인증 실패 시 호출될 콜백 함수
+        // InvalidKeyMapError를 잡아서 사용자에게 명확한 안내를 제공합니다.
+        window.gm_authFailure = function() {
+            const sidebar = document.getElementById('sidebar');
+            const mapContainer = document.getElementById('map');
+            
+            // 지도 영역 숨기기
+            mapContainer.style.display = 'none';
+            sidebar.style.width = '100%'; // 사이드바를 전체 너비로 확장
+
+            const errorMessage = document.createElement('div');
+            errorMessage.innerHTML = `
+                <strong style="color: #D32F2F;">Google Maps API 키 오류</strong><br><br>
+                API 키가 유효하지 않거나 설정되지 않았습니다. 
+                HTML 파일 맨 아래의 스크립트 태그에서 'YOUR_API_KEY' 부분을 실제 Google Cloud에서 발급받은 키로 교체했는지 확인해주세요.
+            `;
+            errorMessage.style.padding = '15px';
+            errorMessage.style.backgroundColor = '#FFEBEE';
+            errorMessage.style.border = '1px solid #D32F2F';
+            errorMessage.style.color = '#333';
+            errorMessage.style.borderRadius = '8px';
+            errorMessage.style.marginBottom = '20px';
+            // 다른 콘텐츠 대신 오류 메시지만 표시
+            sidebar.innerHTML = '';
+            sidebar.appendChild(errorMessage);
+        };
+
+        function initMap() {
+            // 지도 생성
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: tokyo,
+                zoom: 13,
+            });
+
+            // 장소 검색 서비스 객체 생성
+            service = new google.maps.places.PlacesService(map);
+            infowindow = new google.maps.InfoWindow();
+
+            // 도쿄 중심부에서 'restaurant' 타입의 장소를 검색
+            const request = {
+                location: tokyo,
+                radius: '5000', // 5km 반경
+                type: ['restaurant']
+            };
+
+            service.nearbySearch(request, (results, status, pagination) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                    processResults(results);
+
+                    // 다음 페이지가 있으면 추가로 검색
+                    if (pagination && pagination.hasNextPage) {
+                        // API 호출 제한을 피하기 위해 약간의 딜레이 후 다음 페이지 요청
+                        setTimeout(() => pagination.nextPage(), 2000); 
+                    }
+                }
+            });
+        }
+
+        function processResults(results) {
+            const resultsList = document.getElementById("results-list");
+
+            for (let i = 0; i < results.length; i++) {
+                const place = results[i];
+
+                // 필터링 조건: 평점 4.5 이상, 리뷰 500개 이상
+                if (place.rating >= 4.5 && place.user_ratings_total >= 500) {
+                    // 리스트에 아이템 추가
+                    const listItem = document.createElement("li");
+                    listItem.innerHTML = `
+                        <div class="place-name">${place.name}</div>
+                        <div class="place-details">
+                            <span class="rating-star">★</span> ${place.rating} / 5.0
+                            <span>(${place.user_ratings_total.toLocaleString()} reviews)</span>
+                        </div>
+                        <div class="place-details">${place.vicinity}</div>
+                    `;
+                    listItem.onclick = () => {
+                        google.maps.event.trigger(markers[markers.findIndex(m => m.title === place.name)], 'click');
+                    };
+                    resultsList.appendChild(listItem);
+                    
+                    // 지도에 마커 생성
+                    createMarker(place);
+                }
+            }
+        }
+
+        function createMarker(place) {
+            if (!place.geometry || !place.geometry.location) return;
+
+            const marker = new google.maps.Marker({
+                map,
+                position: place.geometry.location,
+                title: place.name
+            });
+            
+            markers.push(marker);
+
+            google.maps.event.addListener(marker, "click", () => {
+                infowindow.setContent(`
+                    <div>
+                        <strong>${place.name}</strong><br>
+                        평점: ${place.rating} ★<br>
+                        리뷰 수: ${place.user_ratings_total}
+                    </div>
+                `);
+                infowindow.open(map, marker);
+                map.panTo(marker.getPosition());
+            });
+        }
+    </script>
+    <!-- Google Maps API 스크립트. YOUR_API_KEY 부분을 실제 API 키로 교체해야 합니다. -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAUDSezsDa6fighXLz3byv41t_itHSMrJA&libraries=places&callback=initMap">
+    </script>
+</body>
+</html>
+
