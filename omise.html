@@ -269,29 +269,19 @@
             font-size: 16px; padding: 12px;
         }
 
-        /* 모바일 뷰 스위치 */
-        #mobile-view-switch {
-            display: none;
-        }
-
         /* 반응형 디자인 (모바일) */
         @media (max-width: 768px) {
             body { 
-                flex-direction: column-reverse; /* 지도를 위로 */
-                height: 100vh; /* 모바일 화면 높이 고정 */
+                height: 100vh;
             } 
+            #map { 
+                display: none;
+            }
             #sidebar {
                 width: 100%;
-                height: 60%; /* 사이드바 높이 60% */
+                height: 100%;
                 padding: 16px;
-                box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
-                transition: height 0.3s ease;
-            }
-            #map { 
-                width: 100%; 
-                height: 40%; /* 지도 높이 40% */
-                flex-shrink: 0;
-                transition: height 0.3s ease;
+                box-shadow: none;
             }
             .search-header h1 { font-size: 20px; }
             .search-header p { font-size: 14px; margin-bottom: 16px; }
@@ -302,31 +292,6 @@
             .place-details { font-size: 12px; }
             .place-actions { flex-direction: row; }
             .action-button { font-size: 12px; padding: 5px 10px; }
-            
-            /* 모바일 뷰 스위치 활성화 */
-            #mobile-view-switch {
-                display: flex;
-                background-color: #f2f4f6;
-                border-radius: 8px;
-                padding: 4px;
-                margin-bottom: 16px;
-            }
-            #mobile-view-switch button {
-                flex: 1; padding: 8px; border: none; background-color: transparent;
-                border-radius: 6px; font-size: 14px; font-weight: 600;
-                color: #4e5968; cursor: pointer; transition: background-color 0.2s, color 0.2s;
-            }
-            #mobile-view-switch button.active {
-                background-color: white; color: #3182f6; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-
-            /* 목록만 보기 모드 */
-            body.list-only-view #map {
-                display: none;
-            }
-            body.list-only-view #sidebar {
-                height: 100%;
-            }
         }
     </style>
 </head>
@@ -339,10 +304,6 @@
                 <input type="text" id="region-input" placeholder="도시 (예: 도쿄)">
                 <input type="text" id="keyword-input" placeholder="음식 (예: 라멘)">
                 <button id="search-button">검색</button>
-            </div>
-             <div id="mobile-view-switch">
-                <button id="show-map-list" class="active">지도+목록</button>
-                <button id="show-list-only">목록만 보기</button>
             </div>
              <div class="view-toggle-buttons">
                 <button id="view-search-results" class="active">검색 결과</button>
@@ -405,29 +366,6 @@
             document.getElementById('details-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'details-modal') hideModal();
             });
-
-            // Mobile view switch
-            document.getElementById('show-list-only').addEventListener('click', () => setMobileView('list'));
-            document.getElementById('show-map-list').addEventListener('click', () => setMobileView('map'));
-        }
-
-        function setMobileView(view) {
-            if (window.innerWidth > 768) return;
-
-            const body = document.body;
-            const showListOnlyBtn = document.getElementById('show-list-only');
-            const showMapListBtn = document.getElementById('show-map-list');
-
-            if (view === 'list') {
-                body.classList.add('list-only-view');
-                showListOnlyBtn.classList.add('active');
-                showMapListBtn.classList.remove('active');
-            } else {
-                body.classList.remove('list-only-view');
-                showListOnlyBtn.classList.remove('active');
-                showMapListBtn.classList.add('active');
-                setTimeout(() => google.maps.event.trigger(map, 'resize'), 300);
-            }
         }
 
         function startSearch() {
