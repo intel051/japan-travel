@@ -3,209 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>도쿄 평점 높은 가게 검색</title>
+    <title>맛집 검색기</title>
     <style>
-        /* 기본 스타일 설정 */
-        body {
-            font-family: 'Inter', sans-serif;
+        /* Pretendard 폰트 불러오기 */
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+        /* 기본 스타일 및 레이아웃 */
+        html, body {
+            height: 100%;
             margin: 0;
-            padding: 0;
+            overflow: hidden; /* 데스크탑에서 스크롤 방지 */
+        }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
             display: flex;
-            height: 100vh;
-            background-color: #f8f9fa;
+            background-color: #f0f2f5;
+            color: #333d4b;
         }
         #map {
             height: 100%;
             width: 65%;
-            background-color: #e9ecef; /* 지도 로딩 전 배경색 */
+            background-color: #e5e8eb;
         }
         #sidebar {
             width: 35%;
             height: 100%;
-            overflow-y: auto;
             background-color: white;
-            padding: 20px;
-            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            padding: 24px;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.05);
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
-        h1 {
-            font-size: 1.5rem;
+        
+        /* 헤더 및 검색 폼 */
+        .search-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #191f28;
+            margin: 0 0 8px 0;
+        }
+        .search-header p {
+            font-size: 15px;
+            color: #6b7684;
+            margin: 0 0 24px 0;
+        }
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .search-form input {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #e5e8eb;
+            border-radius: 8px;
+            font-family: 'Pretendard', sans-serif;
+            transition: border-color 0.2s;
+        }
+        .search-form input::placeholder {
+            color: #adb5bd;
+        }
+        .search-form input:focus {
+            outline: none;
+            border-color: #3182f6;
+        }
+        .search-form button {
+            padding: 12px 20px;
+            font-size: 16px;
             font-weight: 600;
-            color: #212529;
-            margin-bottom: 5px;
+            color: white;
+            background-color: #3182f6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        p {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-top: 0;
-            margin-bottom: 20px;
+        .search-form button:hover {
+            background-color: #1b64da;
         }
-        ul {
+        
+        /* 정렬 버튼 */
+        #sort-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        #sort-buttons button {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #e5e8eb;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #4e5968;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+        #sort-buttons button:hover {
+            background-color: #f2f4f6;
+        }
+        #sort-buttons button.active {
+            background-color: #e8f3ff;
+            color: #3182f6;
+            border-color: #3182f6;
+            font-weight: 700;
+        }
+        
+        /* 맛집 리스트 (토스 스타일) */
+        #results-container {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        #results-list {
             list-style-type: none;
             padding: 0;
+            margin: 0;
         }
-        li {
+        #results-list li {
             background-color: #ffffff;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
             cursor: pointer;
-            transition: background-color 0.2s, box-shadow 0.2s;
+            border: 1px solid transparent;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
         }
-        li:hover {
-            background-color: #f1f3f5;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        #results-list li:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
         }
         .place-name {
-            font-weight: 600;
-            font-size: 1rem;
-            color: #343a40;
+            font-weight: 700;
+            font-size: 17px;
+            color: #191f28;
+            margin-bottom: 4px;
         }
         .place-details {
-            font-size: 0.85rem;
-            color: #495057;
-            margin-top: 5px;
+            font-size: 14px;
+            color: #4e5968;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
         }
         .rating-star {
-            color: #fcc419;
+            color: #ffc107;
+        }
+        .message {
+            padding: 40px 20px;
+            text-align: center;
+            font-size: 16px;
+            color: #868e96;
+        }
+
+        /* 반응형 디자인을 위한 미디어 쿼리 (모바일 화면) */
+        @media (max-width: 768px) {
+            html, body {
+                overflow: auto; /* 모바일에서는 스크롤 허용 */
+            }
+            body {
+                flex-direction: column;
+            }
+            #sidebar {
+                width: 100%;
+                height: auto; /* 내용에 따라 높이 조절 */
+                min-height: 55vh; /* 검색 결과 영역 최소 높이 보장 */
+                box-shadow: none;
+                padding: 16px;
+            }
+            #map {
+                width: 100%;
+                height: 45vh; /* 지도 높이 고정 */
+            }
+            .search-header h1 {
+                font-size: 22px;
+            }
+            .search-header p {
+                font-size: 14px;
+                margin-bottom: 16px;
+            }
+            .search-form {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .search-form input, .search-form button {
+                font-size: 15px;
+            }
+            #results-list li {
+                padding: 14px;
+            }
+            .place-name {
+                font-size: 16px;
+            }
+            .place-details {
+                font-size: 13px;
+            }
         }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- 가게 정보가 표시될 사이드바 -->
     <div id="sidebar">
-        <h1>도쿄 맛집 리스트</h1>
-        <p>평점 4.5 이상 & 리뷰 500개 이상인 곳만 표시됩니다.</p>
-        <ul id="results-list"></ul>
+        <div class="search-header">
+            <h1>맛집 검색</h1>
+            <p>도시와 음식 종류를 입력해 최고의 맛집을 찾아보세요.</p>
+            <div class="search-form">
+                <input type="text" id="region-input" placeholder="도시 (예: 도쿄)">
+                <input type="text" id="keyword-input" placeholder="음식 (예: 라멘)">
+                <button id="search-button">검색</button>
+            </div>
+        </div>
+        <div id="sort-buttons" style="display: none;">
+            <button id="sortByRating" class="active">평점 높은순</button>
+            <button id="sortByReviews">리뷰 많은순</button>
+        </div>
+        <div id="results-container">
+            <ul id="results-list">
+                <li class="message">검색을 시작해주세요.</li>
+            </ul>
+        </div>
     </div>
-    <!-- 지도가 표시될 영역 -->
     <div id="map"></div>
 
     <script>
-        let map;
-        let service;
-        let infowindow;
-        const tokyo = { lat: 35.6895, lng: 139.6917 };
-        const markers = [];
+        let map, service, infowindow, geocoder;
+        let markers = [];
+        let allPlaces = [];
 
-        // Google Maps API 인증 실패 시 호출될 콜백 함수
-        // InvalidKeyMapError를 잡아서 사용자에게 명확한 안내를 제공합니다.
-        window.gm_authFailure = function() {
+        window.gm_authFailure = () => {
             const sidebar = document.getElementById('sidebar');
             const mapContainer = document.getElementById('map');
-            
-            // 지도 영역 숨기기
             mapContainer.style.display = 'none';
-            sidebar.style.width = '100%'; // 사이드바를 전체 너비로 확장
-
+            sidebar.style.width = '100%';
             const errorMessage = document.createElement('div');
-            errorMessage.innerHTML = `
-                <strong style="color: #D32F2F;">Google Maps API 키 오류</strong><br><br>
-                API 키가 유효하지 않거나 설정되지 않았습니다. 
-                HTML 파일 맨 아래의 스크립트 태그에서 'YOUR_API_KEY' 부분을 실제 Google Cloud에서 발급받은 키로 교체했는지 확인해주세요.
-            `;
+            errorMessage.innerHTML = `<strong style="color: #D32F2F;">Google Maps API 키 오류</strong><br><br>API 키가 유효하지 않거나, Google Cloud 프로젝트에서 결제가 활성화되지 않았을 수 있습니다. API 키와 결제 설정을 다시 확인해주세요.`;
             errorMessage.style.padding = '15px';
             errorMessage.style.backgroundColor = '#FFEBEE';
             errorMessage.style.border = '1px solid #D32F2F';
             errorMessage.style.color = '#333';
             errorMessage.style.borderRadius = '8px';
-            errorMessage.style.marginBottom = '20px';
-            // 다른 콘텐츠 대신 오류 메시지만 표시
             sidebar.innerHTML = '';
             sidebar.appendChild(errorMessage);
         };
 
         function initMap() {
-            // 지도 생성
             map = new google.maps.Map(document.getElementById("map"), {
-                center: tokyo,
-                zoom: 13,
+                center: { lat: 35.6895, lng: 139.6917 },
+                zoom: 12,
+                disableDefaultUI: true,
+                zoomControl: true,
             });
-
-            // 장소 검색 서비스 객체 생성
             service = new google.maps.places.PlacesService(map);
             infowindow = new google.maps.InfoWindow();
+            geocoder = new google.maps.Geocoder();
 
-            // 도쿄 중심부에서 'restaurant' 타입의 장소를 검색
-            const request = {
-                location: tokyo,
-                radius: '5000', // 5km 반경
-                type: ['restaurant']
-            };
+            document.getElementById('search-button').addEventListener('click', startSearch);
+            document.getElementById('sortByRating').addEventListener('click', () => renderList('rating'));
+            document.getElementById('sortByReviews').addEventListener('click', () => renderList('reviews'));
+        }
 
-            service.nearbySearch(request, (results, status, pagination) => {
-                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-                    processResults(results);
+        function startSearch() {
+            const region = document.getElementById('region-input').value;
+            const keyword = document.getElementById('keyword-input').value;
 
-                    // 다음 페이지가 있으면 추가로 검색
-                    if (pagination && pagination.hasNextPage) {
-                        // API 호출 제한을 피하기 위해 약간의 딜레이 후 다음 페이지 요청
-                        setTimeout(() => pagination.nextPage(), 2000); 
-                    }
+            if (!region || !keyword) {
+                alert("도시와 음식 종류를 모두 입력해주세요.");
+                return;
+            }
+
+            clearResults();
+            document.getElementById('results-list').innerHTML = `<li class="message">검색 중...</li>`;
+            
+            geocoder.geocode({ 'address': region }, (results, status) => {
+                if (status === 'OK') {
+                    const location = results[0].geometry.location;
+                    map.setCenter(location);
+                    fetchPlaces(location, keyword, region);
+                } else {
+                    document.getElementById('results-list').innerHTML = `<li class="message">'${region}'을(를) 찾을 수 없습니다. 도시 이름을 확인해주세요.</li>`;
                 }
             });
         }
 
-        function processResults(results) {
+        function fetchPlaces(location, keyword, region) {
+            const request = {
+                query: `${keyword} in ${region}`,
+                location: location,
+                radius: 50000
+            };
+
+            service.textSearch(request, (results, status, pagination) => {
+                if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                    const filteredPlaces = results.filter(place => place.rating >= 4.1 && place.user_ratings_total >= 500);
+                    allPlaces = allPlaces.concat(filteredPlaces);
+
+                    if (pagination && pagination.hasNextPage) {
+                        setTimeout(() => pagination.nextPage(), 2000);
+                    } else {
+                        document.getElementById('sort-buttons').style.display = 'flex';
+                        renderList('rating');
+                    }
+                } else if (allPlaces.length === 0 && (!pagination || !pagination.hasNextPage)) {
+                     document.getElementById('results-list').innerHTML = `<li class="message">조건에 맞는 맛집을 찾지 못했습니다.</li>`;
+                } else if (status === google.maps.places.PlacesServiceStatus.REQUEST_DENIED) {
+                    window.gm_authFailure();
+                }
+            });
+        }
+        
+        function renderList(sortBy) {
+            document.getElementById('sortByRating').classList.toggle('active', sortBy === 'rating');
+            document.getElementById('sortByReviews').classList.toggle('active', sortBy === 'reviews');
+
+            if (sortBy === 'rating') {
+                allPlaces.sort((a, b) => b.rating - a.rating || b.user_ratings_total - a.user_ratings_total);
+            } else if (sortBy === 'reviews') {
+                allPlaces.sort((a, b) => b.user_ratings_total - a.user_ratings_total || b.rating - a.rating);
+            }
+
+            clearMarkersAndList();
             const resultsList = document.getElementById("results-list");
 
-            for (let i = 0; i < results.length; i++) {
-                const place = results[i];
-
-                // 필터링 조건: 평점 4.5 이상, 리뷰 500개 이상
-                if (place.rating >= 4.5 && place.user_ratings_total >= 500) {
-                    // 리스트에 아이템 추가
-                    const listItem = document.createElement("li");
-                    listItem.innerHTML = `
-                        <div class="place-name">${place.name}</div>
-                        <div class="place-details">
-                            <span class="rating-star">★</span> ${place.rating} / 5.0
-                            <span>(${place.user_ratings_total.toLocaleString()} reviews)</span>
-                        </div>
-                        <div class="place-details">${place.vicinity}</div>
-                    `;
-                    listItem.onclick = () => {
-                        google.maps.event.trigger(markers[markers.findIndex(m => m.title === place.name)], 'click');
-                    };
-                    resultsList.appendChild(listItem);
-                    
-                    // 지도에 마커 생성
-                    createMarker(place);
-                }
+            if (allPlaces.length === 0) {
+                 resultsList.innerHTML = `<li class="message">조건에 맞는 맛집을 찾지 못했습니다.</li>`;
+                 return;
             }
+            
+            allPlaces.forEach(place => {
+                const listItem = document.createElement("li");
+                listItem.innerHTML = `
+                    <div class="place-name">${place.name}</div>
+                    <div class="place-details">
+                        <span class="rating-star">★</span> 
+                        <strong>${place.rating}</strong> 
+                        <span>/ 5.0 (${place.user_ratings_total.toLocaleString()}개)</span>
+                    </div>
+                    <div class="place-details">${place.formatted_address}</div>
+                `;
+                listItem.onclick = () => {
+                    const marker = markers.find(m => m.title === place.name);
+                    if (marker) google.maps.event.trigger(marker, 'click');
+                };
+                resultsList.appendChild(listItem);
+                createMarker(place);
+            });
+        }
+        
+        function clearResults() {
+            allPlaces = [];
+            document.getElementById('sort-buttons').style.display = 'none';
+            clearMarkersAndList();
+        }
+
+        function clearMarkersAndList() {
+            document.getElementById("results-list").innerHTML = "";
+            markers.forEach(marker => marker.setMap(null));
+            markers = [];
         }
 
         function createMarker(place) {
             if (!place.geometry || !place.geometry.location) return;
 
-            const marker = new google.maps.Marker({
-                map,
-                position: place.geometry.location,
-                title: place.name
-            });
-            
+            const marker = new google.maps.Marker({ map, position: place.geometry.location, title: place.name });
             markers.push(marker);
 
             google.maps.event.addListener(marker, "click", () => {
-                infowindow.setContent(`
-                    <div>
-                        <strong>${place.name}</strong><br>
-                        평점: ${place.rating} ★<br>
-                        리뷰 수: ${place.user_ratings_total}
-                    </div>
-                `);
+                infowoken.setContent(`<div><strong>${place.name}</strong><br>평점: ${place.rating} ★<br>리뷰 수: ${place.user_ratings_total}</div>`);
                 infowindow.open(map, marker);
                 map.panTo(marker.getPosition());
+                map.setZoom(15);
             });
         }
     </script>
-    <!-- Google Maps API 스크립트. YOUR_API_KEY 부분을 실제 API 키로 교체해야 합니다. -->
     <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBtbz039wQKzOjm_sSOxDhgnPkSClueL-U&libraries=places&callback=initMap">
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBtbz039wQKzOjm_sSOxDhgnPkSClueL-U&libraries=places,geocoding&callback=initMap">
     </script>
 </body>
 </html>
