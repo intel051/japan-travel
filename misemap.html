@@ -35,6 +35,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
         }
         
         /* 헤더 및 검색 폼 */
@@ -175,6 +176,7 @@
             text-overflow: ellipsis;
         }
         .rating-star { color: #ffc107; }
+        .price-level { color: #6b7684; font-weight: 600; }
         .place-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;}
         .action-button {
             padding: 6px 12px;
@@ -204,18 +206,72 @@
         }
         .message:hover { transform: none; box-shadow: none; }
         
-        /* 인포윈도우 리뷰 스타일 */
-        .gm-style-iw .review {
-            margin-top: 8px;
-            padding-top: 8px;
+        /* Modal 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 12px; right: 12px;
+            background: #f0f2f5;
+            border: none;
+            border-radius: 50%;
+            width: 32px; height: 32px;
+            font-size: 20px;
+            line-height: 32px;
+            cursor: pointer;
+            color: #6b7684;
+        }
+        #modal-place-details .place-name { font-size: 22px; white-space: normal; }
+        #modal-place-details .place-details { white-space: normal; }
+        #modal-place-details .review-section-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: #191f28;
+            margin-top: 20px;
+            margin-bottom: 4px;
+        }
+         #modal-place-details .review-section-subheader {
+            font-size: 13px;
+            color: #868e96;
+            margin-bottom: 12px;
+        }
+        #modal-place-details .review {
+            margin-top: 12px; padding-top: 12px;
             border-top: 1px solid #e5e8eb;
         }
-        .gm-style-iw .review p {
-            margin: 4px 0;
-            font-size: 13px;
+        #modal-place-details .review:first-of-type {
+             border-top: none; padding-top: 0;
         }
-        .gm-style-iw .review strong {
-            font-size: 12px;
+        #modal-place-details .review p { margin: 4px 0; font-size: 14px; color: #4e5968; }
+        #modal-place-details .review strong { font-size: 13px; color: #191f28; }
+        #modal-place-details .action-button {
+            display: block; margin-top: 20px;
+            background-color: #3182f6; color: white;
+            font-size: 16px; padding: 12px;
+        }
+
+        /* 모바일 핸들 */
+        #mobile-handle {
+            display: none;
         }
 
         /* 반응형 디자인 (모바일) */
@@ -227,14 +283,34 @@
             #sidebar {
                 width: 100%;
                 height: 60%; /* 사이드바 높이 60% */
-                padding: 16px;
-                box-shadow: none;
+                padding: 16px 16px 0 16px;
+                box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+                transition: height 0.3s ease;
             }
+            #sidebar.expanded { height: calc(100% - 70px); }
             #map { 
                 width: 100%; 
                 height: 40%; /* 지도 높이 40% */
                 flex-shrink: 0;
+                transition: height 0.3s ease;
             }
+            #sidebar.expanded + #map { height: 70px; }
+            #mobile-handle {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                flex-shrink: 0;
+                cursor: pointer;
+                padding-top: 8px;
+            }
+            #mobile-handle div {
+                width: 40px;
+                height: 5px;
+                background-color: #e5e8eb;
+                border-radius: 100px;
+            }
+            .search-header { padding-top: 8px; }
             .search-header h1 { font-size: 20px; }
             .search-header p { font-size: 14px; margin-bottom: 16px; }
             .search-form { flex-direction: column; gap: 8px; }
@@ -249,6 +325,7 @@
 </head>
 <body>
     <div id="sidebar">
+        <div id="mobile-handle"><div></div></div>
         <div class="search-header">
             <h1>맛집 검색</h1>
             <p>도시와 음식 종류를 입력해 최고의 맛집을 찾아보세요.</p>
@@ -274,8 +351,15 @@
     </div>
     <div id="map"></div>
 
+    <div id="details-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button id="modal-close-button" class="modal-close-button">&times;</button>
+            <div id="modal-place-details"></div>
+        </div>
+    </div>
+
     <script>
-        let map, service, infowindow, geocoder;
+        let map, service, geocoder;
         let markers = [];
         let allPlaces = [];
         let savedPlaces = [];
@@ -296,7 +380,6 @@
                 zoomControl: true,
             });
             service = new google.maps.places.PlacesService(map);
-            infowindow = new google.maps.InfoWindow();
             geocoder = new google.maps.Geocoder();
 
             loadSavedPlaces();
@@ -306,6 +389,17 @@
             document.getElementById('view-search-results').addEventListener('click', () => switchView('search'));
             document.getElementById('view-saved-list').addEventListener('click', () => switchView('saved'));
             document.getElementById('results-list').addEventListener('click', handleListClick);
+            
+            // Modal
+            document.getElementById('modal-close-button').addEventListener('click', hideModal);
+            document.getElementById('details-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'details-modal') hideModal();
+            });
+
+            // Mobile handle
+            document.getElementById('mobile-handle').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('expanded');
+            });
         }
 
         function startSearch() {
@@ -331,7 +425,7 @@
         }
 
         function fetchPlaces(location, query) {
-            allPlaces = []; // 새로운 검색 시 이전 결과 초기화
+            allPlaces = [];
             const request = { query, location, radius: 50000 };
             
             const processPage = (results, status, pagination) => {
@@ -339,7 +433,6 @@
                     allPlaces = allPlaces.concat(results.filter(p => p.rating >= 4.1 && p.user_ratings_total >= 500 && p.place_id));
                     
                     if (pagination && pagination.hasNextPage) {
-                        // Google Places API는 다음 페이지 로드에 약간의 딜레이가 필요합니다.
                         setTimeout(() => pagination.nextPage(), 2000);
                     } else {
                         document.getElementById('sort-buttons').style.display = 'flex';
@@ -356,6 +449,11 @@
             service.textSearch(request, processPage);
         }
         
+        function formatPriceLevel(level) {
+            if (level == null || level === 0) return '';
+            return '· ' + '$'.repeat(level);
+        }
+
         function renderList(sortBy) {
             if (currentView !== 'search') return;
             document.getElementById('sortByRating').classList.toggle('active', sortBy === 'rating');
@@ -400,6 +498,7 @@
                         <span class="rating-star">★</span> 
                         <strong>${place.rating}</strong> 
                         <span>/ 5.0 (${place.user_ratings_total.toLocaleString()}개)</span>
+                        <span class="price-level">${formatPriceLevel(place.price_level)}</span>
                     </div>
                     <div class="place-details">${place.formatted_address}</div>
                 </div>
@@ -414,42 +513,63 @@
             if (!place.geometry || !place.geometry.location) return;
             const marker = new google.maps.Marker({ map, position: place.geometry.location, title: place.name });
             markers.push({ marker, placeId: place.place_id });
-
-            google.maps.event.addListener(marker, "click", () => {
-                infowindow.setContent(`<div><strong>${place.name}</strong><br>리뷰를 불러오는 중...</div>`);
-                infowindow.open(map, marker);
-                map.panTo(marker.getPosition());
-                
-                service.getDetails({ placeId: place.place_id, fields: ['review'] }, (placeDetails, status) => {
-                    let content = `<div><strong>${place.name}</strong><br>평점: ${place.rating} ★ (${place.user_ratings_total.toLocaleString()}개)`;
-                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}`;
-
-                    if (status === google.maps.places.PlacesServiceStatus.OK && placeDetails && placeDetails.reviews) {
-                        placeDetails.reviews.slice(0, 3).forEach(review => {
-                            content += `<div class="review">
-                                            <p>"${review.text.substring(0, 100)}..."</p>
-                                            <strong>- ${review.author_name} (${review.rating} ★)</strong>
-                                        </div>`;
-                        });
-                    }
-                    content += `<br><a href="${googleMapsUrl}" target="_blank" style="font-weight: 600; font-size: 14px; margin-top: 8px; display:inline-block;">Google 지도에서 열기</a></div>`;
-                    infowindow.setContent(content);
-                });
-            });
+            google.maps.event.addListener(marker, "click", () => showModal(place.place_id));
         }
         
         function handleListClick(event) {
-            const target = event.target;
-            const placeItem = target.closest('li[data-place-id]');
+            const placeItem = event.target.closest('li[data-place-id]');
             if (!placeItem) return;
             
             const placeId = placeItem.dataset.placeId;
-            if (target.matches('.save-button')) {
+            if (event.target.matches('.save-button')) {
                 toggleSavePlace(placeId);
-            } else if (!target.closest('a')) {
-                const markerData = markers.find(m => m.placeId === placeId);
-                if (markerData) google.maps.event.trigger(markerData.marker, 'click');
+            } else if (!event.target.closest('a')) {
+                showModal(placeId);
             }
+        }
+
+        function showModal(placeId) {
+            const place = allPlaces.find(p => p.place_id === placeId) || savedPlaces.find(p => p.place_id === placeId);
+            if (!place) return;
+
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('modal-place-details');
+            modalContent.innerHTML = `<div><strong>${place.name}</strong><br>리뷰를 불러오는 중...</div>`;
+            modal.style.display = 'flex';
+
+            service.getDetails({ placeId: place.place_id, fields: ['review'] }, (placeDetails, status) => {
+                let content = `
+                    <div class="place-name">${place.name}</div>
+                    <div class="place-details">
+                        <span class="rating-star">★</span> 
+                        <strong>${place.rating}</strong> 
+                        <span>/ 5.0 (${place.user_ratings_total.toLocaleString()}개)</span>
+                        <span class="price-level">${formatPriceLevel(place.price_level)}</span>
+                    </div>
+                    <div class="place-details" style="margin-top: 4px;">${place.formatted_address}</div>`;
+                
+                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&query_place_id=${place.place_id}`;
+
+                content += `<div class="review-section-header">최신 리뷰</div>`;
+                if (status === google.maps.places.PlacesServiceStatus.OK && placeDetails && placeDetails.reviews && placeDetails.reviews.length > 0) {
+                    placeDetails.reviews.slice(0, 3).forEach(review => {
+                        content += `<div class="review">
+                                        <p>"${review.text.substring(0, 100)}${review.text.length > 100 ? '...' : ''}"</p>
+                                        <strong>- ${review.author_name} (${review.rating} ★)</strong>
+                                    </div>`;
+                    });
+                } else {
+                     content += `<div class="review-section-subheader">리뷰가 없거나 불러올 수 없어요.</div>`;
+                }
+                
+                content += `<div class="review-section-subheader" style="margin-top: 12px; border-top: 1px solid #e5e8eb; padding-top: 12px;">대표 메뉴 정보는 제공되지 않아요. 리뷰를 참고해 보세요!</div>`
+                content += `<a href="${googleMapsUrl}" target="_blank" class="action-button">Google 지도에서 열기</a>`;
+                modalContent.innerHTML = content;
+            });
+        }
+
+        function hideModal() {
+            document.getElementById('details-modal').style.display = 'none';
         }
         
         function switchView(view, forceSearch = false) {
