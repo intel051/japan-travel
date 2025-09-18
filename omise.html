@@ -20,6 +20,9 @@
             background-color: #f0f2f5;
             color: #333d4b;
         }
+        button {
+            font-family: inherit; /* 모든 버튼에 body 폰트 상속 */
+        }
         #map {
             height: 100%;
             width: 65%;
@@ -269,6 +272,10 @@
             font-size: 16px; padding: 12px;
         }
 
+        #toggle-filters-btn {
+            display: none;
+        }
+
         /* 반응형 디자인 (모바일) */
         @media (max-width: 768px) {
             body { 
@@ -292,6 +299,27 @@
             .place-details { font-size: 12px; }
             .place-actions { flex-direction: row; }
             .action-button { font-size: 12px; padding: 5px 10px; }
+
+            #toggle-filters-btn {
+                display: block; /* 모바일에서만 보이기 */
+                width: 100%;
+                padding: 10px;
+                font-size: 14px;
+                border: 1px solid #e5e8eb;
+                background-color: #f9fafb;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 600;
+                color: #4e5968;
+                margin-top: -8px;
+                margin-bottom: 16px;
+            }
+
+            #sidebar.filters-collapsed .search-form,
+            #sidebar.filters-collapsed .view-toggle-buttons,
+            #sidebar.filters-collapsed #sort-buttons {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -310,6 +338,7 @@
                 <button id="view-saved-list">저장 목록</button>
             </div>
         </div>
+        <button id="toggle-filters-btn">필터 접기</button>
         <div id="sort-buttons" style="display: none;">
             <button id="sortByRating" class="active">평점 높은순</button>
             <button id="sortByReviews">리뷰 많은순</button>
@@ -344,13 +373,19 @@
         };
 
         function initMap() {
-            map = new google.maps.Map(document.getElementById("map"), {
-                center: { lat: 35.6895, lng: 139.6917 },
-                zoom: 12,
-                disableDefaultUI: true,
-                zoomControl: true,
-            });
-            service = new google.maps.places.PlacesService(map);
+            if (window.innerWidth > 768) {
+                map = new google.maps.Map(document.getElementById("map"), {
+                    center: { lat: 35.6895, lng: 139.6917 },
+                    zoom: 12,
+                    disableDefaultUI: true,
+                    zoomControl: true,
+                });
+                service = new google.maps.places.PlacesService(map);
+            } else {
+                 // 모바일에서는 지도 초기화는 하되, PlacesService만 사용
+                service = new google.maps.places.PlacesService(document.createElement('div'));
+            }
+
             geocoder = new google.maps.Geocoder();
 
             loadSavedPlaces();
@@ -366,6 +401,21 @@
             document.getElementById('details-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'details-modal') hideModal();
             });
+
+            // Filters toggle
+            document.getElementById('toggle-filters-btn').addEventListener('click', toggleFilters);
+        }
+
+        function toggleFilters() {
+            const sidebar = document.getElementById('sidebar');
+            const button = document.getElementById('toggle-filters-btn');
+            sidebar.classList.toggle('filters-collapsed');
+
+            if (sidebar.classList.contains('filters-collapsed')) {
+                button.textContent = '필터 열기';
+            } else {
+                button.textContent = '필터 접기';
+            }
         }
 
         function startSearch() {
@@ -382,7 +432,9 @@
             
             geocoder.geocode({ 'address': region }, (results, status) => {
                 if (status === 'OK') {
-                    map.setCenter(results[0].geometry.location);
+                    if (map) {
+                       map.setCenter(results[0].geometry.location);
+                    }
                     fetchPlaces(results[0].geometry.location, `${keyword} in ${region}`);
                 } else {
                     document.getElementById('results-list').innerHTML = `<li class="message">'${region}'을(를) 찾을 수 없습니다.</li>`;
@@ -476,7 +528,7 @@
         }
         
         function createMarker(place) {
-            if (!place.geometry || !place.geometry.location) return;
+            if (!map || !place.geometry || !place.geometry.location) return;
             const marker = new google.maps.Marker({ map, position: place.geometry.location, title: place.name });
             markers.push({ marker, placeId: place.place_id });
             google.maps.event.addListener(marker, "click", () => showModal(place.place_id));
