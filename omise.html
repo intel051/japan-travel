@@ -8,7 +8,7 @@
     <!-- 1. Tailwind CSS 로드 -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 2. Tailwind 폰트 설정 (프리텐다드를 기본 산스 폰트로 지정) -->
+    <!-- 2. Tailwind 폰트 설정 (프리텐다드) -->
     <script>
         tailwind.config = {
             theme: {
@@ -21,14 +21,13 @@
         }
     </script>
 
-    <!-- 3. Babel Standalone (리액트 JSX 변환용) -->
+    <!-- 3. Babel Standalone -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <!-- 4. 프리텐다드 폰트 파일 로드 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     
     <style>
-        /* 기본 바디 폰트도 프리텐다드로 강제 적용 */
         body { 
             font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif; 
         }
@@ -39,12 +38,12 @@
 <body>
     <div id="root"></div>
 
-    <!-- 리액트 환경 변수 설정 -->
+    <!-- 리액트 환경 변수 -->
     <script>
         window.process = { env: { NODE_ENV: 'production' } };
     </script>
 
-    <!-- 메인 스크립트 (Babel 처리) -->
+    <!-- 메인 스크립트 -->
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
@@ -71,7 +70,8 @@
                 }
 
                 const script = document.createElement('script');
-                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&libraries=places&v=weekly`;
+                // 🔥 중요: language=ko 파라미터 추가 (주소 비교 정확도 향상)
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&libraries=places&v=weekly&language=ko`;
                 script.async = true;
                 script.defer = true;
                 script.onload = () => waitForGoogleMaps(resolve);
@@ -149,10 +149,22 @@
                                 place.rating >= 4.1 && 
                                 place.userRatingCount >= 300
                             )
-                            // 한국 식당 제외
+                            // 🔥 강력해진 필터링 로직
                             .filter(place => {
                                 const addr = place.formattedAddress || "";
-                                return !addr.includes("대한민국") && !addr.includes("Korea") && !addr.includes("South Korea") && !addr.includes("서울");
+                                // 1. 한국 주소 제외
+                                if (addr.includes("대한민국") || addr.includes("Korea") || addr.includes("South Korea") || addr.includes("서울")) {
+                                    return false;
+                                }
+                                
+                                // 2. 입력한 도시 이름(city)이 주소에 실제로 포함되어 있는지 확인
+                                // 예: city가 "아키타"면, 주소에 "아키타"라는 글자가 있어야만 통과
+                                const targetCity = city.trim();
+                                if (targetCity && !addr.includes(targetCity)) {
+                                    return false; 
+                                }
+                                
+                                return true;
                             })
                             .map(place => ({
                                 id: place.id, 
@@ -167,7 +179,7 @@
                             .sort((a, b) => b.rating - a.rating);
 
                         if (filtered.length === 0) {
-                            setError('조건(4.1점+, 리뷰 300개+)에 맞는 맛집이 없어요.');
+                            setError(`'${city}' 지역에서 조건(4.1점+, 리뷰 300개+)에 맞는 맛집을 찾지 못했어요.`);
                             setStep('input');
                         } else {
                             setResults(filtered);
@@ -279,7 +291,7 @@
                         <div className="bg-white/60 backdrop-blur-xl border border-white/40 shadow-xl shadow-gray-200/20 rounded-full px-6 py-3 flex items-center justify-center min-w-[120px]">
                             <span className="font-bold text-gray-900 flex items-center gap-2 font-sans">
                                 <Utensils className="w-4 h-4 text-blue-600" />
-                                일본여행정보공유
+                                일본여행 정보공유
                             </span>
                         </div>
                     </header>
@@ -290,7 +302,7 @@
                             <div className="flex flex-col h-full animate-[slideUp_0.5s_cubic-bezier(0.16,1,0.3,1)]">
                                 <div className="mb-10">
                                     <h1 className="text-[40px] font-extrabold text-gray-900 leading-[1.1] tracking-tight mb-4 font-sans">일본,<br />어디서 드시나요?</h1>
-                                    <p className="text-gray-600/90 text-lg font-medium leading-relaxed font-sans">실패 없는 미식 여행을 위해<br/><span className="text-blue-600 font-bold">별점 4.1+</span>, 리뷰 300개 이상의 인증된 곳만 찾아드릴게요.</p>
+                                    <p className="text-gray-600/90 text-lg font-medium leading-relaxed font-sans">실패 없는 미식 여행을 위해<br/><span className="text-blue-600 font-bold">별점 4.1+,</span> 리뷰 300개 이상의 인증된 곳만 찾아드릴게요.</p>
                                 </div>
                                 <div className="space-y-6">
                                     <div className="group relative">
@@ -340,15 +352,15 @@
                                     <div className="absolute inset-0 flex items-center justify-center"><Search className="w-8 h-8 text-blue-500 animate-pulse" /></div>
                                 </div>
                                 <h3 className="text-2xl font-bold text-gray-900 mb-2 font-sans">Searching...</h3>
-                                <p className="text-gray-600 font-medium text-center leading-relaxed font-sans">{city}의 {food} 맛집 중<br/>평점 4.1 이상, 리뷰 300개 이상인 곳을 찾고 있어요.</p>
+                                <p className="text-gray-600 font-medium text-center leading-relaxed font-sans">{city}의 {food} 맛집 중<br/>평점 4.1 이상인 곳을 찾고 있어요.</p>
                             </div>
                         )}
                         {step === 'results' && (
                             <div className="animate-[slideUp_0.6s_cubic-bezier(0.16,1,0.3,1)]">
                                 <div className="flex items-center justify-between mb-8 px-1">
                                     <div>
-                                        <h2 className="text-[28px] font-extrabold text-gray-900 leading-none mb-1 font-sans">결과</h2>
-                                        <p className="text-sm font-medium text-gray-600 font-sans">{city}의 {food} 맛집 목록</p>
+                                        <h2 className="text-[28px] font-extrabold text-gray-900 leading-none mb-1 font-sans">검색결과</h2>
+                                        <p className="text-sm font-medium text-gray-600 font-sans">{food}맛집 리스트</p>
                                     </div>
                                     <button onClick={handleReset} className="w-10 h-10 rounded-full bg-white/60 text-gray-500 flex items-center justify-center hover:bg-white hover:shadow-md transition-all"><ArrowLeft className="w-5 h-5" /></button>
                                 </div>
