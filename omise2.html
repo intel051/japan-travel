@@ -113,8 +113,8 @@
             const [debugInfo, setDebugInfo] = useState('');
             const [blockedUrl, setBlockedUrl] = useState(''); 
             const [step, setStep] = useState('input');
-            const [filterStatus, setFilterStatus] = useState(''); // 필터 적용 상태 메시지
-            const [rawCount, setRawCount] = useState(0); // API 원본 결과 수
+            const [filterStatus, setFilterStatus] = useState(''); 
+            const [rawCount, setRawCount] = useState(0); 
             
             useEffect(() => {
                 const handleAuthFailure = () => {
@@ -136,6 +136,17 @@
                 navigator.clipboard.writeText(text).then(() => {
                     alert('주소가 복사되었습니다.');
                 });
+            };
+
+            // 실제 검색 로직 (재사용을 위해 분리)
+            const executeSearch = async (Place, queryText) => {
+                const request = {
+                    textQuery: queryText,
+                    fields: ['displayName', 'formattedAddress', 'rating', 'userRatingCount', 'id', 'location'],
+                    includedType: 'restaurant', // 식당 타입 명시
+                };
+                const { places } = await Place.searchByText(request);
+                return places || [];
             };
 
             const searchRestaurants = async (e) => {
@@ -160,7 +171,7 @@
                     setLoading(false);
                     setError('응답이 지연되고 있어요. 새로고침 후 다시 시도해 주세요.');
                     setStep('input');
-                }, 10000);
+                }, 12000); // 타임아웃 12초로 조금 더 늘림
 
                 try {
                     await loadGoogleMapsScript(GOOGLE_MAPS_API_KEY);
@@ -171,12 +182,15 @@
 
                     const { Place } = await window.google.maps.importLibrary("places");
                     
-                    const request = {
-                        textQuery: `일본 ${city} ${food}`,
-                        fields: ['displayName', 'formattedAddress', 'rating', 'userRatingCount', 'id', 'location'],
-                    };
-
-                    const { places } = await Place.searchByText(request);
+                    // [전략] 이중 검색 시도
+                    // 1차 시도: "일본 {도시} {음식}" (정확도 높음)
+                    let places = await executeSearch(Place, `일본 ${city} ${food}`);
+                    
+                    // 1차 결과가 없으면 2차 시도: "{도시} {음식}" (범용성 높음)
+                    if (!places || places.length === 0) {
+                        console.warn("1차 검색 실패, 2차 검색 시도...");
+                        places = await executeSearch(Place, `${city} ${food}`);
+                    }
 
                     clearTimeout(timeoutId);
 
@@ -192,11 +206,10 @@
                             return true;
                         });
 
-                        // 결과 매핑 함수
                         const mapPlace = (place) => ({
                             id: place.id, 
                             placeId: place.id,
-                            name: place.displayName, // v3에서는 string, 만약 객체라면 처리 필요
+                            name: place.displayName, 
                             koreanName: place.displayName,
                             rating: place.rating || 0,
                             reviewCount: place.userRatingCount || 0,
@@ -204,7 +217,7 @@
                             address: place.formattedAddress,
                         });
 
-                        // [전략 1] 엄격한 필터
+                        // [전략 1] 엄격한 필터 (4.1+, 300+)
                         let finalResults = validPlaces.filter(p => p.rating >= 4.1 && p.userRatingCount >= 300);
                         let statusMsg = "Top Rated";
 
@@ -214,7 +227,7 @@
                             statusMsg = "추천 맛집 (조건 완화됨)";
                         }
 
-                        // [전략 3] 최후의 수단 (필터 없이 모두 보여줌)
+                        // [전략 3] 최후의 수단 (필터 없이 모두)
                         if (finalResults.length === 0) {
                             finalResults = validPlaces;
                             statusMsg = "검색된 모든 결과";
@@ -254,7 +267,7 @@
                     } else if (err.message === "LEGACY_MAPS_DETECTED" || (err.message && err.message.includes("importLibrary"))) {
                         setError('브라우저 업데이트를 위해 "새로고침"이 꼭 필요해요!');
                     } else {
-                        setError('검색 중 오류가 발생했어요.');
+                        setError('검색 중 오류가 발생했어요. 잠시 후 다시 시도해주세요.');
                     }
                     
                     setStep('input');
@@ -316,6 +329,7 @@
 
             return (
                 <div className="min-h-[100dvh] relative overflow-hidden text-gray-800 selection:bg-blue-500/20 font-sans">
+                    {/* Background */}
                     <div className="fixed inset-0 bg-[#F5F5F7] -z-30"></div> 
                     <div className="fixed top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-purple-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob -z-20"></div>
                     <div className="fixed top-[-10%] right-[-20%] w-[70vw] h-[70vw] bg-blue-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000 -z-20"></div>
@@ -439,8 +453,6 @@
                                                     {filterStatus}
                                                 </span>
                                             )}
-                                            {/* 디버그용: 실제 가져온 데이터 수 (나중에 숨기셔도 돼요) */}
-                                            {/* <span className="text-[10px] text-gray-300">API Found: {rawCount}</span> */}
                                         </div>
                                     </div>
                                     <button onClick={handleReset} className="w-10 h-10 rounded-full bg-white/60 text-gray-500 flex items-center justify-center hover:bg-white hover:shadow-md transition-all"><ArrowLeft className="w-5 h-5" /></button>
