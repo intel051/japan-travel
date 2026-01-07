@@ -50,7 +50,7 @@
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
         import { Search, MapPin, Star, Utensils, ChevronRight, AlertCircle, ArrowLeft, RotateCw, Info, Copy } from 'https://esm.sh/lucide-react@0.292.0';
 
-        // --- Google Maps Auth Failure Handler (전역) ---
+        // --- Google Maps Auth Failure Handler ---
         window.gm_authFailure = () => {
             console.error("Google Maps Authentication Failed");
             window.dispatchEvent(new Event('gm_auth_failure'));
@@ -113,7 +113,8 @@
             const [debugInfo, setDebugInfo] = useState('');
             const [blockedUrl, setBlockedUrl] = useState(''); 
             const [step, setStep] = useState('input');
-            const [isFallback, setIsFallback] = useState(false); // 추천 모드 여부 확인용
+            const [filterStatus, setFilterStatus] = useState(''); // 필터 적용 상태 메시지
+            const [rawCount, setRawCount] = useState(0); // API 원본 결과 수
             
             useEffect(() => {
                 const handleAuthFailure = () => {
@@ -133,7 +134,7 @@
 
             const copyToClipboard = (text) => {
                 navigator.clipboard.writeText(text).then(() => {
-                    alert('주소가 복사되었습니다. Google Cloud Console에 추가해주세요.');
+                    alert('주소가 복사되었습니다.');
                 });
             };
 
@@ -152,7 +153,8 @@
                 setBlockedUrl('');
                 setStep('loading');
                 setResults([]);
-                setIsFallback(false);
+                setFilterStatus('');
+                setRawCount(0);
 
                 const timeoutId = setTimeout(() => {
                     setLoading(false);
@@ -179,7 +181,9 @@
                     clearTimeout(timeoutId);
 
                     if (places && places.length > 0) {
-                        // 1. 공통 필터: 한국 주소 및 무관한 데이터 제외
+                        setRawCount(places.length);
+
+                        // 1. 공통 필터: 한국 주소 제외
                         const validPlaces = places.filter(place => {
                             const addr = place.formattedAddress || "";
                             if (addr.includes("대한민국") || addr.includes("Korea") || addr.includes("South Korea") || addr.includes("서울")) {
@@ -188,49 +192,46 @@
                             return true;
                         });
 
-                        // 2. 엄격한 필터 (평점 4.1 이상, 리뷰 300개 이상)
-                        let filtered = validPlaces.filter(place => 
-                            place.rating && 
-                            place.userRatingCount && 
-                            place.rating >= 4.1 && 
-                            place.userRatingCount >= 300
-                        );
+                        // 결과 매핑 함수
+                        const mapPlace = (place) => ({
+                            id: place.id, 
+                            placeId: place.id,
+                            name: place.displayName, // v3에서는 string, 만약 객체라면 처리 필요
+                            koreanName: place.displayName,
+                            rating: place.rating || 0,
+                            reviewCount: place.userRatingCount || 0,
+                            description: place.formattedAddress, 
+                            address: place.formattedAddress,
+                        });
 
-                        let fallbackMode = false;
+                        // [전략 1] 엄격한 필터
+                        let finalResults = validPlaces.filter(p => p.rating >= 4.1 && p.userRatingCount >= 300);
+                        let statusMsg = "Top Rated";
 
-                        // 3. 엄격 필터 결과가 없으면 -> 완화된 기준 적용 (별점순/리뷰순 상위 30개)
-                        if (filtered.length === 0) {
-                            fallbackMode = true;
-                            filtered = validPlaces
-                                .filter(place => place.rating && place.userRatingCount) // 평점 데이터가 있는 것만
-                                .sort((a, b) => {
-                                    // 1순위: 별점 내림차순, 2순위: 리뷰수 내림차순
-                                    if (b.rating !== a.rating) return b.rating - a.rating;
-                                    return b.userRatingCount - a.userRatingCount;
-                                })
-                                .slice(0, 30); // 상위 30개만 자름
-                        } else {
-                            // 엄격 필터 결과도 평점순 정렬
-                            filtered.sort((a, b) => b.rating - a.rating);
+                        // [전략 2] 완화된 필터 (리뷰 10개 이상)
+                        if (finalResults.length === 0) {
+                            finalResults = validPlaces.filter(p => p.userRatingCount >= 10);
+                            statusMsg = "추천 맛집 (조건 완화됨)";
                         }
 
-                        if (filtered.length === 0) {
-                            setError(`'${city}' 지역에서 적당한 맛집을 찾지 못했어요.\n다른 검색어를 입력해보세요.`);
+                        // [전략 3] 최후의 수단 (필터 없이 모두 보여줌)
+                        if (finalResults.length === 0) {
+                            finalResults = validPlaces;
+                            statusMsg = "검색된 모든 결과";
+                        }
+
+                        // 정렬 (별점순 -> 리뷰순)
+                        finalResults.sort((a, b) => {
+                            if ((b.rating || 0) !== (a.rating || 0)) return (b.rating || 0) - (a.rating || 0);
+                            return (b.userRatingCount || 0) - (a.userRatingCount || 0);
+                        });
+
+                        if (finalResults.length === 0) {
+                            setError(`'${city}' 지역에서 검색된 결과가 없습니다.\n검색어(예: 도쿄, 라멘)를 확인해주세요.`);
                             setStep('input');
                         } else {
-                            const mappedResults = filtered.map(place => ({
-                                id: place.id, 
-                                placeId: place.id,
-                                name: place.displayName, 
-                                koreanName: place.displayName,
-                                rating: place.rating,
-                                reviewCount: place.userRatingCount,
-                                description: place.formattedAddress, 
-                                address: place.formattedAddress,
-                            }));
-                            
-                            setResults(mappedResults);
-                            setIsFallback(fallbackMode);
+                            setResults(finalResults.map(mapPlace));
+                            setFilterStatus(statusMsg);
                             setStep('results');
                         }
                     } else {
@@ -249,13 +250,9 @@
                     if (errString.includes("referer") && errString.includes("blocked")) {
                         setError('보안 설정으로 인해 접속이 차단되었습니다.');
                         const match = errString.match(/referer\s+(.*?)\s+are blocked/);
-                        if (match && match[1]) {
-                            setBlockedUrl(match[1]);
-                        }
+                        if (match && match[1]) setBlockedUrl(match[1]);
                     } else if (err.message === "LEGACY_MAPS_DETECTED" || (err.message && err.message.includes("importLibrary"))) {
                         setError('브라우저 업데이트를 위해 "새로고침"이 꼭 필요해요!');
-                    } else if (err.message.includes("Network")) {
-                        setError('네트워크 연결 상태를 확인해주세요.');
                     } else {
                         setError('검색 중 오류가 발생했어요.');
                     }
@@ -319,7 +316,6 @@
 
             return (
                 <div className="min-h-[100dvh] relative overflow-hidden text-gray-800 selection:bg-blue-500/20 font-sans">
-                    {/* Background */}
                     <div className="fixed inset-0 bg-[#F5F5F7] -z-30"></div> 
                     <div className="fixed top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-purple-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob -z-20"></div>
                     <div className="fixed top-[-10%] right-[-20%] w-[70vw] h-[70vw] bg-blue-200/40 rounded-full mix-blend-multiply filter blur-[80px] opacity-70 animate-blob animation-delay-2000 -z-20"></div>
@@ -433,12 +429,19 @@
                                 <div className="flex items-center justify-between mb-8 px-1">
                                     <div>
                                         <h2 className="text-[28px] font-extrabold text-gray-900 leading-none mb-1 font-sans">Results</h2>
-                                        {/* 결과 설명 텍스트 업데이트 */}
-                                        <p className="text-sm font-medium text-gray-600 font-sans">
-                                            {isFallback 
-                                                ? "기준 미달로 인기 맛집을 추천해드려요" 
-                                                : `${city}의 Top Rated ${food}`}
-                                        </p>
+                                        <div className="flex flex-col gap-0.5">
+                                            <p className="text-sm font-medium text-gray-600 font-sans">
+                                                {city}의 {food} 검색 결과
+                                            </p>
+                                            {/* 적용된 필터 상태 표시 */}
+                                            {filterStatus && (
+                                                <span className="text-[11px] font-medium text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full w-fit">
+                                                    {filterStatus}
+                                                </span>
+                                            )}
+                                            {/* 디버그용: 실제 가져온 데이터 수 (나중에 숨기셔도 돼요) */}
+                                            {/* <span className="text-[10px] text-gray-300">API Found: {rawCount}</span> */}
+                                        </div>
                                     </div>
                                     <button onClick={handleReset} className="w-10 h-10 rounded-full bg-white/60 text-gray-500 flex items-center justify-center hover:bg-white hover:shadow-md transition-all"><ArrowLeft className="w-5 h-5" /></button>
                                 </div>
