@@ -153,7 +153,7 @@
                         // [필터 전략]
                         // 1순위: 평점 4.1+, 리뷰 300+
                         let finalResults = validPlaces.filter(p => p.rating >= 4.1 && p.userRatingCount >= 300);
-                        let statusMsg = "Top Rated";
+                        let statusMsg = "평점 및 리뷰 순";
 
                         // 2순위: 리뷰 20개 이상 (완화)
                         if (!finalResults.length) {
@@ -305,7 +305,7 @@
                                     <div>
                                         <h2 className="text-2xl font-extrabold text-gray-900">검색 결과</h2>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <p className="text-sm font-medium text-gray-500">{city} {food}</p>
+                                            <p className="text-sm font-medium text-gray-500">{city}의 {food}맛집 리스트</p>
                                             {filterStatus && <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{filterStatus}</span>}
                                         </div>
                                     </div>
