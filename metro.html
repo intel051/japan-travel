@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>도쿄 지하철 퀴즈</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Pretendard Font -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard-jp.css">
+  
+  <style>
+    * { 
+      font-family: 'Pretendard JP', sans-serif !important;
+      letter-spacing: -0.015em;
+      -webkit-font-smoothing: antialiased;
+    }
+    body { background-color: #FAFAFA; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    input::placeholder { color: #d1d5db; }
+    input { font-weight: 500; }
+    input:disabled { opacity: 1; background-color: white; }
+    
+    /* --- 애니메이션 및 추가 효과 --- */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+    .animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
+    
+    .fade-in { animation: fadeIn 0.5s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    
+    .slide-in { animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    .zoom-in { animation: zoomIn 0.3s ease-out; }
+    @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  </style>
+</head>
+<body class="bg-[#FAFAFA]">
+  <div id="app" class="max-w-md mx-auto h-screen bg-[#FAFAFA] selection:bg-slate-200 overflow-hidden flex flex-col border-x border-slate-100 relative">
+    <!-- 화면이 렌더링 될 컨테이너 -->
+  </div>
+
+  <script>
+    // --- 데이터 파싱 헬퍼 (데이터 용량 최적화) ---
+    const parse = (str) => str.split(',').map(s => {
+      const [code, kr, jp, en] = s.split('|');
+      return { code, kr, jp, en };
+    });
+
+    // --- 도쿄 전체 주요 노선 데이터 (16개 노선) ---
+    const SUBWAY_LINES = {
+      'JY': {
+        name: 'JR 야마노테선', color: '#9ACD32',
+        stations: parse('JY01|도쿄|東京|Tokyo,JY02|칸다|神田|Kanda,JY03|아키하바라|秋葉原|Akihabara,JY04|오카치마치|御徒町|Okachimachi,JY05|우에노|上野|Ueno,JY06|우구이스다니|鶯谷|Uguisudani,JY07|닛포리|日暮里|Nippori,JY08|니시닛포리|西日暮里|Nishi-nippori,JY09|타바타|田端|Tabata,JY10|코마고메|駒込|Komagome,JY11|스가모|巣鴨|Sugamo,JY12|오츠카|大塚|Otsuka,JY13|이케부쿠로|池袋|Ikebukuro,JY14|메지로|目白|Mejiro,JY15|타카다노바바|高田馬場|Takadanobaba,JY16|신오쿠보|新大久保|Shin-Okubo,JY17|신주쿠|新宿|Shinjuku,JY18|요요기|代々木|Yoyogi,JY19|하라주쿠|原宿|Harajuku,JY20|시부야|渋谷|Shibuya,JY21|에비스|恵比寿|Ebisu,JY22|메구로|目黒|Meguro,JY23|고탄다|五反田|Gotanda,JY24|오사키|大崎|Osaki,JY25|시나가와|品川|Shinagawa,JY26|타카나와게이트웨이|高輪ゲートウェイ|Takanawa Gateway,JY27|타마치|田町|Tamachi,JY28|하마마츠초|浜松町|Hamamatsucho,JY29|심바시|新橋|Shimbashi,JY30|유라쿠초|有楽町|Yurakucho')
+      },
+      'JC': {
+        name: 'JR 츄오선 (쾌속)', color: '#F15A22',
+        stations: parse('JC01|도쿄|東京|Tokyo,JC02|칸다|神田|Kanda,JC03|오차노미즈|御茶ノ水|Ochanomizu,JC04|요츠야|四ツ谷|Yotsuya,JC05|신주쿠|新宿|Shinjuku,JC06|나카노|中野|Nakano,JC07|코엔지|高円寺|Koenji,JC08|아사가야|阿佐ケ谷|Asagaya,JC09|오기쿠보|荻窪|Ogikubo,JC10|니시오기쿠보|西荻窪|Nishi-ogikubo,JC11|키치죠지|吉祥寺|Kichijoji,JC12|미타카|三鷹|Mitaka')
+      },
+      'JO': {
+        name: 'JR 소부선 (쾌속)', color: '#003499',
+        stations: parse('JO19|도쿄|東京|Tokyo,JO20|신니혼바시|新日本橋|Shin-Nihombashi,JO21|바쿠로초|馬喰町|Bakurocho,JO22|킨시초|錦糸町|Kinshicho,JO23|신코이와|新小岩|Shin-Koiwa,JO24|이치카와|市川|Ichikawa,JO25|후나바시|船橋|Funabashi,JO26|츠다누마|津田沼|Tsudanuma,JO27|이나게|稲毛|Inage,JO28|치바|千葉|Chiba')
+      },
+      'JB': {
+        name: 'JR 츄오-소부선 (완행)', color: '#FFD400',
+        stations: parse('JB19|아키하바라|秋葉原|Akihabara,JB18|오차노미즈|御茶ノ水|Ochanomizu,JB17|스이도바시|水道橋|Suidobashi,JB16|이이다바시|飯田橋|Iidabashi,JB15|이치가야|市ケ谷|Ichigaya,JB14|요츠야|四ツ谷|Yotsuya,JB13|시나노마치|信濃町|Shinanomachi,JB12|센다가야|千駄ケ谷|Sendagaya,JB11|요요기|代々木|Yoyogi,JB10|신주쿠|新宿|Shinjuku,JB09|오쿠보|大久保|Okubo,JB08|히가시나카노|東中野|Higashi-nakano,JB07|나카노|中野|Nakano,JB06|코엔지|高円寺|Koenji,JB05|아사가야|阿佐ケ谷|Asagaya,JB04|오기쿠보|荻窪|Ogikubo,JB03|니시오기쿠보|西荻窪|Nishi-ogikubo,JB02|키치죠지|吉祥寺|Kichijoji,JB01|미타카|三鷹|Mitaka')
+      },
+      'G': {
+        name: '긴자선 (도쿄메트로)', color: '#FF9500',
+        stations: parse('G01|시부야|渋谷|Shibuya,G02|오모테산도|表参道|Omotesando,G03|가이엔마에|外苑前|Gaiemmae,G04|아오야마잇초메|青山一丁目|Aoyama-itchome,G05|아카사카미츠케|赤坂見附|Akasaka-mitsuke,G06|타메이케산노|溜池山王|Tameike-sanno,G07|토라노몬|虎ノ門|Toranomon,G08|심바시|新橋|Shimbashi,G09|긴자|銀座|Ginza,G10|쿄바시|京橋|Kyobashi,G11|니혼바시|日本橋|Nihombashi,G12|미츠코시마에|三越前|Mitsukoshimae,G13|칸다|神田|Kanda,G14|스에히로초|末広町|Suehirocho,G15|우에노히로코지|上野広小路|Ueno-hirokoji,G16|우에노|上野|Ueno,G17|이나리초|稲荷町|Inaricho,G18|타와라마치|田原町|Tawaramachi,G19|아사쿠사|浅草|Asakusa')
+      },
+      'M': {
+        name: '마루노우치선 (도쿄메트로)', color: '#F62E36',
+        stations: parse('M01|오기쿠보|荻窪|Ogikubo,M02|미나미아사가야|南阿佐ケ谷|Minami-asagaya,M03|신코엔지|新高円寺|Shin-koenji,M04|히가시코엔지|東高円寺|Higashi-koenji,M05|신나카노|新中野|Shin-nakano,M06|나카노사카우에|中野坂上|Nakano-sakaue,M07|니시신주쿠|西新宿|Nishi-shinjuku,M08|신주쿠|新宿|Shinjuku,M09|신주쿠산초메|新宿三丁目|Shinjuku-sanchome,M10|신주쿠교엔마에|新宿御苑前|Shinjuku-gyoemmae,M11|요츠야산초메|四谷三丁目|Yotsuya-sanchome,M12|요츠야|四ツ谷|Yotsuya,M13|아카사카미츠케|赤坂見附|Akasaka-mitsuke,M14|코카이기지도마에|国会議事堂前|Kokkai-gijidomae,M15|카스미가세키|霞ケ関|Kasumigaseki,M16|긴자|銀座|Ginza,M17|도쿄|東京|Tokyo,M18|오테마치|大手町|Otemachi,M19|아와지초|淡路町|Awajicho,M20|오차노미즈|御茶ノ水|Ochanomizu,M21|혼고산초메|本郷三丁目|Hongo-sanchome,M22|코라쿠엔|後楽園|Korakuen,M23|묘가다니|茗荷谷|Myogadani,M24|신오츠카|新大塚|Shin-otsuka,M25|이케부쿠로|池袋|Ikebukuro')
+      },
+      'H': {
+        name: '히비야선 (도쿄메트로)', color: '#B5B5AC',
+        stations: parse('H01|나카메구로|中目黒|Naka-meguro,H02|에비스|恵比寿|Ebisu,H03|히로오|広尾|Hiroo,H04|롯폰기|六本木|Roppongi,H05|카미야초|神谷町|Kamiyacho,H06|토라노몬힐즈|虎ノ門힐즈|Toranomon Hills,H07|카스미가세키|霞ケ関|Kasumigaseki,H08|히비야|日比谷|Hibiya,H09|긴자|銀座|Ginza,H10|히가시긴자|東銀座|Higashi-ginza,H11|츠키지|築地|Tsukiji,H12|핫초보리|八丁堀|Hatchobori,H13|카야바초|茅場町|Kayabacho,H14|닝교초|人形町|Ningyocho,H15|코데마초|小伝馬町|Kodemmacho,H16|아키하바라|秋葉原|Akihabara,H17|나카오카치마치|仲御徒町|Naka-okachimachi,H18|우에노|上野|Ueno,H19|이리야|入谷|Iriya,H20|미노와|三ノ輪|Minowa,H21|미나미센주|南千住|Minami-senju,H22|키타센주|北千住|Kita-senju')
+      },
+      'T': {
+        name: '토자이선 (도쿄메트로)', color: '#009BBF',
+        stations: parse('T01|나카노|中野|Nakano,T02|오치아이|落合|Ochiai,T03|타카다노바바|高田馬場|Takadanobaba,T04|와세다|早稲田|Waseda,T05|카구라자카|神楽坂|Kagurazaka,T06|이이다바시|飯田橋|Iidabashi,T07|쿠단시타|九段下|Kudanshita,T08|타케바시|竹橋|Takebashi,T09|오테마치|大手町|Otemachi,T10|니혼바시|日本橋|Nihombashi,T11|카야바초|茅場町|Kayabacho,T12|몬젠나카초|門前仲町|Monzen-nakacho,T13|키바|木場|Kiba,T14|토요초|東陽町|Toyocho,T15|미나미스나마치|南砂町|Minami-sunamachi,T16|니시카사이|西葛西|Nishi-kasai,T17|카사이|葛西|Kasai,T18|우라야스|浦安|Urayasu,T19|미나미교토쿠|南行徳|Minami-gyotoku,T20|교토쿠|行徳|Gyotoku,T21|묘덴|妙典|Myoden,T22|바라키나카야마|原木中山|Baraki-nakayama,T23|니시후나바시|西船橋|Nishi-funabashi')
+      },
+      'C': {
+        name: '치요다선 (도쿄메트로)', color: '#00BC8D',
+        stations: parse('C01|요요기우에하라|代々木上原|Yoyogi-uehara,C02|요요기코엔|代々木公園|Yoyogi-koen,C03|메이지진구마에|明治神宮前|Meiji-jingumae,C04|오모테산도|表参道|Omotesando,C05|노기자카|乃木坂|Nogizaka,C06|아카사카|赤坂|Akasaka,C07|코카이기지도마에|国会議事堂前|Kokkai-gijidomae,C08|카스미가세키|霞ケ関|Kasumigaseki,C09|히비야|日比谷|Hibiya,C10|니주바시마에|二重橋前|Nijubashimae,C11|오테마치|大手町|Otemachi,C12|신오차노미즈|新御茶ノ水|Shin-ochanomizu,C13|유시마|湯島|Yushima,C14|네즈|根津|Nezu,C15|센다기|千駄木|Sendagi,C16|니시닛포리|西日暮里|Nishi-nippori,C17|마치야|町屋|Machiya,C18|키타센주|北千住|Kita-senju,C19|아야세|綾瀬|Ayase,C20|키타아야세|北綾瀬|Kita-ayase')
+      },
+      'Y': {
+        name: '유라쿠초선 (도쿄메트로)', color: '#C1A470',
+        stations: parse('Y01|와코시|和光市|Wakoshi,Y02|치카테츠나리마스|地下鉄成増|Chikatetsu-narimasu,Y03|치카테츠아카츠카|地下鉄赤塚|Chikatetsu-akatsuka,Y04|헤이와다이|平和台|Heiwadai,Y05|히카와다이|氷川台|Hikawadai,Y06|코타케무카이하라|小竹向原|Kotake-mukaihara,Y07|센카와|千川|Senkawa,Y08|카나메초|要町|Kanamecho,Y09|이케부쿠로|池袋|Ikebukuro,Y10|히가시이케부쿠로|東池袋|Higashi-ikebukuro,Y11|고코쿠지|護国寺|Gokokuji,Y12|에도가와바시|江戸川橋|Edogawabashi,Y13|이이다바시|飯田橋|Iidabashi,Y14|이치가야|市ケ谷|Ichigaya,Y15|코지마치|麹町|Kojimachi,Y16|나가타초|永田町|Nagatacho,Y17|사쿠라다몬|桜田門|Sakuradamon,Y18|유라쿠초|有楽町|Yurakucho,Y19|긴자잇초메|銀座一丁目|Ginza-itchome,Y20|신토미초|新富町|Shintomicho,Y21|츠키시마|月島|Tsukishima,Y22|토요스|豊洲|Toyosu,Y23|타츠미|辰巳|Tatsumi,Y24|신키바|新木場|Shin-kiba')
+      },
+      'Z': {
+        name: '한조몬선 (도쿄메트로)', color: '#8F76D6',
+        stations: parse('Z01|시부야|渋谷|Shibuya,Z02|오모테산도|表参道|Omotesando,Z03|아오야마잇초메|青山一丁目|Aoyama-itchome,Z04|나가타초|永田町|Nagatacho,Z05|한조몬|半蔵門|Hanzomon,Z06|쿠단시타|九段下|Kudanshita,Z07|짐보초|神保町|Jimbocho,Z08|오테마치|大手町|Otemachi,Z09|미츠코시마에|三越前|Mitsukoshimae,Z10|스이텐구마에|水天宮前|Suitengumae,Z11|키요스미시라카와|清澄白河|Kiyosumi-shirakawa,Z12|스미요시|住吉|Sumiyoshi,Z13|킨시초|錦糸町|Kinshicho,Z14|오시아게|押上|Oshiage')
+      },
+      'N': {
+        name: '난보쿠선 (도쿄메트로)', color: '#00AC9B',
+        stations: parse('N01|메구로|目黒|Meguro,N02|시로카네다이|白金台|Shirokanedai,N03|시로카네타카나와|白金高輪|Shirokane-takanawa,N04|아자부주반|麻布十番|Azabu-juban,N05|롯폰기잇초메|六本木一丁目|Roppongi-itchome,N06|타메이케산노|溜池山王|Tameike-sanno,N07|나가타초|永田町|Nagatacho,N08|요츠야|四ツ谷|Yotsuya,N09|이치가야|市ケ谷|Ichigaya,N10|이이다바시|飯田橋|Iidabashi,N11|코라쿠엔|後楽園|Korakuen,N12|토다이마에|東大前|Todaimae,N13|혼코마고메|本駒込|Hon-komagome,N14|코마고메|駒込|Komagome,N15|니시가하라|西ケ原|Nishigahara,N16|오지|王子|Oji,N17|오지카미야|王子神谷|Oji-kamiya,N18|시모|志茂|Shimo,N19|아카바네이와부치|赤羽岩淵|Akabane-iwabuchi')
+      },
+      'F': {
+        name: '후쿠토신선 (도쿄메트로)', color: '#9C5E31',
+        stations: parse('F01|와코시|和光市|Wakoshi,F02|치카테츠나리마스|地下鉄成増|Chikatetsu-narimasu,F03|치카테츠아카츠카|地下鉄赤塚|Chikatetsu-akatsuka,F04|헤이와다이|平和台|Heiwadai,F05|히카와다이|氷川台|Hikawadai,F06|코타케무카이하라|小竹向原|Kotake-mukaihara,F07|센카와|千川|Senkawa,F08|카나메초|要町|Kanamecho,F09|이케부쿠로|池袋|Ikebukuro,F10|조시가야|雑司が谷|Zoshigaya,F11|니시와세다|西早稲田|Nishi-waseda,F12|히가시신주쿠|東新宿|Higashi-shinjuku,F13|신주쿠산초메|新宿三丁目|Shinjuku-sanchome,F14|키타산도|北参道|Kitasando,F15|메이지진구마에|明治神宮前|Meiji-jingumae,F16|시부야|渋谷|Shibuya')
+      },
+      'A': {
+        name: '아사쿠사선 (도영)', color: '#E85298',
+        stations: parse('A01|니시마고메|西馬込|Nishi-magome,A02|마고메|馬込|Magome,A03|나카노부|中延|Nakanobu,A04|토고시|戸越|Togoshi,A05|고탄다|五反田|Gotanda,A06|타카나와다이|高輪台|Takanawadai,A07|센가쿠지|泉岳寺|Sengakuji,A08|미타|三田|Mita,A09|다이몬|大門|Daimon,A10|심바시|新橋|Shimbashi,A11|히가시긴자|東銀座|Higashi-ginza,A12|타카라초|宝町|Takaracho,A13|니혼바시|日本橋|Nihombashi,A14|닝교초|人形町|Ningyocho,A15|히가시니혼바시|東日本橋|Higashi-nihombashi,A16|아사쿠사바시|浅草橋|Asakusabashi,A17|쿠라마에|蔵前|Kuramae,A18|아사쿠사|浅草|Asakusa,A19|혼조아즈마바시|本所吾妻橋|Honjo-azumabashi,A20|오시아게|押上|Oshiage')
+      },
+      'I': {
+        name: '미타선 (도영)', color: '#0079C2',
+        stations: parse('I01|메구로|目黒|Meguro,I02|시로카네다이|白金台|Shirokanedai,I03|시로카네타카나와|白金高輪|Shirokane-takanawa,I04|미타|三田|Mita,I05|시바코엔|芝公園|Shibakoen,I06|오나리몬|御成門|Onarimon,I07|우치사이와이초|内幸町|Uchisaiwaicho,I08|히비야|日比谷|Hibiya,I09|오테마치|大手町|Otemachi,I10|짐보초|神保町|Jimbocho,I11|스이도바시|水道橋|Suidobashi,I12|카스가|春日|Kasuga,I13|하쿠산|白山|Hakusan,I14|센고쿠|千石|Sengoku,I15|스가모|巣鴨|Sugamo,I16|니시스가모|西巣鴨|Nishi-sugamo,I17|신이타바시|新板橋|Shin-itabashi,I18|이타바시쿠야쿠쇼마에|板橋区役所前|Itabashikuyakushomae,I19|이타바시혼초|板橋本町|Itabashihoncho,I20|모토하스누마|本蓮沼|Motohasunuma,I21|시무라사카우에|志村坂上|Shimura-sakaue,I22|시무라산초메|志村三丁目|Shimura-sanchome,I23|하스네|蓮根|Hasune,I24|니시다이|西台|Nishidai,I25|타카시마다이라|高島平|Takashimadaira,I26|신타카시마다이라|新高島平|Shin-takashimadaira,I27|니시타카시마다이라|西高島平|Nishi-takashimadaira')
+      },
+      'S': {
+        name: '신주쿠선 (도영)', color: '#6CBB5A',
+        stations: parse('S01|신주쿠|新宿|Shinjuku,S02|신주쿠산초메|新宿三丁目|Shinjuku-sanchome,S03|아케보노바시|曙橋|Akebonobashi,S04|이치가야|市ケ谷|Ichigaya,S05|쿠단시타|九段下|Kudanshita,S06|짐보초|神保町|Jimbocho,S07|오가와마치|小川町|Ogawamachi,S08|이와모토초|岩本町|Iwamotocho,S09|바쿠로요코야마|馬喰横山|Bakuroyokoyama,S10|하마초|浜町|Hamacho,S11|모리시타|森下|Morishita,S12|키쿠카와|菊川|Kikukawa,S13|스미요시|住吉|Sumiyoshi,S14|니시오지마|西大島|Nishi-ojima,S15|오지마|大島|Ojima,S16|히가시오지마|東大島|Higashi-ojima,S17|후나보리|船堀|Funabori,S18|이치노에|一之江|Ichinoe,S19|미즈에|瑞江|Mizue,S20|시노자키|篠崎|Shinozaki,S21|모토야와타|本八幡|Moto-yawata')
+      },
+      'E': {
+        name: '오에도선 (도영)', color: '#B6007A',
+        stations: parse('E01|신주쿠니시구치|新宿西口|Shinjuku-nishiguchi,E02|히가시신주쿠|東新宿|Higashi-shinjuku,E03|와카마츠카와다|若松河田|Wakamatsu-kawada,E04|우시고메야나기초|牛込柳町|Ushigome-yanagicho,E05|우시고메카구라자카|牛込神楽坂|Ushigome-kagurazaka,E06|이이다바시|飯田橋|Iidabashi,E07|카스가|春日|Kasuga,E08|혼고산초메|本郷三丁目|Hongo-sanchome,E09|우에노오카치마치|上野御徒町|Ueno-okachimachi,E10|신오카치마치|新御徒町|Shin-okachimachi,E11|쿠라마에|蔵前|Kuramae,E12|료고쿠|両国|Ryogoku,E13|모리시타|森下|Morishita,E14|키요스미시라카와|清澄白河|Kiyosumi-shirakawa,E15|몬젠나카초|門前仲町|Monzen-nakacho,E16|츠키시마|月島|Tsukishima,E17|카치도키|勝どき|Kachidoki,E18|츠키지시조|築地市場|Tsukijishijo,E19|시오도메|汐留|Shiodome,E20|다이몬|大門|Daimon,E21|아카바네바시|赤羽橋|Akabanebashi,E22|아자부주반|麻布十番|Azabu-juban,E23|롯폰기|六本木|Roppongi,E24|아오야마잇초메|青山一丁目|Aoyama-itchome,E25|코쿠리츠쿄기조|国立競技場|Kokuritsu-kyogijo,E26|요요기|代々木|Yoyogi,E27|신주쿠|新宿|Shinjuku,E28|토초마에|都庁前|Tochomae,E29|니시신주쿠고초메|西新宿五丁目|Nishi-shinjuku-gochome,E30|나카노사카우에|中野坂上|Nakano-sakaue,E31|히가시나카노|東中野|Higashi-nakano,E32|나카이|中井|Nakai,E33|오치아이미나미나가사키|落合南長崎|Ochiai-minaminagasaki,E34|신에고타|新江古田|Shin-egota,E35|네리마|練馬|Nerima,E36|토시마엔|豊島園|Toshimaen,E37|네리마카스가초|練馬春日町|Nerima-kasugacho,E38|히카리가오카|光が丘|Hikarigaoka')
+      },
+      'KO': {
+        name: '게이오선', color: '#DD0061',
+        stations: parse('KO01|신주쿠|新宿|Shinjuku,KO02|하츠다이|初台|Hatsudai,KO03|하타가야|幡ヶ谷|Hatagaya,KO04|사사즈카|笹塚|Sasazuka,KO05|다이타바시|代田橋|Daitabashi,KO06|메이다이마에|明大前|Meidaimae,KO07|시모타카이도|下高井戸|Shimo-takaido,KO08|사쿠라조스이|桜上水|Sakurajosui,KO09|카미키타자와|上北沢|Kami-kitazawa,KO10|하치만야마|八幡山|Hachiman-yama,KO11|로카코엔|芦花公園|Roka-koen,KO12|치토세카라스야마|千歳烏山|Chitose-karasuyama,KO13|센가와|仙川|Sengawa,KO14|츠츠지가오카|つつじヶ丘|Tsutsujigaoka,KO15|시바사키|柴崎|Shibasaki,KO16|코쿠료|国領|Kokuryo,KO17|후다|布田|Fuda,KO18|초후|調布|Chofu,KO19|니시초후|西調布|Nishi-chofu,KO20|토비타큐|飛田給|Tobitakyu,KO21|무사시노다이|武蔵野台|Musashinodai,KO22|타마레이엔|多磨霊園|Tama-reien,KO23|히가시후추|東府中|Higashi-fuchu,KO24|후추|府中|Fuchu,KO25|부바이가와라|分倍河原|Bubaigawara,KO26|나카가와라|中河原|Nakagawara,KO27|세이세키사쿠라가오카|聖蹟桜ヶ丘|Seiseki-sakuragaoka,KO28|모모구사엔|百草園|Mogusaen,KO29|타카하타후도|高幡不動|Takahatafudo,KO30|미나미다이라|南平|Minamidaira,KO31|히라야마조시코엔|平山城址公園|Hirayamajoshi-koen,KO32|나가누마|長沼|Naganuma,KO33|키타노|北野|Kitano,KO34|게이오하치오지|京王八王子|Keio-hachioji')
+      },
+      'KS': {
+        name: '케이세이 본선', color: '#005BAB',
+        stations: parse('KS01|게이세이우에노|京成上野|Keisei Ueno,KS02|닛포리|日暮里|Nippori,KS03|신미카와시마|新三河島|Shin-mikawashima,KS04|마치야|町屋|Machiya,KS05|센주오하시|千住大橋|Senjuohashi,KS06|게이세이세키야|京成関屋|Keisei Sekiya,KS07|호리키리쇼부엔|堀切菖蒲園|Horikiri-shobuen,KS08|오하나자야|お花茶屋|Ohanajaya,KS09|아오토|青砥|Aoto,KS10|게이세이타카사고|京成高砂|Keisei Takasago,KS11|게이세이코이와|京成小岩|Keisei Koiwa,KS12|에도가와|江戸川|Edogawa,KS13|코노다이|国府台|Konodai,KS14|이치카와마마|市川真間|Ichikawa-mama,KS15|스가노|菅野|Sugano,KS16|게이세이야와타|京成八幡|Keisei Yawata,KS17|오니고에|鬼越|Onigoe,KS18|게이세이나카야마|京成中山|Keisei Nakayama,KS19|히가시나카야마|東中山|Higashi-nakayama,KS20|게이세이니시후나|京成西船|Keisei Nishifuna,KS21|카이진|海神|Kaijin,KS22|게이세이후나바시|京成船橋|Keisei Funabashi,KS23|다이진구시타|大神宮下|Daijingu-shita,KS24|후나바시키바조|船橋競馬場|Funabashikeibajo,KS25|야츠|谷津|Yatsu,KS26|게이세이츠다누마|京成津田沼|Keisei Tsudanuma,KS27|게이세이오쿠보|京成大久保|Keisei Okubo,KS28|미모미|実籾|Mimomi,KS29|야치요다이|八千代台|Yachiyodai,KS30|게이세이오와다|京成大和田|Keisei Owada,KS31|카츠타다이|勝田台|Katsutadai,KS32|시즈|志津|Shizu,KS33|유카리가오카|ユーカリが丘|Yukarigaoka,KS34|게이세이우스이|京成臼井|Keisei Usui,KS35|게이세이사쿠라|京成佐倉|Keisei Sakura,KS36|오사쿠라|大佐倉|Osakura,KS37|게이세이시스이|京成酒々井|Keisei Shisui,KS38|소고산도|宗吾参道|Sogosando,KS39|코즈노모리|公津の杜|Kozunomori,KS40|게이세이나리타|京成成田|Keisei Narita,KS41|쿠코다이니빌딩|空港第2ビル|Airport Terminal 2,KS42|나리타쿠코|成田空港|Narita Airport')
+      }
+    };
+
+    // --- 노선 아이콘 Prefix 추출 함수 (알파벳만 정확히 추출) ---
+    const getLinePrefix = (code) => {
+      const match = code.match(/^[A-Za-z]+/);
+      return match ? match[0] : '';
+    };
+
+    // --- 앱 상태 (State) 관리 ---
+    let state = {
+      view: 'home',
+      quizMode: 'basic',
+      selectedLine: 'JY',
+      quizData: [],
+      currentIndex: 0,
+      score: 0,
+      inputValue: '',
+      feedback: null,
+      showAnswer: false
+    };
+
+    const app = document.getElementById('app');
+
+    // --- 화면 렌더링 함수 ---
+    function updateApp() {
+      app.innerHTML = '';
+      if (state.view === 'home') app.appendChild(createHomeView());
+      else if (state.view === 'quiz') app.appendChild(createQuizView());
+      else if (state.view === 'result') app.appendChild(createResultView());
+      
+      lucide.createIcons();
+    }
+
+    // --- 홈 화면 ---
+    function createHomeView() {
+      const div = document.createElement('div');
+      div.className = "flex flex-col h-full fade-in w-full bg-[#FAFAFA]";
+
+      let modeHtml = `
+        <button onclick="window.setMode('basic')" class="p-4 rounded-xl border transition-all flex flex-col gap-3 items-start ${state.quizMode === 'basic' ? 'border-[#222] bg-white text-[#222]' : 'border-slate-200 bg-white opacity-60'}">
+          <i data-lucide="layout-grid" class="${state.quizMode === 'basic' ? 'text-[#222]' : 'text-slate-400'} w-4 h-4"></i>
+          <span class="font-bold text-xs">일반 모드</span>
+        </button>
+        <button onclick="window.setMode('relay')" class="p-4 rounded-xl border transition-all flex flex-col gap-3 items-start ${state.quizMode === 'relay' ? 'border-[#222] bg-white text-[#222]' : 'border-slate-200 bg-white opacity-60'}">
+          <i data-lucide="arrow-right-left" class="${state.quizMode === 'relay' ? 'text-[#222]' : 'text-slate-400'} w-4 h-4"></i>
+          <span class="font-bold text-xs">릴레이 모드</span>
+        </button>
+      `;
+
+      let lineHtml = Object.entries(SUBWAY_LINES).map(([key, line]) => {
+        const prefix = getLinePrefix(line.stations[0].code);
+        return `
+          <button onclick="window.prepareQuiz('${state.quizMode}', '${key}')" class="w-full p-4 bg-white border border-slate-100 hover:border-slate-300 rounded-xl flex items-center gap-4 transition-all group active:scale-[0.98] shadow-sm">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-[11px]" style="background-color: ${line.color}">
+              ${prefix}
+            </div>
+            <div class="flex-1 text-left">
+              <div class="font-bold text-slate-700 text-sm">${line.name}</div>
+              <div class="text-[10px] text-slate-400 font-medium mt-0.5">총 ${line.stations.length}개 역 수록</div>
+            </div>
+            <i data-lucide="chevron-right" class="text-slate-200 group-hover:text-slate-400 transition-colors w-4 h-4"></i>
+          </button>
+        `;
+      }).join('');
+
+      div.innerHTML = `
+        <div class="flex flex-col items-center pt-16 pb-12 shrink-0">
+          <div class="w-14 h-14 bg-[#222222] rounded-xl flex items-center justify-center mb-6 border border-slate-200 shadow-sm">
+            <i data-lucide="train" class="text-white w-7 h-7"></i>
+          </div>
+          <h1 class="text-xl font-bold text-slate-800 tracking-tight mb-2">도쿄 철도 퀴즈</h1>
+          <p class="text-slate-400 text-xs font-medium">여러 노선 수록 완벽 정복</p>
+        </div>
+        <div class="flex-1 overflow-y-auto px-6 pb-12 no-scrollbar w-full">
+          <div class="space-y-8 w-full">
+            <section>
+              <p class="text-[10px] font-bold text-slate-400 mb-3 ml-1 tracking-widest uppercase">Select Mode</p>
+              <div class="grid grid-cols-2 gap-3">${modeHtml}</div>
+            </section>
+            <section>
+              <p class="text-[10px] font-bold text-slate-400 mb-3 ml-1 tracking-widest uppercase">Select Line</p>
+              <div class="space-y-2">${lineHtml}</div>
+            </section>
+          </div>
+        </div>
+      `;
+      return div;
+    }
+
+    // --- 퀴즈 화면 ---
+    function createQuizView() {
+      const div = document.createElement('div');
+      div.className = "h-full bg-[#FAFAFA] flex flex-col p-6 slide-in w-full";
+      
+      const line = SUBWAY_LINES[state.selectedLine];
+      const currentItem = state.quizData[state.currentIndex];
+      const prevStation = state.quizMode === 'relay' ? line.stations[currentItem.originalIndex - 1] : null;
+      const nextStation = state.quizMode === 'relay' ? line.stations[currentItem.originalIndex + 1] : null;
+
+      const progress = ((state.currentIndex + 1) / state.quizData.length) * 100;
+
+      let questionHtml = '';
+      if (state.quizMode === 'relay') {
+        questionHtml = `
+          <div class="w-full mb-12">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex-1 text-center">
+                <div class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center mx-auto mb-2 opacity-60 bg-white shadow-sm">
+                  <span class="text-[9px] font-bold text-slate-400">${prevStation.code}</span>
+                </div>
+                <p class="text-[10px] font-bold text-slate-500 truncate px-1">${prevStation.kr}</p>
+              </div>
+              <div class="text-slate-300 pb-4"><i data-lucide="chevron-right" class="w-3 h-3"></i></div>
+              <div class="flex-[1.4] text-center scale-110">
+                <div class="w-14 h-14 rounded-full border-[3px] flex items-center justify-center mx-auto mb-3 bg-white shadow-sm" style="border-color: ${line.color}">
+                  <span class="text-lg font-bold text-slate-700">?</span>
+                </div>
+                <p class="text-xs font-bold text-slate-800 tracking-tight">다음 역은?</p>
+              </div>
+              <div class="text-slate-300 pb-4"><i data-lucide="chevron-right" class="w-3 h-3"></i></div>
+              <div class="flex-1 text-center">
+                <div class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center mx-auto mb-2 opacity-60 bg-white shadow-sm">
+                  <span class="text-[9px] font-bold text-slate-400">${nextStation.code}</span>
+                </div>
+                <p class="text-[10px] font-bold text-slate-500 truncate px-1">${nextStation.kr}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        questionHtml = `
+          <div class="text-center mb-12">
+            <div class="w-20 h-20 rounded-full border-[6px] flex items-center justify-center mx-auto mb-6 bg-white shadow-sm" style="border-color: ${line.color}">
+              <span class="text-xl font-bold text-slate-700 tracking-tighter">${currentItem.code}</span>
+            </div>
+            <h2 class="text-xl font-bold text-slate-800 tracking-tight">이 역의 이름은?</h2>
+          </div>
+        `;
+      }
+
+      let inputClass = "w-full p-4 rounded-xl bg-white border transition-all outline-none text-center text-base font-bold shadow-sm ";
+      let iconHtml = '';
+      if (state.feedback === 'correct') {
+        inputClass += "border-[#00BC8D] text-[#00BC8D]";
+        iconHtml = `<i data-lucide="check-circle" class="text-[#00BC8D] w-5 h-5"></i>`;
+      } else if (state.feedback === 'wrong') {
+        inputClass += "border-[#E85298] text-[#E85298] animate-shake";
+        iconHtml = `<i data-lucide="x-circle" class="text-[#E85298] w-5 h-5"></i>`;
+      } else {
+        inputClass += "border-slate-200 focus:border-[#222] text-slate-700";
+      }
+
+      let formContentHtml = '';
+      if (state.showAnswer) {
+        formContentHtml = `
+          <div class="p-4 bg-white border border-slate-200 rounded-xl text-center shadow-sm zoom-in">
+            <p class="text-[9px] text-slate-400 font-bold mb-1 uppercase tracking-widest">정답</p>
+            <p class="text-lg font-bold text-slate-800">${currentItem.kr}</p>
+            <p class="text-[10px] text-slate-500 font-medium mt-1">${currentItem.jp} | ${currentItem.en}</p>
+          </div>
+        `;
+      } else if (!state.feedback) {
+        formContentHtml = `
+          <div class="flex gap-2 pt-1">
+            <button type="submit" class="flex-[3] p-4 bg-[#222] text-white rounded-xl text-sm font-bold active:scale-[0.98] transition-all">
+              제출하기
+            </button>
+            <button type="button" onclick="window.handleSkip()" class="flex-1 p-4 bg-white border border-slate-200 text-slate-400 rounded-xl text-sm font-bold active:scale-[0.98] transition-all shadow-sm">
+              패스
+            </button>
+          </div>
+        `;
+      } else if (state.feedback === 'wrong') {
+        formContentHtml = `
+          <div class="flex gap-2 pt-1 fade-in">
+            <button type="button" onclick="window.handleRetryInput()" class="flex-[3] p-4 bg-white border border-[#E85298] text-[#E85298] rounded-xl text-sm font-bold active:scale-[0.98] transition-all shadow-sm">
+              다시 입력하기
+            </button>
+            <button type="button" onclick="window.handleSkip()" class="flex-1 p-4 bg-white border border-slate-200 text-slate-400 rounded-xl text-sm font-bold active:scale-[0.98] transition-all shadow-sm">
+              패스
+            </button>
+          </div>
+        `;
+      }
+
+      div.innerHTML = `
+        <div class="flex items-center justify-between mb-8 pt-4 shrink-0">
+          <button onclick="window.exitQuiz()" class="p-2 -ml-2 text-slate-400 hover:text-slate-600 transition-colors">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+          </button>
+          <div class="flex-1 px-8">
+            <div class="h-1 bg-slate-200 rounded-full overflow-hidden">
+              <div class="h-full bg-[#222] transition-all duration-500" style="width: ${progress}%"></div>
+            </div>
+          </div>
+          <span class="text-[10px] font-bold text-slate-400 w-8 text-right">${state.currentIndex + 1} / ${state.quizData.length}</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center max-w-sm mx-auto w-full justify-center pb-20">
+          <div class="px-3 py-1 bg-white border border-slate-200 rounded-md text-[9px] font-bold text-slate-500 mb-8 uppercase tracking-widest shadow-sm">
+            ${line.name}
+          </div>
+          ${questionHtml}
+          <form id="quiz-form" class="w-full space-y-4">
+            <div class="relative">
+              <input
+                id="quiz-input"
+                type="text"
+                value="${state.inputValue}"
+                ${state.feedback === 'correct' || state.showAnswer ? 'disabled' : ''}
+                placeholder="역 이름을 입력하세요"
+                class="${inputClass}"
+              />
+              <div class="absolute right-4 top-1/2 -translate-y-1/2">
+                ${iconHtml}
+              </div>
+            </div>
+            ${formContentHtml}
+          </form>
+        </div>
+      `;
+
+      // --- 입력 이벤트 처리 ---
+      const inputEl = div.querySelector('#quiz-input');
+      if (inputEl) {
+        setTimeout(() => inputEl.focus(), 50);
+        inputEl.addEventListener('input', (e) => {
+          state.inputValue = e.target.value;
+          if (state.feedback === 'wrong') {
+            state.feedback = null;
+            updateApp();
+          }
+        });
+      }
+
+      const formEl = div.querySelector('#quiz-form');
+      if (formEl) {
+        formEl.addEventListener('submit', (e) => {
+          e.preventDefault();
+          window.checkAnswer();
+        });
+      }
+
+      return div;
+    }
+
+    // --- 결과 화면 ---
+    function createResultView() {
+      const div = document.createElement('div');
+      div.className = "h-full bg-[#FAFAFA] flex flex-col items-center justify-center p-8 zoom-in text-center w-full";
+      
+      const total = state.quizData.length;
+      const percent = Math.round((state.score / total) * 100);
+      const msg = percent === 100 ? "완벽합니다! 도쿄 지하철 마스터네요." : "수고하셨습니다. 다시 도전해볼까요?";
+
+      div.innerHTML = `
+        <div class="w-16 h-16 bg-[#222] rounded-2xl flex items-center justify-center mb-8 shadow-sm rotate-3 shrink-0">
+          <i data-lucide="trophy" class="text-white w-7 h-7 -rotate-3"></i>
+        </div>
+        <div class="mb-10">
+          <h2 class="text-2xl font-bold text-slate-800 mb-2 tracking-tighter">결과 확인</h2>
+          <p class="text-slate-500 text-xs font-medium">${msg}</p>
+        </div>
+        <div class="w-full max-w-xs grid grid-cols-2 gap-3 mb-10">
+          <div class="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Score</p>
+            <p class="text-2xl font-bold text-[#222]">${state.score}<span class="text-xs text-slate-300 font-medium"> / ${total}</span></p>
+          </div>
+          <div class="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Accuracy</p>
+            <p class="text-2xl font-bold text-slate-700">${percent}%</p>
+          </div>
+        </div>
+        <div class="w-full max-w-xs space-y-2">
+          <button onclick="window.prepareQuiz('${state.quizMode}', '${state.selectedLine}')" class="w-full p-4 bg-[#222] text-white rounded-xl text-sm font-bold active:scale-[0.98] transition-all shadow-sm">
+            다시 시도하기
+          </button>
+          <button onclick="window.exitQuiz()" class="w-full p-4 bg-white border border-slate-200 text-slate-500 rounded-xl text-sm font-bold active:scale-[0.98] transition-all shadow-sm">
+            홈으로 가기
+          </button>
+        </div>
+      `;
+      return div;
+    }
+
+    // --- 이벤트 핸들러 ---
+    window.setMode = (mode) => {
+      state.quizMode = mode;
+      updateApp();
+    };
+
+    window.prepareQuiz = (mode, lineKey) => {
+      state.quizMode = mode;
+      state.selectedLine = lineKey;
+      const line = SUBWAY_LINES[lineKey];
+      let items = [];
+
+      if (mode === 'basic') {
+        items = [...line.stations].sort(() => Math.random() - 0.5);
+      } else {
+        items = line.stations
+          .map((item, idx) => ({ ...item, originalIndex: idx }))
+          .filter((_, idx) => idx > 0 && idx < line.stations.length - 1)
+          .sort(() => Math.random() - 0.5);
+      }
+
+      state.quizData = items.slice(0, 10); // 최대 10문제
+      state.currentIndex = 0;
+      state.score = 0;
+      state.inputValue = '';
+      state.feedback = null;
+      state.showAnswer = false;
+      state.view = 'quiz';
+      updateApp();
+    };
+
+    window.checkAnswer = () => {
+      if (state.feedback === 'correct' || state.showAnswer || !state.inputValue.trim()) return;
+
+      const input = state.inputValue.trim().replace(/\s+/g, '').toLowerCase();
+      const currentItem = state.quizData[state.currentIndex];
+      const correctKr = currentItem.kr.replace(/\s+/g, '');
+      const correctJp = currentItem.jp.replace(/\s+/g, '');
+      const correctEn = currentItem.en.toLowerCase().replace(/\s+/g, '');
+
+      if ([correctKr, correctJp, correctEn].includes(input)) {
+        state.feedback = 'correct';
+        state.score += 1;
+        updateApp();
+        setTimeout(window.handleNext, 800);
+      } else {
+        state.feedback = 'wrong';
+        updateApp();
+      }
+    };
+
+    window.handleNext = () => {
+      if (state.currentIndex < state.quizData.length - 1) {
+        state.currentIndex += 1;
+        state.inputValue = '';
+        state.feedback = null;
+        state.showAnswer = false;
+        updateApp();
+      } else {
+        state.view = 'result';
+        updateApp();
+      }
+    };
+
+    window.handleSkip = () => {
+      state.showAnswer = true;
+      updateApp();
+      setTimeout(window.handleNext, 2000);
+    };
+
+    window.handleRetryInput = () => {
+      state.inputValue = '';
+      state.feedback = null;
+      updateApp();
+    };
+
+    window.exitQuiz = () => {
+      state.view = 'home';
+      updateApp();
+    };
+
+    // --- 초기화 ---
+    updateApp();
+
+  </script>
+</body>
+</html>
