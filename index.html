@@ -192,7 +192,10 @@
                     const data = await res.json();
 
                     if (!res.ok) {
-                        throw new Error(data.error || '검색 중 오류가 발생했습니다.');
+                        const msg = data.detail
+                            ? `${data.error} (${data.detail})`
+                            : (data.error || '검색 중 오류가 발생했습니다.');
+                        throw new Error(msg);
                     }
 
                     if (!data.results?.length) {
@@ -206,6 +209,7 @@
                     setStep('results');
 
                 } catch (err) {
+                    // detail 포함해서 표시 (디버깅용)
                     setError(err.message || '일시적인 오류가 발생했습니다.');
                     setStep('input');
                 } finally {
