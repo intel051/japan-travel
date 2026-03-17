@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>일본 맛집 검색</title>
 
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-jp-dynamic-subset.min.css" />
+    <!-- 폰트 로드: Pretendard JP Variable -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-jp-dynamic-subset.min.css" />
 
     <style>
         :root {
@@ -21,15 +22,22 @@
             --white-20: rgba(255,255,255,0.12);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
+            /* 모든 요소에 폰트 강제 적용 */
+            font-family: 'Pretendard JP Variable', 'Pretendard JP', 'Pretendard', -apple-system, sans-serif;
+        }
+
         html, body {
             min-height: 100%;
             background: var(--ink);
             color: var(--paper);
-            font-family: 'Pretendard JP Variable', sans-serif;
             overflow-x: hidden;
         }
 
+        /* 노이즈 텍스처 효과 */
         body::before {
             content: '';
             position: fixed; inset: 0;
@@ -40,115 +48,64 @@
         .ambient { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
         .ambient-1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(192,57,43,0.18) 0%, transparent 70%); top: -200px; right: -100px; animation: drift1 20s ease-in-out infinite; }
         .ambient-2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%); bottom: -100px; left: -100px; animation: drift2 25s ease-in-out infinite; }
-        .ambient-3 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(192,57,43,0.08) 0%, transparent 70%); top: 40%; left: -50px; animation: drift1 18s ease-in-out infinite reverse; }
 
         @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(30px,-40px) scale(1.08)} 66%{transform:translate(-20px,20px) scale(0.95)} }
         @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(40px,-30px) scale(1.1)} }
 
-        .jp-deco { position: fixed; top: 0; bottom: 0; writing-mode: vertical-rl; font-family: 'Pretendard JP Variable', sans-serif; font-size: 11px; letter-spacing: 0.3em; color: rgba(255,255,255,0.04); pointer-events: none; z-index: 1; display: flex; align-items: center; user-select: none; }
+        .jp-deco { position: fixed; top: 0; bottom: 0; writing-mode: vertical-rl; font-size: 11px; letter-spacing: 0.3em; color: rgba(255,255,255,0.04); pointer-events: none; z-index: 1; display: flex; align-items: center; user-select: none; }
         .jp-deco-left { left: 18px; }
         .jp-deco-right { right: 18px; }
 
         #root { position: relative; z-index: 2; min-height: 100dvh; }
-
         .page { max-width: 480px; margin: 0 auto; padding: 0 24px 60px; min-height: 100dvh; display: flex; flex-direction: column; }
 
         .header { padding: 48px 0 0; display: flex; align-items: center; gap: 12px; }
-        .header-lantern { width: 8px; height: 8px; background: var(--red); border-radius: 50%; box-shadow: 0 0 12px var(--red-glow), 0 0 24px var(--red-glow); animation: lanternPulse 3s ease-in-out infinite; flex-shrink: 0; }
-        @keyframes lanternPulse { 0%,100%{opacity:1;box-shadow:0 0 12px var(--red-glow),0 0 24px var(--red-glow)} 50%{opacity:0.7;box-shadow:0 0 6px var(--red-glow)} }
+        .header-lantern { width: 8px; height: 8px; background: var(--red); border-radius: 50%; box-shadow: 0 0 12px var(--red-glow); animation: lanternPulse 3s ease-in-out infinite; flex-shrink: 0; }
+        @keyframes lanternPulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
         .header-label { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.35); font-weight: 500; }
 
         .hero { padding: 40px 0 36px; }
-        .hero-eyebrow { font-family: 'Pretendard JP Variable', sans-serif; font-size: 13px; color: var(--gold); letter-spacing: 0.2em; margin-bottom: 16px; opacity: 0.85; }
-        .hero-title { font-family: 'Pretendard JP Variable', sans-serif; font-size: clamp(38px, 10vw, 52px); line-height: 1.05; font-weight: 800; color: var(--paper); margin-bottom: 20px; }
-        .hero-title em { font-style: normal; font-weight: 200; color: var(--gold); letter-spacing: -0.01em; }
-        .hero-desc { font-size: 14px; line-height: 1.8; color: rgba(255,255,255,0.45); }
-        .hero-desc strong { color: rgba(255,255,255,0.75); font-weight: 600; }
-
-        .divider { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
-        .divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent); }
-        .divider-kanji { font-family: 'Pretendard JP Variable', sans-serif; font-size: 11px; color: rgba(201,168,76,0.4); letter-spacing: 0.1em; }
+        .hero-eyebrow { font-size: 13px; color: var(--gold); letter-spacing: 0.2em; margin-bottom: 16px; opacity: 0.85; }
+        .hero-title { font-size: clamp(38px, 10vw, 52px); line-height: 1.05; font-weight: 800; color: var(--paper); margin-bottom: 20px; }
+        .hero-title em { font-style: normal; font-weight: 200; color: var(--gold); }
 
         .form { display: flex; flex-direction: column; gap: 14px; }
-        .input-group { position: relative; }
-        .input-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.25); pointer-events: none; font-size: 16px; }
-        .form-input { width: 100%; padding: 18px 18px 18px 52px; background: var(--white-10); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; font-size: 16px; font-weight: 600; color: var(--paper); font-family: 'Pretendard JP Variable', sans-serif !important; outline: none; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); -webkit-appearance: none; }
-        .form-input::placeholder { color: rgba(255,255,255,0.2); font-weight: 400; }
-        .form-input:focus { background: var(--white-20); border-color: rgba(201,168,76,0.35); box-shadow: 0 0 0 3px rgba(201,168,76,0.08), inset 0 1px 0 rgba(255,255,255,0.05); }
+        .form-input { 
+            width: 100%; padding: 18px 18px 18px 52px; background: var(--white-10); border: 1px solid rgba(255,255,255,0.08); 
+            border-radius: 16px; font-size: 16px; font-weight: 600; color: var(--paper); outline: none; transition: all 0.3s;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        }
+        .form-input:focus { background: var(--white-20); border-color: rgba(201,168,76,0.35); }
 
-        .btn-submit { width: 100%; padding: 19px 24px; background: linear-gradient(135deg, #c0392b 0%, #96281b 100%); border: none; border-radius: 16px; color: #fff; font-size: 16px; font-weight: 700; font-family: 'Pretendard JP Variable', sans-serif !important; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); box-shadow: 0 8px 32px rgba(192,57,43,0.35), inset 0 1px 0 rgba(255,255,255,0.12); position: relative; overflow: hidden; margin-top: 6px; }
-        .btn-submit::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%); opacity: 0; transition: opacity 0.3s; }
-        .btn-submit:active::before { opacity: 1; }
-        .btn-submit:active { transform: scale(0.975); box-shadow: 0 4px 16px rgba(192,57,43,0.3); }
-        .btn-arrow { display: inline-flex; transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); }
-        .btn-submit:hover .btn-arrow { transform: translateX(4px); }
+        .btn-submit { 
+            width: 100%; padding: 19px; background: linear-gradient(135deg, #c0392b 0%, #96281b 100%); border: none; 
+            border-radius: 16px; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 8px 32px rgba(192,57,43,0.35); margin-top: 6px;
+        }
+        .btn-submit:active { transform: scale(0.975); }
 
-        .error-box { background: rgba(192,57,43,0.12); border: 1px solid rgba(192,57,43,0.3); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; animation: shake 0.4s ease-in-out; }
-        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-        .error-title { font-size: 13px; font-weight: 700; color: #e74c3c; display: flex; align-items: center; gap: 8px; }
-        .error-msg { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; }
-        .btn-refresh { background: rgba(192,57,43,0.25); border: 1px solid rgba(192,57,43,0.4); border-radius: 10px; padding: 10px 16px; color: #e74c3c; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Pretendard JP Variable', sans-serif !important; transition: all 0.2s; }
-        .btn-refresh:active { opacity: 0.7; transform: scale(0.97); }
+        /* 결과 카드 스타일 */
+        .card { background: var(--white-10); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 20px; margin-bottom: 12px; cursor: pointer; transition: 0.3s; }
+        .card:active { background: var(--white-20); transform: scale(0.98); }
+        .card-name { font-size: 16px; font-weight: 700; color: var(--paper); margin-bottom: 4px; }
+        .card-address { font-size: 12px; color: rgba(255,255,255,0.3); }
+        .rating-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--gold-soft); padding: 4px 10px; border-radius: 20px; margin-top: 10px; }
+        .rating-val { color: var(--gold); font-weight: 700; font-size: 13px; }
 
-        .loading-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; animation: fadeIn 0.5s ease; }
-        .loading-symbol { position: relative; width: 80px; height: 80px; }
-        .loading-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; }
-        .loading-ring-1 { border-top-color: var(--red); border-right-color: rgba(192,57,43,0.3); animation: spin 1.2s linear infinite; }
-        .loading-ring-2 { inset: 10px; border-top-color: var(--gold); border-right-color: rgba(201,168,76,0.3); animation: spin 1.8s linear infinite reverse; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-kanji { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Pretendard JP Variable', sans-serif; font-size: 22px; color: var(--paper); animation: kanjiFade 1.5s ease-in-out infinite; }
-        @keyframes kanjiFade { 0%,100%{opacity:0.5} 50%{opacity:1} }
-        .loading-title { font-size: 18px; font-weight: 700; color: var(--paper); margin-bottom: 8px; text-align: center; }
-        .loading-sub { font-size: 13px; color: rgba(255,255,255,0.35); text-align: center; }
-        .loading-dots { display: inline-flex; gap: 5px; margin-top: 20px; }
-        .loading-dot { width: 5px; height: 5px; background: var(--red); border-radius: 50%; animation: dotBounce 1.2s ease-in-out infinite; }
-        .loading-dot:nth-child(2) { animation-delay: 0.2s; background: var(--gold); }
-        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes dotBounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-6px);opacity:1} }
-
-        .results-header { padding: 48px 0 28px; display: flex; align-items: flex-start; justify-content: space-between; }
-        .results-eyebrow { font-size: 11px; letter-spacing: 0.25em; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: 8px; }
-        .results-title { font-family: 'Pretendard JP Variable', sans-serif; font-size: 30px; font-weight: 800; color: var(--paper); line-height: 1.1; }
-        .results-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-        .results-sub { font-size: 12px; color: rgba(255,255,255,0.35); }
-        .results-badge { font-size: 10px; font-weight: 700; color: var(--gold); background: var(--gold-soft); border: 1px solid rgba(201,168,76,0.25); padding: 2px 8px; border-radius: 20px; letter-spacing: 0.05em; }
-        .btn-back { width: 42px; height: 42px; background: var(--white-10); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: rgba(255,255,255,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s; flex-shrink: 0; margin-top: 10px; }
-        .btn-back:active { transform: scale(0.93); background: var(--white-20); }
-
-        .card-list { display: flex; flex-direction: column; gap: 12px; }
-        .card { background: var(--white-10); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 20px; cursor: pointer; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); position: relative; overflow: hidden; animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent); }
-        .card:active { transform: scale(0.98); background: var(--white-20); }
-        @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        .card-inner { display: flex; align-items: flex-start; gap: 16px; }
-        .card-rank { font-family: 'Pretendard JP Variable', sans-serif; font-size: 28px; font-weight: 800; color: rgba(255,255,255,0.08); line-height: 1; flex-shrink: 0; min-width: 28px; }
-        .card-body { flex: 1; min-width: 0; }
-        .card-name { font-size: 16px; font-weight: 700; color: var(--paper); line-height: 1.3; margin-bottom: 5px; word-break: keep-all; }
-        .card-address { font-size: 12px; color: rgba(255,255,255,0.3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-arrow { width: 34px; height: 34px; background: rgba(192,57,43,0.15); border: 1px solid rgba(192,57,43,0.3); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; color: var(--red); transition: all 0.2s; }
-        .card:active .card-arrow { background: rgba(192,57,43,0.3); transform: scale(0.9); }
-        .card-footer { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .rating-pill { display: flex; align-items: center; gap: 5px; background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.25); padding: 4px 10px 4px 8px; border-radius: 20px; }
-        .rating-star { color: var(--gold); font-size: 12px; }
-        .rating-val { font-size: 13px; font-weight: 700; color: var(--gold); }
-        .review-count { font-size: 12px; color: rgba(255,255,255,0.3); }
-
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        .fade-in { animation: fadeIn 0.5s ease both; }
+        .loading-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+        .loading-kanji { font-size: 32px; color: var(--gold); animation: kanjiFade 1.5s infinite; }
+        @keyframes kanjiFade { 0%,100%{opacity:0.3} 50%{opacity:1} }
     </style>
 </head>
 <body>
     <div class="ambient ambient-1"></div>
     <div class="ambient ambient-2"></div>
-    <div class="ambient ambient-3"></div>
-    <div class="jp-deco jp-deco-left">美食探訪・日本全国・絶品グルメ・旅の記憶・味わい深い</div>
-    <div class="jp-deco jp-deco-right">食べ歩き・おすすめ・人気店・口コミ・地元の味</div>
+    <div class="jp-deco jp-deco-left">美食探訪・日本全国・絶品グルメ</div>
+    <div class="jp-deco jp-deco-right">食べ歩기・おすすめ・人気店</div>
 
     <div id="root"></div>
 
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script>window.process = { env: { NODE_ENV: 'production' } };</script>
-
     <script type="text/babel" data-type="module">
         import React, { useState } from 'https://esm.sh/react@18.2.0';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
@@ -160,54 +117,28 @@
             const [loading, setLoading] = useState(false);
             const [error, setError] = useState('');
             const [step, setStep] = useState('input');
-            const [filterStatus, setFilterStatus] = useState('');
-
-            const dismissKeyboard = () => document.activeElement?.blur();
 
             const searchRestaurants = async (e) => {
                 if (e) e.preventDefault();
-                dismissKeyboard();
-
-                if (!city.trim() || !food.trim()) {
-                    setError('도시와 메뉴를 모두 입력해주세요.');
-                    return;
-                }
+                if (!city.trim() || !food.trim()) return setError('도시와 메뉴를 입력해주세요.');
 
                 setLoading(true);
                 setError('');
                 setStep('loading');
-                setResults([]);
 
                 try {
-                    // API 키 없이 서버 라우트만 호출
                     const res = await fetch('/api/search', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ city: city.trim(), food: food.trim() }),
+                        body: JSON.stringify({ city, food }),
                     });
-
                     const data = await res.json();
-
-                    if (!res.ok) {
-                        const msg = data.detail
-                            ? `${data.error} (${data.detail})`
-                            : (data.error || '검색 중 오류가 발생했습니다.');
-                        throw new Error(msg);
-                    }
-
-                    if (!data.results?.length) {
-                        setError(`'${city}'의 '${food}' 맛집을 찾을 수 없습니다.`);
-                        setStep('input');
-                        return;
-                    }
+                    if (!res.ok) throw new Error(data.error || '검색 실패');
 
                     setResults(data.results);
-                    setFilterStatus(data.filterStatus || '');
                     setStep('results');
-
                 } catch (err) {
-                    // detail 포함해서 표시 (디버깅용)
-                    setError(err.message || '일시적인 오류가 발생했습니다.');
+                    setError(err.message);
                     setStep('input');
                 } finally {
                     setLoading(false);
@@ -217,110 +148,55 @@
             const handleReset = () => { setCity(''); setFood(''); setStep('input'); setError(''); };
 
             if (step === 'loading') return (
-                <div class="page">
-                    <div class="loading-wrap">
-                        <div class="loading-symbol">
-                            <div class="loading-ring loading-ring-1"></div>
-                            <div class="loading-ring loading-ring-2"></div>
-                            <div class="loading-kanji">食</div>
-                        </div>
-                        <div>
-                            <div class="loading-title">맛집을 찾고 있어요</div>
-                            <div class="loading-sub">{city}의 {food} 분석 중</div>
-                            <div style={{display:'flex',justifyContent:'center'}}>
-                                <div class="loading-dots">
-                                    <div class="loading-dot"></div>
-                                    <div class="loading-dot"></div>
-                                    <div class="loading-dot"></div>
-                                </div>
-                            </div>
-                        </div>
+                <div className="page">
+                    <div className="loading-wrap">
+                        <div className="loading-kanji">食</div>
+                        <p>{city}의 {food} 맛집 분석 중...</p>
                     </div>
                 </div>
             );
 
             if (step === 'results') return (
-                <div class="page fade-in">
-                    <div class="results-header">
-                        <div>
-                            <div class="results-eyebrow">Search Results</div>
-                            <div class="results-title">{city}의 {food}</div>
-                            <div class="results-meta">
-                                <span class="results-sub">맛집 {results.length}곳 발견</span>
-                                {filterStatus && <span class="results-badge">{filterStatus}</span>}
+                <div className="page">
+                    <div style={{padding: '48px 0 20px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                        <h2 style={{fontSize:'24px'}}>{city} {food}</h2>
+                        <button onClick={handleReset} style={{background:'none', border:'none', color:'var(--gold)', cursor:'pointer'}}>다시 검색</button>
+                    </div>
+                    {results.map((item, i) => (
+                        <div key={i} className="card" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.name + ' ' + item.address)}`, '_blank')}>
+                            <div className="card-name">{item.name}</div>
+                            <div className="card-address">{item.address}</div>
+                            <div className="rating-pill">
+                                <span className="rating-val">★ {item.rating}</span>
+                                <span style={{fontSize:'11px', color:'rgba(255,255,255,0.3)', marginLeft:'8px'}}>리뷰 {item.reviewCount}</span>
                             </div>
                         </div>
-                        <button class="btn-back" onClick={handleReset}>←</button>
-                    </div>
-                    <div class="card-list">
-                        {results.map((item, index) => (
-                            <div key={index} class="card" style={{animationDelay:`${index*0.06}s`}}
-                                 onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${city} ${item.name}`)}`, '_blank')}>
-                                <div class="card-inner">
-                                    <div class="card-rank">{String(index+1).padStart(2,'0')}</div>
-                                    <div class="card-body">
-                                        <div class="card-name">{item.name}</div>
-                                        <div class="card-address">{item.address}</div>
-                                    </div>
-                                    <div class="card-arrow">→</div>
-                                </div>
-                                <div class="card-footer">
-                                    <div class="rating-pill">
-                                        <span class="rating-star">★</span>
-                                        <span class="rating-val">{item.rating.toFixed(1)}</span>
-                                    </div>
-                                    <span class="review-count">리뷰 {item.reviewCount.toLocaleString()}개</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    ))}
                 </div>
             );
 
             return (
-                <div class="page fade-in">
-                    <div class="header">
-                        <div class="header-lantern"></div>
-                        <span class="header-label">Japan Food Finder</span>
+                <div className="page">
+                    <div className="header">
+                        <div className="header-lantern"></div>
+                        <span className="header-label">Japan Food Finder</span>
                     </div>
-                    <div class="hero">
-                        <div class="hero-eyebrow">美食探訪</div>
-                        <h1 class="hero-title">일본 어디서<br /><em>드시나요?</em></h1>
-                        <p class="hero-desc">
-                            구글 평점으로 검증된 <strong>진짜 맛집</strong>만 찾아드려요.
-                        </p>
+                    <div className="hero">
+                        <div className="hero-eyebrow">美食探訪</div>
+                        <h1 className="hero-title">일본 어디서<br /><em>드시나요?</em></h1>
+                        <p style={{fontSize:'14px', color:'rgba(255,255,255,0.5)'}}>구글 평점으로 검증된 맛집만 찾아드려요.</p>
                     </div>
-                    <div class="divider">
-                        <div class="divider-line"></div>
-                        <div class="divider-kanji">検索</div>
-                        <div class="divider-line"></div>
-                    </div>
-                    <form class="form" onSubmit={searchRestaurants}>
-                        <div class="input-group">
-                            <span class="input-icon">📍</span>
-                            <input type="text" class="form-input" value={city} onChange={e=>setCity(e.target.value)} placeholder="도시 (예: 도쿄, 오사카)" enterKeyHint="next" />
-                        </div>
-                        <div class="input-group">
-                            <span class="input-icon">🍜</span>
-                            <input type="text" class="form-input" value={food} onChange={e=>setFood(e.target.value)} placeholder="메뉴 (예: 라멘, ramen)" enterKeyHint="search" />
-                        </div>
-                        {error && (
-                            <div class="error-box">
-                                <div class="error-title">⚠️ 검색 오류</div>
-                                <div class="error-msg">{error}</div>
-                                <button type="button" class="btn-refresh" onClick={() => window.location.reload()}>↺ 새로고침</button>
-                            </div>
-                        )}
-                        <button type="submit" class="btn-submit">
-                            <span>맛집 검색하기</span>
-                            <span class="btn-arrow">→</span>
-                        </button>
+                    <form className="form" onSubmit={searchRestaurants}>
+                        <input className="form-input" value={city} onChange={e=>setCity(e.target.value)} placeholder="도시 (예: 도쿄)" />
+                        <input className="form-input" value={food} onChange={e=>setFood(e.target.value)} placeholder="메뉴 (예: 라멘)" />
+                        {error && <p style={{color:'var(--red)', fontSize:'13px'}}>{error}</p>}
+                        <button type="submit" className="btn-submit">맛집 검색하기 →</button>
                     </form>
                 </div>
             );
         };
 
-        createRoot(document.getElementById('root')).render(React.createElement(App));
+        createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
