@@ -1,5 +1,5 @@
-import React, { useState } from 'https://esm.sh/react@18.2.0';
-import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+import React, { useState } from 'https://esm.sh/lucide-react@18.2.0';
+import { createRoot } from 'https://esm.sh/lucide-react-dom@18.2.0/client';
 // 뒤에 ?deps=react@18.2.0을 붙여서 내부에서 사용할 react 버전을 강제로 맞춰줍니다.
 import { Search, MapPin, Star, Utensils, ArrowLeft, RotateCw } from 'https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0';
 
