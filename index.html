@@ -54,23 +54,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <style>
-        /* Pretendard JP Font Enforcement */
         html, body, button, input, select, textarea {
             font-family: 'Pretendard JP Variable', 'Pretendard', -apple-system, sans-serif;
             box-sizing: border-box;
         }
 
-        /* Ensure Font Awesome Font Family is Preserved for Icons */
         .fa, .fas, .far, .fal, .fab, .fa-solid, .fa-regular, .fa-brands, [class*="fa-"] {
             font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #C5A059; border-radius: 99px; }
 
-        /* Washi Paper Subtle Pattern Background Overlay */
         body::before {
             content: '';
             position: fixed; inset: 0;
@@ -78,18 +74,15 @@
             pointer-events: none; z-index: 999;
         }
 
-        /* Vertical Japanese Typography Side Accent */
         .vertical-kanji {
             writing-mode: vertical-rl;
             text-orientation: mixed;
             letter-spacing: 0.4em;
         }
 
-        /* Active Scaling Micro-Interactions */
         .active-scale { transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .active-scale:active { transform: scale(0.96); }
 
-        /* Custom Animations */
         @keyframes slideUpFade {
             from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
@@ -109,7 +102,7 @@
     <div class="fixed -top-40 -right-20 w-96 h-96 bg-vermilion/10 dark:bg-vermilion/20 rounded-full blur-3xl pointer-events-none"></div>
     <div class="fixed -bottom-20 -left-20 w-96 h-96 bg-japandi-accent/15 dark:bg-tokyonight-gold/10 rounded-full blur-3xl pointer-events-none"></div>
 
-    <!-- Decorative Vertical Japanese Accent on XL Desktop Viewports -->
+    <!-- Decorative Vertical Japanese Accent on Desktop Viewports -->
     <div class="fixed top-0 bottom-0 left-6 vertical-kanji text-[11px] text-japandi-muted/30 dark:text-tokyonight-muted/30 pointer-events-none z-10 hidden xl:flex items-center select-none font-bold">
         日本美食探訪 ・ 厳選名店ガイド ・ 伝統と現代の味覚
     </div>
@@ -127,18 +120,16 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // Japanese Dining Phrasebook
         const DINING_PHRASEBOOK = [
             { category: '입장 & 인원', jp: '二人です (Futari desu)', ko: '두 명입니다.', tip: '손가락으로 인원수를 함께 보여주면 더 정확합니다.' },
             { category: '메뉴판 요청', jp: '韓国語のメニューはありますか？ (Kankokugo no menyu wa arimasu ka?)', ko: '한국어 메뉴판이 있나요?' },
             { category: '주문 시', jp: 'これをお願いします (Kore o onegaishimasu)', ko: '이것으로 부탁드립니다 (메뉴 가리키며).' },
             { category: '추천 요청', jp: '一番人気は何ですか？ (Ichiban ninki wa nan desu ka?)', ko: '가장 인기 있는 메뉴는 무엇인가요?' },
             { category: '와사비 조절', jp: 'ワサビ抜きでお願いします (Wasabi nuki de onegaishimasu)', ko: '와사비 빼고 부탁드립니다.' },
-            { category: '계산 시', jp: 'お会計をお願いします (Okaikei o onegaishimasu)', ko: '계산 부탁드립니다 (X 표시 가능).' },
+            { category: '계산 시', jp: 'お会計をお願いします (Okaikei o onegaishimasu)', ko: '계산 부탁드립니다 (손가락 X 표시 가능).' },
             { category: '식사 후 감사', jp: 'ごちそうさまでした (Gochisosama deshita)', ko: '잘 먹었습니다 (점원에게 미소 지으며).' }
         ];
 
-        // Japanese Speech Synthesis Engine Voice Loader Helper
         let jaVoiceInstance = null;
         const loadJapaneseVoice = () => {
             if ('speechSynthesis' in window) {
@@ -163,12 +154,9 @@
                 utterance.lang = 'ja-JP';
                 utterance.rate = 0.85;
 
-                if (!jaVoiceInstance) {
-                    loadJapaneseVoice();
-                }
-                if (jaVoiceInstance) {
-                    utterance.voice = jaVoiceInstance;
-                }
+                if (!jaVoiceInstance) loadJapaneseVoice();
+                if (jaVoiceInstance) utterance.voice = jaVoiceInstance;
+
                 window.speechSynthesis.speak(utterance);
             }
         };
@@ -189,9 +177,36 @@
 
             // Currency Converter State
             const [yenInput, setYenInput] = useState('1000');
-            const yenRate = 8.95;
+            const [yenRate, setYenRate] = useState(9.12);
+            const [isCustomRate, setIsCustomRate] = useState(false);
+            const [lastUpdated, setLastUpdated] = useState('');
+            const [rateLoading, setRateLoading] = useState(false);
 
-            // Saved Spots in Gourmet Passport (Stores Full Spot Objects)
+            const fetchExchangeRate = async (showToastMsg = false) => {
+                setRateLoading(true);
+                try {
+                    const res = await fetch('https://open.er-api.com/v6/latest/JPY');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.rates && data.rates.KRW) {
+                            setYenRate(data.rates.KRW);
+                            const now = new Date();
+                            setLastUpdated(`${now.getMonth() + 1}월 ${now.getDate()}일 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`);
+                            if (showToastMsg) triggerToast('💱 실시간 환율 정보가 반영되었습니다.');
+                        }
+                    }
+                } catch (err) {
+                    if (showToastMsg) triggerToast('⚠️ 실시간 환율을 불러오지 못해 기준 환율을 유지합니다.');
+                } finally {
+                    setRateLoading(false);
+                }
+            };
+
+            useEffect(() => {
+                fetchExchangeRate(false);
+            }, []);
+
+            // Saved Spots in Gourmet Passport
             const [savedSpots, setSavedSpots] = useState(() => {
                 try {
                     const saved = localStorage.getItem('tabi_gourmet_saved_spots_v5');
@@ -249,30 +264,32 @@
                     if (res.ok) {
                         const data = await res.json();
                         if (data.results && data.results.length > 0) {
-                            setResults(data.results.map((p, idx) => ({
-                                id: p.id || `spot-${Date.now()}-${idx}`,
-                                name: p.name || `${city} ${food} 맛집`,
-                                jpName: p.japaneseName || p.name,
-                                city: city || '일본',
-                                district: p.district || '주요지역',
-                                category: food || '맛집',
-                                rating: p.rating || 4.5,
-                                reviewCount: p.reviewCount || 100,
-                                price: p.price || '¥1,000 - ¥3,000',
-                                hours: p.hours || '영업시간 매장 문의',
-                                address: p.address || '주소 정보',
-                                jpAddress: p.japaneseAddress || p.address,
-                                tags: p.tags || ['구글검증', '실시간데이터'],
-                                description: p.description || `${city}에서 만나는 인기의 ${food} 전문 레스토랑.`,
-                                signatureDishes: p.signatureDishes || [`추천 ${food} 메뉴`]
-                            })));
+                            setResults(data.results.map((p, idx) => {
+                                const jaName = p.japaneseName || p.jpName || p.japanese_name || p.jp_name || p.name_ja || p.nameJa || p.originalName || '';
+                                return {
+                                    id: p.id || `spot-${Date.now()}-${idx}`,
+                                    name: p.name || `${city} ${food} 맛집`,
+                                    jpName: (jaName && jaName !== p.name) ? jaName : '',
+                                    city: city || '일본',
+                                    district: p.district || '주요지역',
+                                    category: food || '맛집',
+                                    rating: p.rating || 4.5,
+                                    reviewCount: p.reviewCount || p.userRatingCount || 100,
+                                    price: p.price || '¥1,000 - ¥3,000',
+                                    hours: p.hours || '영업시간 매장 문의',
+                                    address: p.address || '주소 정보',
+                                    jpAddress: p.japaneseAddress || p.jpAddress || p.address,
+                                    tags: p.tags || ['구글검증', '실시간데이터'],
+                                    description: p.description || `${city}에서 만나는 인기의 ${food} 전문 레스토랑.`,
+                                    signatureDishes: p.signatureDishes || [`추천 ${food} 메뉴`]
+                                };
+                            }));
                             setFilterStatus(data.filterStatus || '실시간 API 결과');
                             setLoading(false);
                             return;
                         }
                     }
                     
-                    // API Call returned no results or failed
                     setResults([]);
                     setError('검색된 맛집이 없거나 API 연동 정보를 불러올 수 없습니다.');
                     setFilterStatus('');
@@ -295,7 +312,6 @@
             return (
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 relative z-10 min-h-screen flex flex-col">
                     
-                    {/* Toast Notification Alert */}
                     {toast && (
                         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-japandi-text dark:bg-tokyonight-card text-japandi-bg dark:text-tokyonight-text text-xs sm:text-sm font-bold px-5 py-3 rounded-full shadow-2xl flex items-center space-x-2.5 border border-japandi-accent/40 dark:border-tokyonight-gold/40 animate-bounce">
                             <i className="fa-solid fa-wand-magic-sparkles text-japandi-accent dark:text-tokyonight-gold"></i>
@@ -303,7 +319,6 @@
                         </div>
                     )}
 
-                    {/* HEADER NAVIGATION */}
                     <header className="flex items-center justify-between pb-6 border-b border-japandi-border/80 dark:border-tokyonight-border/80 mb-8">
                         <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => { setActiveTab('explore'); setCity(''); setFood(''); setResults([]); setError(''); }}>
                             <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-vermilion via-red-600 to-amber-600 text-white flex items-center justify-center shadow-lg group-hover:scale-105 active-scale">
@@ -311,17 +326,16 @@
                             </div>
                             <div>
                                 <div className="flex items-center space-x-2">
-                                    <span className="font-extrabold text-xl tracking-tight">일여방</span>
+                                    <span className="font-extrabold text-xl tracking-tight">일여방 맛집검색기</span>
                                     <span className="text-[10px] font-extrabold tracking-wider text-vermilion bg-vermilion-soft border border-vermilion/30 px-2 py-0.5 rounded-full uppercase">
-                                        日旅食
+                                        By. Gongta
                                     </span>
                                 </div>
-                                <p className="text-[11px] text-japandi-muted dark:text-tokyonight-muted font-medium">일본 미식 여행 가이드</p>
+                                <p className="text-[11px] text-japandi-muted dark:text-tokyonight-muted font-medium">2030 일본 미식 여행 가이드</p>
                             </div>
                         </div>
 
                         <div className="flex items-center space-x-2">
-                            {/* Theme Toggle Button */}
                             <button
                                 onClick={toggleTheme}
                                 className="px-3.5 py-2 rounded-xl bg-japandi-card dark:bg-tokyonight-card text-japandi-text dark:text-tokyonight-gold border border-japandi-border dark:border-tokyonight-border flex items-center space-x-2 active-scale text-xs font-bold shadow-washi dark:shadow-night"
@@ -330,7 +344,6 @@
                                 <span className="hidden sm:inline">{isDarkMode ? '도쿄 야경' : '료칸 와시'}</span>
                             </button>
 
-                            {/* Gourmet Passport Tab Button */}
                             <button
                                 onClick={() => setActiveTab('passport')}
                                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 active-scale ${
@@ -350,11 +363,10 @@
                         </div>
                     </header>
 
-                    {/* MAIN TAB 1: EXPLORE GOURMET SPOTS */}
+                    {}
                     {activeTab === 'explore' && (
                         <div className="space-y-8 animate-slide-up">
                             
-                            {/* Torii Hero Banner */}
                             <div className="relative overflow-hidden rounded-3xl bg-japandi-card dark:bg-tokyonight-card p-6 sm:p-10 border border-japandi-border/80 dark:border-tokyonight-border/80 shadow-washi dark:shadow-night">
                                 <div className="absolute -top-10 -right-8 text-[140px] sm:text-[180px] font-black text-japandi-text/5 dark:text-white/5 pointer-events-none select-none">
                                     食
@@ -376,11 +388,9 @@
                                 </div>
                             </div>
 
-                            {/* Search Dashboard Card */}
                             <div className="bg-japandi-card dark:bg-tokyonight-card p-5 sm:p-7 rounded-3xl space-y-6 border border-japandi-border/80 dark:border-tokyonight-border/80 shadow-washi dark:shadow-night">
                                 <form onSubmit={searchRestaurants} className="space-y-5">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {/* City Input */}
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-bold text-japandi-muted dark:text-tokyonight-muted flex items-center space-x-1.5">
                                                 <i className="fa-solid fa-location-dot text-vermilion"></i>
@@ -398,7 +408,6 @@
                                             </div>
                                         </div>
 
-                                        {/* Food Input */}
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-bold text-japandi-muted dark:text-tokyonight-muted flex items-center space-x-1.5">
                                                 <i className="fa-solid fa-utensils text-japandi-accent dark:text-tokyonight-gold"></i>
@@ -417,7 +426,6 @@
                                         </div>
                                     </div>
 
-                                    {/* Quick Chips Filter */}
                                     <div className="space-y-2 pt-1">
                                         <span className="text-[11px] font-bold text-japandi-muted dark:text-tokyonight-muted tracking-wider uppercase block">
                                             ⚡ 주요 도시 빠른 선택
@@ -440,7 +448,6 @@
                                         </div>
                                     </div>
 
-                                    {/* Submit Button */}
                                     <button 
                                         type="submit"
                                         disabled={loading}
@@ -462,7 +469,6 @@
                                 </form>
                             </div>
 
-                            {/* Gourmet Spot Grid */}
                             <div className="space-y-4">
                                 {error && (
                                     <div className="p-4 rounded-2xl bg-vermilion-soft border border-vermilion/30 text-vermilion text-xs font-bold text-center">
@@ -480,7 +486,7 @@
                                 )}
 
                                 {results.length === 0 && !loading && !error && (
-                                    <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-10 text-center space-y-3 border border-japandi-border dark:border-tokyonight-border">
+                                    <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-10 text-center space-y-3 border border-japandi-border dark:border-tokyonight-border shadow-washi dark:shadow-night">
                                         <i className="fa-solid fa-utensils text-3xl text-japandi-muted dark:text-tokyonight-muted"></i>
                                         <p className="text-xs text-japandi-muted dark:text-tokyonight-muted font-medium">
                                             원하는 여행 도시와 메뉴를 입력하고 검색 버튼을 눌러주세요.
@@ -520,7 +526,9 @@
                                                     <h3 className="text-base font-extrabold group-hover:text-vermilion dark:group-hover:text-tokyonight-gold transition-colors leading-snug">
                                                         {spot.name}
                                                     </h3>
-                                                    <p className="text-xs text-japandi-muted dark:text-tokyonight-muted font-medium mb-3">{spot.jpName}</p>
+                                                    {spot.jpName && spot.jpName !== spot.name && (
+                                                        <p className="text-xs text-japandi-muted dark:text-tokyonight-muted font-medium mb-3">{spot.jpName}</p>
+                                                    )}
 
                                                     <div className="flex items-center space-x-3 mb-3 text-xs">
                                                         <div className="flex items-center bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-xl text-amber-600 dark:text-amber-400 font-extrabold">
@@ -572,120 +580,233 @@
                         </div>
                     )}
 
-                    {/* MAIN TAB 2: JAPANESE DINING PHRASEBOOK */}
+                    {}
                     {activeTab === 'phrases' && (
                         <div className="space-y-6 animate-slide-up">
-                            <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-6 sm:p-8 space-y-2 border border-japandi-border dark:border-tokyonight-border">
+                            <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-6 sm:p-8 space-y-2 border border-japandi-border dark:border-tokyonight-border shadow-washi dark:shadow-night">
                                 <span className="text-xs font-bold text-vermilion uppercase tracking-wider">JAPANESE DINING PHRASES</span>
                                 <h2 className="text-2xl font-extrabold">현지 식당 필수 회화 가이드</h2>
-                                <p className="text-xs text-japandi-muted dark:text-tokyonight-muted">스피커 버튼을 누르면 일본어 오디오 발음이 재생됩니다.</p>
+                                <p className="text-xs text-japandi-muted dark:text-tokyonight-muted font-medium">스피커 버튼을 누르면 일본어 오디오 발음이 재생됩니다.</p>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {DINING_PHRASEBOOK.map((phrase, pIdx) => (
-                                    <div key={pIdx} className="bg-japandi-card dark:bg-tokyonight-card rounded-2xl p-5 space-y-3 border border-japandi-border dark:border-tokyonight-border">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-vermilion-soft text-vermilion">
-                                                {phrase.category}
-                                            </span>
-                                            <button 
-                                                onClick={() => speakJapanese(phrase.jp)}
-                                                className="w-8 h-8 rounded-full bg-japandi-bg dark:bg-tokyonight-bg text-vermilion border border-japandi-border dark:border-tokyonight-border flex items-center justify-center active-scale"
-                                            >
-                                                <i className="fa-solid fa-volume-high text-xs"></i>
-                                            </button>
+                                    <div key={pIdx} className="bg-japandi-card dark:bg-tokyonight-card rounded-2xl p-5 space-y-3 border border-japandi-border dark:border-tokyonight-border shadow-washi dark:shadow-night flex flex-col justify-between">
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-md bg-vermilion-soft text-vermilion border border-vermilion/30">
+                                                    {phrase.category}
+                                                </span>
+                                                <button
+                                                    onClick={() => speakJapanese(phrase.jp)}
+                                                    className="w-8 h-8 rounded-full bg-japandi-bg dark:bg-tokyonight-bg text-japandi-accent dark:text-tokyonight-gold border border-japandi-border dark:border-tokyonight-border flex items-center justify-center active-scale"
+                                                    title="발음 듣기"
+                                                >
+                                                    <i className="fa-solid fa-volume-high text-xs"></i>
+                                                </button>
+                                            </div>
+                                            <div className="text-base font-extrabold text-japandi-text dark:text-tokyonight-text pt-1">
+                                                {phrase.jp}
+                                            </div>
+                                            <div className="text-xs font-semibold text-vermilion dark:text-tokyonight-gold">
+                                                {phrase.ko}
+                                            </div>
                                         </div>
-
-                                        <p className="text-base font-extrabold leading-snug">{phrase.jp}</p>
-                                        <p className="text-xs text-vermilion font-bold">{phrase.ko}</p>
-                                        <p className="text-[11px] text-japandi-muted dark:text-tokyonight-muted bg-japandi-bg dark:bg-tokyonight-bg p-2.5 rounded-xl border border-japandi-border dark:border-tokyonight-border">
+                                        <div className="pt-2 text-[11px] text-japandi-muted dark:text-tokyonight-muted border-t border-japandi-border/60 dark:border-tokyonight-border/60 font-medium">
                                             💡 {phrase.tip}
-                                        </p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* MAIN TAB 3: GOURMET PASSPORT (BOOKMARKS) */}
+                    {}
                     {activeTab === 'passport' && (
                         <div className="space-y-6 animate-slide-up">
-                            <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-6 sm:p-8 space-y-2 border border-japandi-border dark:border-tokyonight-border">
-                                <span className="text-xs font-bold text-vermilion uppercase tracking-wider">MY GOURMET PASSPORT</span>
-                                <h2 className="text-2xl font-extrabold">나의 일본 미식 여권</h2>
-                                <p className="text-xs text-japandi-muted dark:text-tokyonight-muted">
-                                    저장한 맛집 목록 <strong className="text-vermilion font-bold">{savedSpots.length}곳</strong>
-                                </p>
+                            <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-6 sm:p-8 space-y-2 border border-japandi-border dark:border-tokyonight-border shadow-washi dark:shadow-night flex items-center justify-between flex-wrap gap-4">
+                                <div>
+                                    <span className="text-xs font-bold text-vermilion uppercase tracking-wider">GOURMET PASSPORT</span>
+                                    <h2 className="text-2xl font-extrabold">나만의 미식 여권</h2>
+                                    <p className="text-xs text-japandi-muted dark:text-tokyonight-muted font-medium">저장한 맛집 목록 ({savedSpots.length}곳)</p>
+                                </div>
+                                {savedSpots.length > 0 && (
+                                    <button
+                                        onClick={() => {
+                                            setSavedSpots([]);
+                                            triggerToast('🗑️ 저장된 모든 맛집이 비워졌습니다.');
+                                        }}
+                                        className="px-3.5 py-2 rounded-xl bg-vermilion-soft text-vermilion border border-vermilion/30 text-xs font-bold active-scale flex items-center space-x-1.5"
+                                    >
+                                        <i className="fa-solid fa-trash-can"></i>
+                                        <span>전체 비우기</span>
+                                    </button>
+                                )}
                             </div>
 
                             {savedSpots.length === 0 ? (
-                                <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-12 text-center space-y-4 border border-japandi-border dark:border-tokyonight-border">
-                                    <i className="fa-solid fa-passport text-4xl text-japandi-muted"></i>
-                                    <p className="text-sm text-japandi-muted">아직 저장한 미식 스폿이 없습니다.</p>
+                                <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-10 text-center space-y-4 border border-japandi-border dark:border-tokyonight-border shadow-washi dark:shadow-night">
+                                    <i className="fa-solid fa-passport text-4xl text-japandi-muted dark:text-tokyonight-muted"></i>
+                                    <p className="text-sm font-semibold">아직 저장된 맛집이 없습니다.</p>
+                                    <p className="text-xs text-japandi-muted dark:text-tokyonight-muted font-medium">
+                                        탐색 탭에서 마음에 드는 식당의 하트(♥) 버튼을 눌러 여권에 담아보세요.
+                                    </p>
+                                    <button
+                                        onClick={() => setActiveTab('explore')}
+                                        className="px-5 py-2.5 rounded-xl bg-vermilion text-white font-bold text-xs shadow-md active-scale"
+                                    >
+                                        맛집 탐색하러 가기
+                                    </button>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {savedSpots.map((spot) => (
-                                        <div key={spot.id} className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-5 space-y-4 border border-japandi-border dark:border-tokyonight-border">
-                                            <div className="flex items-start justify-between">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                    {savedSpots.map((spot) => {
+                                        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${spot.name} ${spot.address}`)}`;
+                                        return (
+                                            <div
+                                                key={spot.id}
+                                                className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-5 flex flex-col justify-between border border-japandi-border dark:border-tokyonight-border shadow-washi dark:shadow-night space-y-4"
+                                            >
                                                 <div>
-                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-japandi-bg dark:bg-tokyonight-bg">
-                                                        {spot.city} • {spot.district}
-                                                    </span>
-                                                    <h3 className="text-base font-bold mt-1">{spot.name}</h3>
-                                                    <p className="text-xs text-japandi-muted font-medium">{spot.jpName}</p>
+                                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                                        <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-md bg-japandi-bg dark:bg-tokyonight-bg text-japandi-text dark:text-tokyonight-text border border-japandi-border dark:border-tokyonight-border">
+                                                            {spot.city} • {spot.district || spot.category}
+                                                        </span>
+                                                        <button
+                                                            onClick={(e) => toggleBookmark(spot, e)}
+                                                            className="w-8 h-8 rounded-full bg-vermilion/15 text-vermilion border border-vermilion/30 flex items-center justify-center active-scale shrink-0"
+                                                        >
+                                                            <i className="fa-solid fa-trash-can text-xs"></i>
+                                                        </button>
+                                                    </div>
+                                                    <h3 className="text-base font-extrabold">{spot.name}</h3>
+                                                    {spot.jpName && spot.jpName !== spot.name && (
+                                                        <p className="text-xs text-japandi-muted dark:text-tokyonight-muted font-medium">{spot.jpName}</p>
+                                                    )}
+                                                    <p className="text-xs text-japandi-muted dark:text-tokyonight-muted mt-2 line-clamp-2">{spot.jpAddress || spot.address}</p>
                                                 </div>
-                                                <button onClick={(e) => toggleBookmark(spot, e)} className="text-vermilion p-2 active-scale">
-                                                    <i className="fa-solid fa-heart"></i>
-                                                </button>
-                                            </div>
 
-                                            <div className="flex items-center space-x-2 text-xs">
-                                                <button
-                                                    onClick={() => { setSelectedSpot(spot); setShowTaxiModal(true); }}
-                                                    className="flex-1 py-2.5 bg-japandi-bg dark:bg-tokyonight-bg font-bold rounded-xl border border-japandi-border dark:border-tokyonight-border flex items-center justify-center space-x-1 active-scale"
-                                                >
-                                                    <i className="fa-solid fa-taxi text-vermilion"></i>
-                                                    <span>택시 보드</span>
-                                                </button>
-                                                <a
-                                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${spot.name} ${spot.address}`)}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="flex-1 py-2.5 bg-vermilion text-white font-bold rounded-xl text-center shadow-md active-scale"
-                                                >
-                                                    구글 맵
-                                                </a>
+                                                <div className="pt-3 border-t border-japandi-border/80 dark:border-tokyonight-border/80 flex items-center justify-between gap-2 text-xs">
+                                                    <button
+                                                        onClick={() => copyToClipboard(spot.jpAddress || spot.address, spot.id)}
+                                                        className="flex-1 py-2 rounded-xl bg-japandi-bg dark:bg-tokyonight-bg font-semibold border border-japandi-border dark:border-tokyonight-border text-center active-scale"
+                                                    >
+                                                        {copiedId === spot.id ? '복사 완료' : '주소 복사'}
+                                                    </button>
+                                                    <a
+                                                        href={mapUrl}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="flex-1 py-2 rounded-xl bg-vermilion text-white font-bold text-center active-scale shadow-sm"
+                                                    >
+                                                        구글 맵
+                                                    </a>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {/* MAIN TAB 4: YEN CONVERTER */}
+                    {}
                     {activeTab === 'calc' && (
                         <div className="space-y-6 animate-slide-up max-w-xl mx-auto">
-                            <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-6 sm:p-8 space-y-4 border border-japandi-border dark:border-tokyonight-border">
-                                <span className="text-xs font-bold text-vermilion uppercase tracking-wider">YEN CONVERTER</span>
-                                <h2 className="text-2xl font-extrabold">엔화 ↔ 원화 환율 계산기</h2>
-
-                                <div className="space-y-4">
+                            <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-6 sm:p-8 space-y-6 border border-japandi-border dark:border-tokyonight-border shadow-washi dark:shadow-night">
+                                <div className="flex items-center justify-between border-b border-japandi-border dark:border-tokyonight-border pb-4">
                                     <div>
-                                        <label className="text-xs font-bold text-japandi-muted mb-1 block">일본 엔화 (¥)</label>
-                                        <input 
-                                            type="number"
-                                            value={yenInput}
-                                            onChange={e => setYenInput(e.target.value)}
-                                            className="w-full bg-japandi-bg dark:bg-tokyonight-bg border border-japandi-border dark:border-tokyonight-border rounded-2xl p-4 text-xl font-extrabold focus:outline-none focus:border-vermilion"
-                                        />
+                                        <span className="text-xs font-bold text-vermilion uppercase tracking-wider">REALTIME YEN CONVERTER</span>
+                                        <h2 className="text-2xl font-extrabold mt-0.5">엔화 ↔ 원화 환율 계산기</h2>
+                                    </div>
+                                    <button
+                                        onClick={() => fetchExchangeRate(true)}
+                                        disabled={rateLoading}
+                                        className="px-3.5 py-2 rounded-xl bg-japandi-bg dark:bg-tokyonight-bg text-japandi-text dark:text-tokyonight-gold border border-japandi-border dark:border-tokyonight-border text-xs font-bold flex items-center space-x-1.5 active-scale"
+                                    >
+                                        <i className={`fa-solid fa-rotate ${rateLoading ? 'animate-spin' : ''}`}></i>
+                                        <span>환율 동기화</span>
+                                    </button>
+                                </div>
+
+                                <div className="flex items-center justify-between text-xs bg-japandi-bg dark:bg-tokyonight-bg p-3.5 rounded-2xl border border-japandi-border dark:border-tokyonight-border">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                        <span className="font-bold">현재 적용 환율:</span>
+                                        <span className="font-black text-vermilion dark:text-tokyonight-gold text-sm">
+                                            100엔 = {(yenRate * 100).toFixed(1)}원
+                                        </span>
+                                    </div>
+                                    {lastUpdated && <span className="text-[11px] text-japandi-muted dark:text-tokyonight-muted">({lastUpdated} 기준)</span>}
+                                </div>
+
+                                <div className="space-y-5">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label className="text-xs font-bold text-japandi-muted dark:text-tokyonight-muted">일본 엔화 금액 (¥)</label>
+                                            <button 
+                                                onClick={() => setIsCustomRate(!isCustomRate)}
+                                                className="text-[11px] font-bold text-japandi-accent dark:text-tokyonight-gold hover:underline"
+                                            >
+                                                {isCustomRate ? '✓ 실시간 환율로 되돌리기' : '⚙️ 환율 직접 입력'}
+                                            </button>
+                                        </div>
+
+                                        {isCustomRate && (
+                                            <div className="mb-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-between text-xs animate-slide-up">
+                                                <span className="font-bold text-amber-600 dark:text-amber-400">100엔당 원화:</span>
+                                                <div className="flex items-center space-x-1">
+                                                    <input
+                                                        type="number"
+                                                        value={(yenRate * 100).toFixed(1)}
+                                                        onChange={(e) => setYenRate((parseFloat(e.target.value) || 0) / 100)}
+                                                        className="w-20 bg-japandi-bg dark:bg-tokyonight-bg border border-japandi-border dark:border-tokyonight-border rounded-xl px-2 py-1 text-center font-extrabold focus:outline-none"
+                                                    />
+                                                    <span className="font-bold">원</span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="relative">
+                                            <input 
+                                                type="number"
+                                                value={yenInput}
+                                                onChange={e => setYenInput(e.target.value)}
+                                                placeholder="금액 입력"
+                                                className="w-full bg-japandi-bg dark:bg-tokyonight-bg border border-japandi-border dark:border-tokyonight-border rounded-2xl py-4 pl-12 pr-4 text-2xl font-black focus:outline-none focus:border-vermilion"
+                                            />
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-japandi-muted dark:text-tokyonight-muted">¥</span>
+                                        </div>
                                     </div>
 
-                                    <div className="p-5 rounded-2xl bg-vermilion-soft border border-vermilion/30 text-center space-y-1">
-                                        <span className="text-xs text-japandi-muted font-bold block">예상 원화 결제 금액</span>
-                                        <p className="text-3xl font-black text-vermilion">
-                                            ₩ {Math.round((parseFloat(yenInput) || 0) * (yenRate / 10)).toLocaleString()} 원
+                                    <div className="space-y-2">
+                                        <span className="text-[11px] font-bold text-japandi-muted dark:text-tokyonight-muted tracking-wider uppercase block">
+                                            💡 식당에서 많이 쓰는 금액 터치
+                                        </span>
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                            {[
+                                                { label: '라멘 1그릇', val: '1000' },
+                                                { label: '돈카츠 정식', val: '1800' },
+                                                { label: '이자카야 2인', val: '4500' },
+                                                { label: '고급 오마카세', val: '12000' }
+                                            ].map((preset) => (
+                                                <button
+                                                    key={preset.val}
+                                                    type="button"
+                                                    onClick={() => setYenInput(preset.val)}
+                                                    className="p-3 rounded-2xl bg-japandi-bg dark:bg-tokyonight-bg border border-japandi-border dark:border-tokyonight-border text-center hover:border-vermilion transition-all active-scale"
+                                                >
+                                                    <div className="font-extrabold text-vermilion dark:text-tokyonight-gold">¥{parseInt(preset.val).toLocaleString()}</div>
+                                                    <div className="text-[10px] text-japandi-muted dark:text-tokyonight-muted mt-0.5">{preset.label}</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="p-6 rounded-2xl bg-vermilion-soft border border-vermilion/30 text-center space-y-1 shadow-sm">
+                                        <span className="text-xs text-japandi-muted dark:text-tokyonight-muted font-bold block">예상 한화 결제 금액</span>
+                                        <p className="text-3xl sm:text-4xl font-black text-vermilion dark:text-tokyonight-gold">
+                                            ₩ {Math.round((parseFloat(yenInput) || 0) * yenRate).toLocaleString()} 원
                                         </p>
                                     </div>
                                 </div>
@@ -693,7 +814,7 @@
                         </div>
                     )}
 
-                    {/* SPOT DETAIL MODAL */}
+                    {}
                     {selectedSpot && !showTaxiModal && (
                         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-slide-up" onClick={() => setSelectedSpot(null)}>
                             <div className="bg-japandi-card dark:bg-tokyonight-card max-w-lg w-full rounded-3xl p-6 sm:p-8 space-y-6 border border-japandi-border dark:border-tokyonight-border relative shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -704,7 +825,9 @@
                                 <div>
                                     <span className="text-xs font-bold text-vermilion">{selectedSpot.city} • {selectedSpot.district}</span>
                                     <h2 className="text-2xl font-extrabold mt-1">{selectedSpot.name}</h2>
-                                    <p className="text-xs text-japandi-muted font-medium mt-0.5">{selectedSpot.jpName}</p>
+                                    {selectedSpot.jpName && selectedSpot.jpName !== selectedSpot.name && (
+                                        <p className="text-xs text-japandi-muted font-medium mt-0.5">{selectedSpot.jpName}</p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2 text-xs">
@@ -730,7 +853,6 @@
                         </div>
                     )}
 
-                    {/* TAXI DRIVER DISPLAY BOARD OVERLAY */}
                     {showTaxiModal && selectedSpot && (
                         <div className="fixed inset-0 z-50 bg-black flex flex-col justify-between p-6 text-center animate-slide-up">
                             <div className="flex justify-end">
@@ -753,7 +875,7 @@
                         </div>
                     )}
 
-                    {/* FLOATING BOTTOM DOCK NAVIGATION (Mobile Compact Version) */}
+                    {}
                     <nav className="fixed bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-japandi-card/95 dark:bg-tokyonight-card/95 backdrop-blur-2xl border border-japandi-border/80 dark:border-tokyonight-border/80 rounded-full px-4 sm:px-6 py-2 sm:py-3 shadow-2xl flex items-center space-x-5 sm:space-x-8 max-w-[92vw] sm:max-w-none justify-around">
                         <button onClick={() => setActiveTab('explore')} className={`flex flex-col items-center space-y-0.5 active-scale ${activeTab === 'explore' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
                             <i className="fa-solid fa-compass text-sm sm:text-lg"></i>
