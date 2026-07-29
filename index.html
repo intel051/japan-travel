@@ -127,172 +127,6 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // Offline / Fallback Japanese Gourmet Database
-        const JAPAN_GOURMET_DB = [
-            {
-                id: 'tokyo-ramen-1',
-                name: '멘야 무사시 신주쿠 본점',
-                jpName: '麺屋武蔵 新宿本店',
-                city: '도쿄',
-                district: '신주쿠',
-                category: '라멘',
-                rating: 4.7,
-                reviewCount: 3820,
-                price: '¥1,000 - ¥2,000',
-                hours: '11:00 - 22:30 (연중무휴)',
-                address: '7 Chome-2-6 Nishishinjuku, Shinjuku City, Tokyo 160-0023 Japan',
-                jpAddress: '東京都新宿区西新宿7-2-6',
-                tags: ['츠케멘', '자판기주문', '두툼한차슈', '혼밥최적'],
-                description: '진한 멸치 육수와 돼지 사골 육수의 환상적인 더블 스쿱 베이스. 입안에서 녹는 두꺼운 수제 차슈가 일품인 도쿄 대표 츠케멘 명가.',
-                signatureDishes: ['특제 츠케멘 (特製つけ麺)', '무사시 라멘 (武蔵ラーメン)'],
-                phrases: [
-                    { jp: 'つけ麺のひやもりをお願いします', ko: '츠케멘 차가운 면으로 부탁합니다' },
-                    { jp: 'スープ割りをお願いします', ko: '남은 소스에 맑은 육수(스프와리) 추가해주세요' }
-                ]
-            },
-            {
-                id: 'tokyo-sushi-1',
-                name: '스시 다이와 토요스',
-                jpName: '寿司 大和 豊洲店',
-                city: '도쿄',
-                district: '토요스',
-                category: '스시',
-                rating: 4.8,
-                reviewCount: 4210,
-                price: '¥5,000 - ¥9,000',
-                hours: '05:30 - 13:30 (일요일 휴무)',
-                address: '6 Chome-5-1 Toyosu, Koto City, Tokyo 135-0061 Japan',
-                jpAddress: '東京都江東区豊洲6-5-1 6街区水産仲卸売場棟3F',
-                tags: ['오마카세', '토요스시장', '새벽영업', '극상참치'],
-                description: '토요스 수산시장에서 당일 새벽 입고되는 최고의 제철 생선으로 쥐어내는 오마카세. 신선함의 경지를 보여주는 스시 노포.',
-                signatureDishes: ['셰프 추천 오마카세 코스 (おまかせコース)'],
-                phrases: [
-                    { jp: 'おまかせコースをお願いします', ko: '오마카세 코스로 부탁드립니다' },
-                    { jp: 'ワサビ抜きでお願いします', ko: '와사비 빼고 부탁드립니다' }
-                ]
-            },
-            {
-                id: 'tokyo-tonkatsu-1',
-                name: '돈카츠 마이센 아오야마 본점',
-                jpName: 'とんかつ まい泉 青山本店',
-                city: '도쿄',
-                district: '아오야마',
-                category: '돈카츠',
-                rating: 4.7,
-                reviewCount: 3100,
-                price: '¥2,000 - ¥4,000',
-                hours: '11:00 - 21:00',
-                address: '4 Chome-8-5 Jingumae, Shibuya City, Tokyo 150-0001 Japan',
-                jpAddress: '東京都渋谷区神宮前4-8-5',
-                tags: ['젓가락으로잘리는육질', '흑돼지', '고급스러운분위기'],
-                description: '옛 목욕탕 건물을 개조한 고풍스러운 공간에서 맛보는 프리미엄 도쿄 돈카츠. 젓가락만으로 잘릴 정도의 부드러움.',
-                signatureDishes: ['흑돼지 로스카츠 정식 (黒豚ロースカツ定食)', '카츠샌드 (カツサンド)'],
-                phrases: [
-                    { jp: '黒豚ロースカツ定食でお願いします', ko: '흑돼지 등심카츠 정식으로 주십시오' }
-                ]
-            },
-            {
-                id: 'osaka-takoyaki-1',
-                name: '쿠쿠루 도톤보리 본점',
-                jpName: 'たこ家道頓堀くくる 本店',
-                city: '오사카',
-                district: '도톤보리',
-                category: '타코야키',
-                rating: 4.6,
-                reviewCount: 2950,
-                price: '¥800 - ¥1,500',
-                hours: '11:00 - 22:00',
-                address: '1 Chome-10-5 Dotonbori, Chuo Ward, Osaka, 542-0071 Japan',
-                jpAddress: '大阪府大阪市中央区道頓堀1-10-5',
-                tags: ['도톤보리상징', '대왕문어', '겉바속촉', '테이크아웃'],
-                description: '큼직하게 썰어 넣은 통문어 다리가 박혀있는 오사카 명물 타코야키. 화이트 와인을 첨가한 수제 반죽의 부드러움.',
-                signatureDishes: ['대왕 문어 타코야키 8구 (びっくりたこ焼き)'],
-                phrases: [
-                    { jp: 'たこ焼き8個、持ち帰りでお願いします', ko: '타코야키 8개 포장해주세요' }
-                ]
-            },
-            {
-                id: 'osaka-okonomiyaki-1',
-                name: '미즈노 오코노미야키',
-                jpName: '美津の (みずの)',
-                city: '오사카',
-                district: '난바',
-                category: '오코노미야키',
-                rating: 4.7,
-                reviewCount: 3120,
-                price: '¥1,500 - ¥3,000',
-                hours: '11:00 - 21:30',
-                address: '1 Chome-4-15 Dotonbori, Chuo Ward, Osaka, 542-0071 Japan',
-                jpAddress: '大阪府大阪市中央区道頓堀1-4-15',
-                tags: ['미슐랭빕구르망', '마100%반죽', '줄서는맛집'],
-                description: '밀가루를 사용하지 않고 100% 마 반죽만으로 부쳐내는 미슐랭 인정 오코노미야키 노포.',
-                signatureDishes: ['야마이모 야키 (山芋焼)', '미즈노 야키 (美津の焼)'],
-                phrases: [
-                    { jp: '一番人気のお好み焼きは何ですか？', ko: '가장 인기 있는 오코노미야키는 무엇인가요?' }
-                ]
-            },
-            {
-                id: 'kyoto-matcha-1',
-                name: '나카무라 토키치 우지 본점',
-                jpName: '中村藤吉 本店',
-                city: '교토',
-                district: '우지',
-                category: '디저트',
-                rating: 4.8,
-                reviewCount: 2480,
-                price: '¥1,200 - ¥2,500',
-                hours: '10:00 - 17:30',
-                address: '10 Ichiban, Uji, Kyoto 611-0021 Japan',
-                jpAddress: '京都府宇治市宇治一番10',
-                tags: ['170년전통', '말차파페', '일본정원뷰', '교토필수'],
-                description: '1854년 창업한 전통 차 명가. 대나무 통에 담겨 나오는 말차 젤리와 깊고 고소한 유기농 우지 말차 파페.',
-                signatureDishes: ['생말차 젤리 파페 (生茶ゼリイ)', '우지 말차 세트'],
-                phrases: [
-                    { jp: '抹茶パフェをお願いします', ko: '말차 파페로 부탁드립니다' }
-                ]
-            },
-            {
-                id: 'fukuoka-tonkotsu-1',
-                name: '신신 라멘 텐진 본점',
-                jpName: '博多らーめん ShinShin 天神本店',
-                city: '후쿠오카',
-                district: '텐진',
-                category: '라멘',
-                rating: 4.7,
-                reviewCount: 4530,
-                price: '¥800 - ¥1,500',
-                hours: '11:00 - 03:00 (새벽 영업)',
-                address: '3 Chome-2-19 Tenjin, Chuo Ward, Fukuoka, 810-0001 Japan',
-                jpAddress: '福岡県福岡市中央区天神3-2-19',
-                tags: ['하카타돈코츠', '극세면', '야식스폿', '유명인단골'],
-                description: '잡내 없이 깔끔하면서도 깊은 돼지사골+닭육수의 잡탕 베이스. 술자리 마무리에 최고로 꼽히는 후쿠오카 라멘.',
-                signatureDishes: ['하카타 신신 라멘 (博多ShinShinラーメン)', '야키교자 (焼き餃子)'],
-                phrases: [
-                    { jp: '麺のかたさはバリカタでお願いします', ko: '면 꼬들함은 바리카타(매우 꼬들하게)로 해주세요' }
-                ]
-            },
-            {
-                id: 'fukuoka-motsunabe-1',
-                name: '하카타 모츠나베 오오야마',
-                jpName: '博多もつ鍋 おおやま',
-                city: '후쿠오카',
-                district: '하카타역',
-                category: '모츠나베',
-                rating: 4.6,
-                reviewCount: 1890,
-                price: '¥2,500 - ¥4,500',
-                hours: '11:00 - 23:00',
-                address: '1-1 Hakataekichuogai, Hakata Ward, Fukuoka, 812-0012 Japan',
-                jpAddress: '福岡県福岡市博多区博多駅中央街1-1',
-                tags: ['소곱창전골', '비법미소육수', '1인식사가능', '하카타역'],
-                description: '큐슈산 엄선 소 곱창과 창업주 비법 3종 미소(된장) 블렌딩의 깊은 감칠맛.',
-                signatureDishes: ['모츠나베 미소맛 (みそ味もつ鍋)', '말고기 육회 (馬刺し)'],
-                phrases: [
-                    { jp: 'みそ味のもつ鍋をお願いします', ko: '된장 맛 곱창전골로 부탁합니다' }
-                ]
-            }
-        ];
-
         // Japanese Dining Phrasebook
         const DINING_PHRASEBOOK = [
             { category: '입장 & 인원', jp: '二人です (Futari desu)', ko: '두 명입니다.', tip: '손가락으로 인원수를 함께 보여주면 더 정확합니다.' },
@@ -304,13 +138,37 @@
             { category: '식사 후 감사', jp: 'ごちそうさまでした (Gochisosama deshita)', ko: '잘 먹었습니다 (점원에게 미소 지으며).' }
         ];
 
-        const speakJapanese = (text) => {
+        // Japanese Speech Synthesis Engine Voice Loader Helper
+        let jaVoiceInstance = null;
+        const loadJapaneseVoice = () => {
             if ('speechSynthesis' in window) {
+                const voices = window.speechSynthesis.getVoices();
+                jaVoiceInstance = voices.find(v => v.lang && (v.lang.startsWith('ja') || v.lang.includes('JP')));
+            }
+        };
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = loadJapaneseVoice;
+            loadJapaneseVoice();
+        }
+
+        const speakJapanese = (text) => {
+            if ('speechSynthesis' in window && text) {
                 window.speechSynthesis.cancel();
-                const cleanText = text.split('(')[0].trim();
+                let cleanText = text;
+                if (text.includes('(')) {
+                    cleanText = text.split('(')[0].trim();
+                }
                 const utterance = new SpeechSynthesisUtterance(cleanText);
                 utterance.lang = 'ja-JP';
-                utterance.rate = 0.9;
+                utterance.rate = 0.85;
+
+                if (!jaVoiceInstance) {
+                    loadJapaneseVoice();
+                }
+                if (jaVoiceInstance) {
+                    utterance.voice = jaVoiceInstance;
+                }
                 window.speechSynthesis.speak(utterance);
             }
         };
@@ -319,7 +177,7 @@
             const [isDarkMode, setIsDarkMode] = useState(true);
             const [city, setCity] = useState('');
             const [food, setFood] = useState('');
-            const [results, setResults] = useState(JAPAN_GOURMET_DB);
+            const [results, setResults] = useState([]);
             const [filterStatus, setFilterStatus] = useState('');
             const [loading, setLoading] = useState(false);
             const [error, setError] = useState('');
@@ -333,19 +191,19 @@
             const [yenInput, setYenInput] = useState('1000');
             const yenRate = 8.95;
 
-            // LocalStorage Bookmarks
-            const [bookmarks, setBookmarks] = useState(() => {
+            // Saved Spots in Gourmet Passport (Stores Full Spot Objects)
+            const [savedSpots, setSavedSpots] = useState(() => {
                 try {
-                    const saved = localStorage.getItem('tabi_gourmet_bookmarks_v4');
-                    return saved ? JSON.parse(saved) : ['tokyo-ramen-1', 'osaka-okonomiyaki-1'];
-                } catch { return ['tokyo-ramen-1']; }
+                    const saved = localStorage.getItem('tabi_gourmet_saved_spots_v5');
+                    return saved ? JSON.parse(saved) : [];
+                } catch { return []; }
             });
 
             useEffect(() => {
                 try {
-                    localStorage.setItem('tabi_gourmet_bookmarks_v4', JSON.stringify(bookmarks));
+                    localStorage.setItem('tabi_gourmet_saved_spots_v5', JSON.stringify(savedSpots));
                 } catch (e) { console.error(e); }
-            }, [bookmarks]);
+            }, [savedSpots]);
 
             const toggleTheme = () => {
                 setIsDarkMode(!isDarkMode);
@@ -359,12 +217,12 @@
 
             const toggleBookmark = (spot, e) => {
                 if (e) e.stopPropagation();
-                const exists = bookmarks.includes(spot.id);
-                if (exists) {
-                    setBookmarks(bookmarks.filter(id => id !== spot.id));
+                const isSaved = savedSpots.some(s => s.id === spot.id);
+                if (isSaved) {
+                    setSavedSpots(savedSpots.filter(s => s.id !== spot.id));
                     triggerToast('🔖 미식 여권에서 삭제되었습니다.');
                 } else {
-                    setBookmarks([...bookmarks, spot.id]);
+                    setSavedSpots([...savedSpots, spot]);
                     triggerToast('🌸 미식 여권에 저장되었습니다!');
                 }
             };
@@ -373,11 +231,15 @@
                 if (e) e.preventDefault();
                 document.activeElement?.blur();
 
+                if (!city.trim() && !food.trim()) {
+                    triggerToast('도시명이나 음식 키워드를 입력해주세요.');
+                    return;
+                }
+
                 setLoading(true);
                 setError('');
 
                 try {
-                    // Try calling backend API (/api/search) first
                     const res = await fetch('/api/search', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -388,14 +250,14 @@
                         const data = await res.json();
                         if (data.results && data.results.length > 0) {
                             setResults(data.results.map((p, idx) => ({
-                                id: p.id || `api-spot-${idx}`,
+                                id: p.id || `spot-${Date.now()}-${idx}`,
                                 name: p.name || `${city} ${food} 맛집`,
                                 jpName: p.japaneseName || p.name,
                                 city: city || '일본',
                                 district: p.district || '주요지역',
                                 category: food || '맛집',
                                 rating: p.rating || 4.5,
-                                reviewCount: p.reviewCount || 120,
+                                reviewCount: p.reviewCount || 100,
                                 price: p.price || '¥1,000 - ¥3,000',
                                 hours: p.hours || '영업시간 매장 문의',
                                 address: p.address || '주소 정보',
@@ -409,27 +271,16 @@
                             return;
                         }
                     }
-                    throw new Error("API_FALLBACK");
-
+                    
+                    // API Call returned no results or failed
+                    setResults([]);
+                    setError('검색된 맛집이 없거나 API 연동 정보를 불러올 수 없습니다.');
+                    setFilterStatus('');
                 } catch (err) {
-                    // Fallback to local filtering if /api/search API is not present/fails
-                    await new Promise(r => setTimeout(r, 450));
-                    const targetCity = city.trim().toLowerCase();
-                    const targetFood = food.trim().toLowerCase();
-
-                    const filtered = JAPAN_GOURMET_DB.filter(spot => {
-                        const matchCity = !targetCity || spot.city.toLowerCase().includes(targetCity) || spot.district.toLowerCase().includes(targetCity);
-                        const matchFood = !targetFood || spot.category.toLowerCase().includes(targetFood) || spot.name.toLowerCase().includes(targetFood) || spot.tags.some(t => t.toLowerCase().includes(targetFood));
-                        return matchCity && matchFood;
-                    });
-
-                    if (filtered.length > 0) {
-                        setResults(filtered);
-                        setFilterStatus('추천 데이터 필터 적용');
-                    } else {
-                        setResults(JAPAN_GOURMET_DB);
-                        setFilterStatus('전체 추천 목록');
-                    }
+                    setResults([]);
+                    setError('API 서버 연결에 실패했습니다. API 환경을 확인해주세요.');
+                    setFilterStatus('');
+                } finally {
                     setLoading(false);
                 }
             };
@@ -437,13 +288,9 @@
             const copyToClipboard = (text, id) => {
                 navigator.clipboard.writeText(text);
                 setCopiedId(id);
-                triggerToast('📋 일본어 주소가 복사되었습니다.');
+                triggerToast('📋 주소가 복사되었습니다.');
                 setTimeout(() => setCopiedId(null), 2000);
             };
-
-            const savedSpotObjects = useMemo(() => {
-                return JAPAN_GOURMET_DB.filter(spot => bookmarks.includes(spot.id));
-            }, [bookmarks]);
 
             return (
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 relative z-10 min-h-screen flex flex-col">
@@ -457,9 +304,8 @@
                     )}
 
                     {/* HEADER NAVIGATION */}
-                    {}
                     <header className="flex items-center justify-between pb-6 border-b border-japandi-border/80 dark:border-tokyonight-border/80 mb-8">
-                        <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => { setActiveTab('explore'); setCity(''); setFood(''); setResults(JAPAN_GOURMET_DB); }}>
+                        <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => { setActiveTab('explore'); setCity(''); setFood(''); setResults([]); setError(''); }}>
                             <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-vermilion via-red-600 to-amber-600 text-white flex items-center justify-center shadow-lg group-hover:scale-105 active-scale">
                                 <i className="fa-solid fa-torii-gate text-lg"></i>
                             </div>
@@ -495,9 +341,9 @@
                             >
                                 <i className="fa-solid fa-passport"></i>
                                 <span className="hidden sm:inline">미식 여권</span>
-                                {bookmarks.length > 0 && (
+                                {savedSpots.length > 0 && (
                                     <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-japandi-accent dark:bg-tokyonight-gold text-white dark:text-tokyonight-bg font-black">
-                                        {bookmarks.length}
+                                        {savedSpots.length}
                                     </span>
                                 )}
                             </button>
@@ -505,7 +351,6 @@
                     </header>
 
                     {/* MAIN TAB 1: EXPLORE GOURMET SPOTS */}
-                    {}
                     {activeTab === 'explore' && (
                         <div className="space-y-8 animate-slide-up">
                             
@@ -526,7 +371,7 @@
                                         </span>
                                     </h1>
                                     <p className="text-xs sm:text-sm text-japandi-muted dark:text-tokyonight-muted leading-relaxed font-medium">
-                                        구글 평점과 현지인 후기로 검증된 맛집 검색. 1초 일어 음성 지원, 택시 기사님 전용 빅폰트 화면, 실전 회화 가이드가 제공됩니다.
+                                        도시와 음식 키워드를 입력해 구글 실시간 맛집을 검색해 보세요.
                                     </p>
                                 </div>
                             </div>
@@ -578,13 +423,13 @@
                                             ⚡ 주요 도시 빠른 선택
                                         </span>
                                         <div className="flex flex-wrap gap-2">
-                                            {['전체', '도쿄', '오사카', '교토', '후쿠오카', '삿포로'].map(c => (
+                                            {['도쿄', '오사카', '교토', '후쿠오카', '삿포로'].map(c => (
                                                 <button
                                                     key={c}
                                                     type="button"
-                                                    onClick={() => { setCity(c === '전체' ? '' : c); }}
+                                                    onClick={() => { setCity(c); }}
                                                     className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all active-scale ${
-                                                        (city === c || (c === '전체' && !city))
+                                                        city === c
                                                             ? 'bg-vermilion text-white shadow-md'
                                                             : 'bg-japandi-bg dark:bg-tokyonight-bg text-japandi-muted dark:text-tokyonight-muted border border-japandi-border dark:border-tokyonight-border'
                                                     }`}
@@ -618,18 +463,34 @@
                             </div>
 
                             {/* Gourmet Spot Grid */}
-                            {}
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between text-xs text-japandi-muted dark:text-tokyonight-muted px-1 font-bold">
-                                    <span>
-                                        검색 결과 <strong className="text-vermilion dark:text-tokyonight-gold font-extrabold">{results.length}</strong>곳
-                                    </span>
-                                    {filterStatus && <span className="text-[11px] bg-vermilion-soft text-vermilion px-2.5 py-0.5 rounded-full">{filterStatus}</span>}
-                                </div>
+                                {error && (
+                                    <div className="p-4 rounded-2xl bg-vermilion-soft border border-vermilion/30 text-vermilion text-xs font-bold text-center">
+                                        ⚠️ {error}
+                                    </div>
+                                )}
+
+                                {results.length > 0 && (
+                                    <div className="flex items-center justify-between text-xs text-japandi-muted dark:text-tokyonight-muted px-1 font-bold">
+                                        <span>
+                                            검색 결과 <strong className="text-vermilion dark:text-tokyonight-gold font-extrabold">{results.length}</strong>곳
+                                        </span>
+                                        {filterStatus && <span className="text-[11px] bg-vermilion-soft text-vermilion px-2.5 py-0.5 rounded-full">{filterStatus}</span>}
+                                    </div>
+                                )}
+
+                                {results.length === 0 && !loading && !error && (
+                                    <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-10 text-center space-y-3 border border-japandi-border dark:border-tokyonight-border">
+                                        <i className="fa-solid fa-utensils text-3xl text-japandi-muted dark:text-tokyonight-muted"></i>
+                                        <p className="text-xs text-japandi-muted dark:text-tokyonight-muted font-medium">
+                                            원하는 여행 도시와 메뉴를 입력하고 검색 버튼을 눌러주세요.
+                                        </p>
+                                    </div>
+                                )}
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                                     {results.map((spot) => {
-                                        const isSaved = bookmarks.includes(spot.id);
+                                        const isSaved = savedSpots.some(s => s.id === spot.id);
                                         const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${spot.name} ${spot.address}`)}`;
 
                                         return (
@@ -676,9 +537,9 @@
 
                                                 <div className="pt-3 border-t border-japandi-border/80 dark:border-tokyonight-border/80 flex items-center justify-between gap-2 text-xs">
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); speakJapanese(spot.jpName); }}
+                                                        onClick={(e) => { e.stopPropagation(); speakJapanese(spot.jpName || spot.name); }}
                                                         className="p-2.5 rounded-xl bg-japandi-bg dark:bg-tokyonight-bg text-japandi-accent dark:text-tokyonight-gold border border-japandi-border dark:border-tokyonight-border active-scale"
-                                                        title="일본어 발음 오디오 들기"
+                                                        title="일본어 발음 듣기"
                                                     >
                                                         <i className="fa-solid fa-volume-high"></i>
                                                     </button>
@@ -712,13 +573,12 @@
                     )}
 
                     {/* MAIN TAB 2: JAPANESE DINING PHRASEBOOK */}
-                    {}
                     {activeTab === 'phrases' && (
                         <div className="space-y-6 animate-slide-up">
                             <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-6 sm:p-8 space-y-2 border border-japandi-border dark:border-tokyonight-border">
                                 <span className="text-xs font-bold text-vermilion uppercase tracking-wider">JAPANESE DINING PHRASES</span>
                                 <h2 className="text-2xl font-extrabold">현지 식당 필수 회화 가이드</h2>
-                                <p className="text-xs text-japandi-muted dark:text-tokyonight-muted">스피커 버튼을 누르면 원어민 일본어 오디오 발음이 재생됩니다.</p>
+                                <p className="text-xs text-japandi-muted dark:text-tokyonight-muted">스피커 버튼을 누르면 일본어 오디오 발음이 재생됩니다.</p>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -748,25 +608,24 @@
                     )}
 
                     {/* MAIN TAB 3: GOURMET PASSPORT (BOOKMARKS) */}
-                    {}
                     {activeTab === 'passport' && (
                         <div className="space-y-6 animate-slide-up">
                             <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-6 sm:p-8 space-y-2 border border-japandi-border dark:border-tokyonight-border">
                                 <span className="text-xs font-bold text-vermilion uppercase tracking-wider">MY GOURMET PASSPORT</span>
                                 <h2 className="text-2xl font-extrabold">나의 일본 미식 여권</h2>
                                 <p className="text-xs text-japandi-muted dark:text-tokyonight-muted">
-                                    저장한 맛집 목록 <strong className="text-vermilion font-bold">{savedSpotObjects.length}곳</strong>
+                                    저장한 맛집 목록 <strong className="text-vermilion font-bold">{savedSpots.length}곳</strong>
                                 </p>
                             </div>
 
-                            {savedSpotObjects.length === 0 ? (
+                            {savedSpots.length === 0 ? (
                                 <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-12 text-center space-y-4 border border-japandi-border dark:border-tokyonight-border">
                                     <i className="fa-solid fa-passport text-4xl text-japandi-muted"></i>
                                     <p className="text-sm text-japandi-muted">아직 저장한 미식 스폿이 없습니다.</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {savedSpotObjects.map((spot) => (
+                                    {savedSpots.map((spot) => (
                                         <div key={spot.id} className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-5 space-y-4 border border-japandi-border dark:border-tokyonight-border">
                                             <div className="flex items-start justify-between">
                                                 <div>
@@ -806,12 +665,11 @@
                     )}
 
                     {/* MAIN TAB 4: YEN CONVERTER */}
-                    {}
                     {activeTab === 'calc' && (
                         <div className="space-y-6 animate-slide-up max-w-xl mx-auto">
                             <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-6 sm:p-8 space-y-4 border border-japandi-border dark:border-tokyonight-border">
                                 <span className="text-xs font-bold text-vermilion uppercase tracking-wider">YEN CONVERTER</span>
-                                <h2 className="text-2xl font-extrabold">엔화 ↔ 원화 1초 환율 계산기</h2>
+                                <h2 className="text-2xl font-extrabold">엔화 ↔ 원화 환율 계산기</h2>
 
                                 <div className="space-y-4">
                                     <div>
@@ -836,7 +694,6 @@
                     )}
 
                     {/* SPOT DETAIL MODAL */}
-                    {}
                     {selectedSpot && !showTaxiModal && (
                         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-slide-up" onClick={() => setSelectedSpot(null)}>
                             <div className="bg-japandi-card dark:bg-tokyonight-card max-w-lg w-full rounded-3xl p-6 sm:p-8 space-y-6 border border-japandi-border dark:border-tokyonight-border relative shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -874,7 +731,6 @@
                     )}
 
                     {/* TAXI DRIVER DISPLAY BOARD OVERLAY */}
-                    {}
                     {showTaxiModal && selectedSpot && (
                         <div className="fixed inset-0 z-50 bg-black flex flex-col justify-between p-6 text-center animate-slide-up">
                             <div className="flex justify-end">
@@ -897,24 +753,28 @@
                         </div>
                     )}
 
-                    {/* FLOATING BOTTOM DOCK NAVIGATION */}
-                    {}
-                    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-japandi-card/90 dark:bg-tokyonight-card/90 backdrop-blur-2xl border border-japandi-border dark:border-tokyonight-border rounded-full px-6 py-3.5 shadow-2xl flex items-center space-x-8">
-                        <button onClick={() => setActiveTab('explore')} className={`flex flex-col items-center space-y-1 active-scale ${activeTab === 'explore' ? 'text-vermilion font-black' : 'text-japandi-muted'}`}>
-                            <i className="fa-solid fa-compass text-lg"></i>
-                            <span className="text-[10px]">탐색</span>
+                    {/* FLOATING BOTTOM DOCK NAVIGATION (Mobile Compact Version) */}
+                    <nav className="fixed bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-japandi-card/95 dark:bg-tokyonight-card/95 backdrop-blur-2xl border border-japandi-border/80 dark:border-tokyonight-border/80 rounded-full px-4 sm:px-6 py-2 sm:py-3 shadow-2xl flex items-center space-x-5 sm:space-x-8 max-w-[92vw] sm:max-w-none justify-around">
+                        <button onClick={() => setActiveTab('explore')} className={`flex flex-col items-center space-y-0.5 active-scale ${activeTab === 'explore' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
+                            <i className="fa-solid fa-compass text-sm sm:text-lg"></i>
+                            <span className="text-[9px] sm:text-[10px]">탐색</span>
                         </button>
-                        <button onClick={() => setActiveTab('phrases')} className={`flex flex-col items-center space-y-1 active-scale ${activeTab === 'phrases' ? 'text-vermilion font-black' : 'text-japandi-muted'}`}>
-                            <i className="fa-solid fa-comments text-lg"></i>
-                            <span className="text-[10px]">회화</span>
+                        <button onClick={() => setActiveTab('phrases')} className={`flex flex-col items-center space-y-0.5 active-scale ${activeTab === 'phrases' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
+                            <i className="fa-solid fa-comments text-sm sm:text-lg"></i>
+                            <span className="text-[9px] sm:text-[10px]">회화</span>
                         </button>
-                        <button onClick={() => setActiveTab('passport')} className={`flex flex-col items-center space-y-1 active-scale ${activeTab === 'passport' ? 'text-vermilion font-black' : 'text-japandi-muted'}`}>
-                            <i className="fa-solid fa-passport text-lg"></i>
-                            <span className="text-[10px]">여권</span>
+                        <button onClick={() => setActiveTab('passport')} className={`flex flex-col items-center space-y-0.5 active-scale relative ${activeTab === 'passport' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
+                            <i className="fa-solid fa-passport text-sm sm:text-lg"></i>
+                            <span className="text-[9px] sm:text-[10px]">여권</span>
+                            {savedSpots.length > 0 && (
+                                <span className="absolute -top-1 -right-2 w-4 h-4 bg-vermilion text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                                    {savedSpots.length}
+                                </span>
+                            )}
                         </button>
-                        <button onClick={() => setActiveTab('calc')} className={`flex flex-col items-center space-y-1 active-scale ${activeTab === 'calc' ? 'text-vermilion font-black' : 'text-japandi-muted'}`}>
-                            <i className="fa-solid fa-calculator text-lg"></i>
-                            <span className="text-[10px]">엔화계산</span>
+                        <button onClick={() => setActiveTab('calc')} className={`flex flex-col items-center space-y-0.5 active-scale ${activeTab === 'calc' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
+                            <i className="fa-solid fa-calculator text-sm sm:text-lg"></i>
+                            <span className="text-[9px] sm:text-[10px]">엔화계산</span>
                         </button>
                     </nav>
 
