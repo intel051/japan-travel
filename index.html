@@ -1,332 +1,1135 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>일본 맛집 검색</title>
+    <title>일여방 (日旅食) 맛집검색 </title>
 
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-jp-dynamic-subset.min.css" />
+    <!-- Tailwind CSS CDN with custom design tokens -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        night: {
+                            DEFAULT: '#0A0908',
+                            surface: '#12100E',
+                            card: 'rgba(20, 18, 15, 0.85)',
+                            border: 'rgba(255, 255, 255, 0.08)',
+                            glass: 'rgba(28, 25, 21, 0.85)'
+                        },
+                        vermilion: {
+                            DEFAULT: '#FF3B30',
+                            hover: '#E03228',
+                            glow: 'rgba(255, 59, 48, 0.35)',
+                            soft: 'rgba(255, 59, 48, 0.12)'
+                        },
+                        gold: {
+                            DEFAULT: '#E2B857',
+                            light: '#F5D77F',
+                            soft: 'rgba(226, 184, 87, 0.15)'
+                        },
+                        matcha: {
+                            DEFAULT: '#4E7C59',
+                            soft: 'rgba(78, 124, 89, 0.15)'
+                        },
+                        washi: {
+                            DEFAULT: '#F9F7F2',
+                            card: '#FFFFFF',
+                            warm: '#EFEBE1',
+                            muted: '#8E887C'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard JP Variable', 'Pretendard', '-apple-system', 'sans-serif'],
+                        serif: ['Noto Serif JP', 'Georgia', 'serif']
+                    },
+                    boxShadow: {
+                        'neon-vermilion': '0 0 25px rgba(255, 59, 48, 0.35), 0 10px 20px rgba(0,0,0,0.5)',
+                        'neon-gold': '0 0 25px rgba(226, 184, 87, 0.25), 0 10px 20px rgba(0,0,0,0.5)',
+                        'glass-dark': '0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                        'glass-light': '0 15px 30px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons & Pretendard JP Dynamic Font -->
+    <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-jp-dynamic-subset.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <style>
-        :root {
-            --ink: #0e0d0b;
-            --ink-soft: #1a1814;
-            --paper: #f5f0e8;
-            --paper-warm: #ede5d4;
-            --red: #c0392b;
-            --red-glow: rgba(192, 57, 43, 0.4);
-            --gold: #c9a84c;
-            --gold-soft: rgba(201, 168, 76, 0.15);
-            --white-10: rgba(255,255,255,0.07);
-            --white-20: rgba(255,255,255,0.12);
-        }
+        /* Custom Smooth Scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #332F2A; border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF3B30; }
 
-        /* 폰트 적용 범위를 모든 요소(*)로 확장 */
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            -webkit-tap-highlight-color: transparent; 
-            font-family: 'Pretendard JP Variable', 'Pretendard JP', 'Pretendard', -apple-system, sans-serif;
-        }
-
-        html, body {
-            min-height: 100%;
-            background: var(--ink);
-            color: var(--paper);
-            font-family: 'Pretendard JP Variable', sans-serif;
-            overflow-x: hidden;
-        }
-
+        /* Washi Paper Subtle Noise Texture Overlay */
         body::before {
             content: '';
             position: fixed; inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-            pointer-events: none; z-index: 9999; opacity: 0.6;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 999;
         }
 
-        .ambient { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
-        .ambient-1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(192,57,43,0.18) 0%, transparent 70%); top: -200px; right: -100px; animation: drift1 20s ease-in-out infinite; }
-        .ambient-2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%); bottom: -100px; left: -100px; animation: drift2 25s ease-in-out infinite; }
-        .ambient-3 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(192,57,43,0.08) 0%, transparent 70%); top: 40%; left: -50px; animation: drift1 18s ease-in-out infinite reverse; }
+        /* Tokyo Night Ambient Glow Orbs */
+        .ambient-orb {
+            position: fixed; border-radius: 50%; filter: blur(140px); pointer-events: none; z-index: 0;
+        }
 
-        @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(30px,-40px) scale(1.08)} 66%{transform:translate(-20px,20px) scale(0.95)} }
-        @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(40px,-30px) scale(1.1)} }
+        /* Vertical Japanese Kanji Typography Accent */
+        .vertical-kanji {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 0.4em;
+        }
 
-        .jp-deco { position: fixed; top: 0; bottom: 0; writing-mode: vertical-rl; font-family: 'Pretendard JP Variable', sans-serif; font-size: 11px; letter-spacing: 0.3em; color: rgba(255,255,255,0.04); pointer-events: none; z-index: 1; display: flex; align-items: center; user-select: none; }
-        .jp-deco-left { left: 18px; }
-        .jp-deco-right { right: 18px; }
+        /* Glassmorphism Cards */
+        .dark .glass-card {
+            background: linear-gradient(135deg, rgba(22, 20, 17, 0.82) 0%, rgba(12, 11, 10, 0.92) 100%);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .html:not(.dark) .glass-card, .light .glass-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.07);
+        }
 
-        #root { position: relative; z-index: 2; min-height: 100dvh; }
+        /* Micro Interactive Animations */
+        .active-scale { transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .active-scale:active { transform: scale(0.95); }
 
-        .page { max-width: 480px; margin: 0 auto; padding: 0 24px 60px; min-height: 100dvh; display: flex; flex-direction: column; }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.08); }
+        }
+        .pulse-glow { animation: pulseGlow 4s ease-in-out infinite; }
 
-        .header { padding: 48px 0 0; display: flex; align-items: center; gap: 12px; }
-        .header-lantern { width: 8px; height: 8px; background: var(--red); border-radius: 50%; box-shadow: 0 0 12px var(--red-glow), 0 0 24px var(--red-glow); animation: lanternPulse 3s ease-in-out infinite; flex-shrink: 0; }
-        @keyframes lanternPulse { 0%,100%{opacity:1;box-shadow:0 0 12px var(--red-glow),0 0 24px var(--red-glow)} 50%{opacity:0.7;box-shadow:0 0 6px var(--red-glow)} }
-        .header-label { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.35); font-weight: 500; }
-
-        .hero { padding: 40px 0 36px; }
-        .hero-eyebrow { font-family: 'Pretendard JP Variable', sans-serif; font-size: 13px; color: var(--gold); letter-spacing: 0.2em; margin-bottom: 16px; opacity: 0.85; }
-        .hero-title { font-family: 'Pretendard JP Variable', sans-serif; font-size: clamp(38px, 10vw, 52px); line-height: 1.05; font-weight: 800; color: var(--paper); margin-bottom: 20px; }
-        .hero-title em { font-style: normal; font-weight: 200; color: var(--gold); letter-spacing: -0.01em; }
-        .hero-desc { font-size: 14px; line-height: 1.8; color: rgba(255,255,255,0.45); }
-        .hero-desc strong { color: rgba(255,255,255,0.75); font-weight: 600; }
-
-        .divider { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
-        .divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent); }
-        .divider-kanji { font-family: 'Pretendard JP Variable', sans-serif; font-size: 11px; color: rgba(201,168,76,0.4); letter-spacing: 0.1em; }
-
-        .form { display: flex; flex-direction: column; gap: 14px; }
-        .input-group { position: relative; }
-        .input-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.25); pointer-events: none; font-size: 16px; }
-        .form-input { width: 100%; padding: 18px 18px 18px 52px; background: var(--white-10); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; font-size: 16px; font-weight: 600; color: var(--paper); font-family: 'Pretendard JP Variable', sans-serif !important; outline: none; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); -webkit-appearance: none; }
-        .form-input::placeholder { color: rgba(255,255,255,0.2); font-weight: 400; }
-        .form-input:focus { background: var(--white-20); border-color: rgba(201,168,76,0.35); box-shadow: 0 0 0 3px rgba(201,168,76,0.08), inset 0 1px 0 rgba(255,255,255,0.05); }
-
-        .btn-submit { width: 100%; padding: 19px 24px; background: linear-gradient(135deg, #c0392b 0%, #96281b 100%); border: none; border-radius: 16px; color: #fff; font-size: 16px; font-weight: 700; font-family: 'Pretendard JP Variable', sans-serif !important; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); box-shadow: 0 8px 32px rgba(192,57,43,0.35), inset 0 1px 0 rgba(255,255,255,0.12); position: relative; overflow: hidden; margin-top: 6px; }
-        .btn-submit::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%); opacity: 0; transition: opacity 0.3s; }
-        .btn-submit:active::before { opacity: 1; }
-        .btn-submit:active { transform: scale(0.975); box-shadow: 0 4px 16px rgba(192,57,43,0.3); }
-        .btn-arrow { display: inline-flex; transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); }
-        .btn-submit:hover .btn-arrow { transform: translateX(4px); }
-
-        .error-box { background: rgba(192,57,43,0.12); border: 1px solid rgba(192,57,43,0.3); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; animation: shake 0.4s ease-in-out; }
-        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-        .error-title { font-size: 13px; font-weight: 700; color: #e74c3c; display: flex; align-items: center; gap: 8px; }
-        .error-msg { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; }
-        .btn-refresh { background: rgba(192,57,43,0.25); border: 1px solid rgba(192,57,43,0.4); border-radius: 10px; padding: 10px 16px; color: #e74c3c; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Pretendard JP Variable', sans-serif !important; transition: all 0.2s; }
-        .btn-refresh:active { opacity: 0.7; transform: scale(0.97); }
-
-        .loading-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; animation: fadeIn 0.5s ease; }
-        .loading-symbol { position: relative; width: 80px; height: 80px; }
-        .loading-ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; }
-        .loading-ring-1 { border-top-color: var(--red); border-right-color: rgba(192,57,43,0.3); animation: spin 1.2s linear infinite; }
-        .loading-ring-2 { inset: 10px; border-top-color: var(--gold); border-right-color: rgba(201,168,76,0.3); animation: spin 1.8s linear infinite reverse; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-kanji { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Pretendard JP Variable', sans-serif; font-size: 22px; color: var(--paper); animation: kanjiFade 1.5s ease-in-out infinite; }
-        @keyframes kanjiFade { 0%,100%{opacity:0.5} 50%{opacity:1} }
-        .loading-title { font-size: 18px; font-weight: 700; color: var(--paper); margin-bottom: 8px; text-align: center; }
-        .loading-sub { font-size: 13px; color: rgba(255,255,255,0.35); text-align: center; }
-        .loading-dots { display: inline-flex; gap: 5px; margin-top: 20px; }
-        .loading-dot { width: 5px; height: 5px; background: var(--red); border-radius: 50%; animation: dotBounce 1.2s ease-in-out infinite; }
-        .loading-dot:nth-child(2) { animation-delay: 0.2s; background: var(--gold); }
-        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes dotBounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-6px);opacity:1} }
-
-        .results-header { padding: 48px 0 28px; display: flex; align-items: flex-start; justify-content: space-between; }
-        .results-eyebrow { font-size: 11px; letter-spacing: 0.25em; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: 8px; }
-        .results-title { font-family: 'Pretendard JP Variable', sans-serif; font-size: 30px; font-weight: 800; color: var(--paper); line-height: 1.1; }
-        .results-meta { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-        .results-sub { font-size: 12px; color: rgba(255,255,255,0.35); }
-        .results-badge { font-size: 10px; font-weight: 700; color: var(--gold); background: var(--gold-soft); border: 1px solid rgba(201,168,76,0.25); padding: 2px 8px; border-radius: 20px; letter-spacing: 0.05em; }
-        .btn-back { width: 42px; height: 42px; background: var(--white-10); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: rgba(255,255,255,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s; flex-shrink: 0; margin-top: 10px; }
-        .btn-back:active { transform: scale(0.93); background: var(--white-20); }
-
-        .card-list { display: flex; flex-direction: column; gap: 12px; }
-        .card { background: var(--white-10); border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 20px; cursor: pointer; transition: all 0.3s cubic-bezier(0.16,1,0.3,1); position: relative; overflow: hidden; animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent); }
-        .card:active { transform: scale(0.98); background: var(--white-20); }
-        @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        .card-inner { display: flex; align-items: flex-start; gap: 16px; }
-        .card-rank { font-family: 'Pretendard JP Variable', sans-serif; font-size: 28px; font-weight: 800; color: rgba(255,255,255,0.08); line-height: 1; flex-shrink: 0; min-width: 28px; }
-        .card-body { flex: 1; min-width: 0; }
-        .card-name { font-size: 16px; font-weight: 700; color: var(--paper); line-height: 1.3; margin-bottom: 5px; word-break: keep-all; }
-        .card-address { font-size: 12px; color: rgba(255,255,255,0.3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-arrow { width: 34px; height: 34px; background: rgba(192,57,43,0.15); border: 1px solid rgba(192,57,43,0.3); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; color: var(--red); transition: all 0.2s; }
-        .card:active .card-arrow { background: rgba(192,57,43,0.3); transform: scale(0.9); }
-        .card-footer { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .rating-pill { display: flex; align-items: center; gap: 5px; background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.25); padding: 4px 10px 4px 8px; border-radius: 20px; }
-        .rating-star { color: var(--gold); font-size: 12px; }
-        .rating-val { font-size: 13px; font-weight: 700; color: var(--gold); }
-        .review-count { font-size: 12px; color: rgba(255,255,255,0.3); }
-
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        .fade-in { animation: fadeIn 0.5s ease both; }
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up { animation: slideUpFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 </head>
-<body>
-    <div class="ambient ambient-1"></div>
-    <div class="ambient ambient-2"></div>
-    <div class="ambient ambient-3"></div>
-    <div class="jp-deco jp-deco-left">美食探訪・日本全国・絶品グルメ・旅の記憶・味わい深い</div>
-    <div class="jp-deco jp-deco-right">食べ歩き・おすすめ・人気店・口コミ・地元の味</div>
+<body class="bg-night text-washi dark:bg-night dark:text-washi light:bg-washi light:text-stone-900 min-h-screen selection:bg-vermilion selection:text-white font-sans relative overflow-x-hidden pb-32 transition-colors duration-300">
+
+    <!-- Ambient Glow Backgrounds -->
+    <div class="ambient-orb w-[500px] h-[500px] bg-vermilion/15 -top-32 -right-20 pulse-glow"></div>
+    <div class="ambient-orb w-[450px] h-[450px] bg-gold/10 -bottom-20 -left-20"></div>
+
+    <!-- Vertical Side Typography Accent -->
+    <div class="fixed top-0 bottom-0 left-5 vertical-kanji text-[10px] text-stone-700/30 dark:text-stone-700/30 pointer-events-none z-10 hidden lg:flex items-center select-none font-serif">
+        日本美食探訪 ・ 厳選名店ガイド ・ 伝統と現代の味覚
+    </div>
+    <div class="fixed top-0 bottom-0 right-5 vertical-kanji text-[10px] text-stone-700/30 dark:text-stone-700/30 pointer-events-none z-10 hidden lg:flex items-center select-none font-serif">
+        東京 ・ 大阪 ・ 京都 ・ 福岡 ・ 札幌 ・ ローカルグルメ
+    </div>
 
     <div id="root"></div>
 
+    <!-- React 18, ReactDOM & Babel CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script>window.process = { env: { NODE_ENV: 'production' } };</script>
 
-    <script type="text/babel" data-type="module">
-        import React, { useState } from 'https://esm.sh/react@18.2.0';
-        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
 
-        const App = () => {
-            const [city, setCity] = useState('');
-            const [food, setFood] = useState('');
-            const [results, setResults] = useState([]);
-            const [loading, setLoading] = useState(false);
-            const [error, setError] = useState('');
-            const [step, setStep] = useState('input');
-            const [filterStatus, setFilterStatus] = useState('');
+        const JAPAN_GOURMET_DB = [
+            {
+                id: 'tokyo-1',
+                name: '멘야 무사시 신주쿠 본점',
+                jpName: '麺屋武蔵 新宿本店',
+                city: '도쿄',
+                district: '신주쿠 (新宿)',
+                category: '라멘',
+                rating: 4.7,
+                reviewCount: 4820,
+                price: '¥1,000 - ¥2,000',
+                priceLevel: 1,
+                hours: '11:00 - 22:30 (연중무휴)',
+                address: '7 Chome-2-6 Nishishinjuku, Shinjuku City, Tokyo 160-0023',
+                jpAddress: '東京都新宿区西新宿7-2-6',
+                michelin: false,
+                localFavorite: true,
+                tags: ['츠케멘', '자판기주문', '두툼한차슈', '혼밥최적'],
+                description: '진한 멸치 육수와 돼지 사골 육수의 환상적인 더블 스쿱 베이스. 입안에서 녹는 두꺼운 수제 차슈가 일품인 도쿄 대표 츠케멘 명가.',
+                signatureDishes: ['특제 츠케멘 (特製つけ麺)', '무사시 라멘 (武蔵ラーメン)'],
+                phrases: [
+                    { jp: 'つけ麺のひやもりをお願いします', romaji: 'Tsukemen no hiyamori o onegaishimasu', ko: '츠케멘 차가운 면으로 부탁합니다' },
+                    { jp: 'スープ割りをお願いします', romaji: 'Supuwari o onegaishimasu', ko: '남은 소스에 맑은 육수(스프와리) 추가해주세요' }
+                ]
+            },
+            {
+                id: 'tokyo-2',
+                name: '스시 다이와 토요스',
+                jpName: '寿司 大和 豊洲店',
+                city: '도쿄',
+                district: '토요스 (豊洲)',
+                category: '스시',
+                rating: 4.8,
+                reviewCount: 3950,
+                price: '¥5,000 - ¥9,000',
+                priceLevel: 3,
+                hours: '05:30 - 13:30 (일요일 휴무)',
+                address: '6 Chome-5-1 Toyosu, Koto City, Tokyo 135-0061',
+                jpAddress: '東京都江東区豊洲6-5-1 6街区水産仲卸売場棟3F',
+                michelin: true,
+                localFavorite: true,
+                tags: ['오마카세', '토요스시장', '새벽영업', '극상참치'],
+                description: '토요스 수산시장에서 당일 새벽 입고되는 최고의 제철 생선으로 쥐어내는 오마카세. 신선함의 경지를 보여주는 당대 최고의 스시 노포.',
+                signatureDishes: ['셰프 추천 오마카세 코스 (おまかせコース)'],
+                phrases: [
+                    { jp: 'おまかせコースをお願いします', romaji: 'Omakase kosu o onegaishimasu', ko: '오마카세 코스로 부탁드립니다' },
+                    { jp: 'ワサビ抜きでお願いします', romaji: 'Wasabi nuki de onegaishimasu', ko: '와사비 빼고 부탁드립니다' }
+                ]
+            },
+            {
+                id: 'tokyo-3',
+                name: '돈카츠 마이센 아오야마 본점',
+                jpName: 'とんかつ まい泉 青山本店',
+                city: '도쿄',
+                district: '아오야마 (青山)',
+                category: '돈카츠',
+                rating: 4.7,
+                reviewCount: 3410,
+                price: '¥2,000 - ¥4,000',
+                priceLevel: 2,
+                hours: '11:00 - 21:00',
+                address: '4 Chome-8-5 Jingumae, Shibuya City, Tokyo 150-0001',
+                jpAddress: '東京都渋谷区神宮前4-8-5',
+                michelin: false,
+                localFavorite: true,
+                tags: ['젓가락으로잘리는육질', '흑돼지', '고급스러운분위기'],
+                description: '옛 목욕탕 건물을 개조한 고풍스러운 공간에서 맛보는 프리미엄 도쿄 돈카츠. 젓가락만으로 잘릴 정도의 극상 부드러움.',
+                signatureDishes: ['흑돼지 로스카츠 정식 (黒豚ロースカツ定食)', '카츠샌드 (カツサンド)'],
+                phrases: [
+                    { jp: '黒豚ロースカツ定食でお願いします', romaji: 'Kurobuta rosu katsu teishoku de onegaishimasu', ko: '흑돼지 등심카츠 정식으로 주십시오' }
+                ]
+            },
+            {
+                id: 'tokyo-4',
+                name: '야키토리 고치야 신주쿠',
+                jpName: '焼き鳥 鳥貴族 新宿東口店',
+                city: '도쿄',
+                district: '신주쿠 (新宿)',
+                category: '이자카야',
+                rating: 4.5,
+                reviewCount: 2890,
+                price: '¥2,000 - ¥3,500',
+                priceLevel: 1,
+                hours: '17:00 - 04:00 (연중무휴)',
+                address: '3 Chome-26-11 Shinjuku, Shinjuku City, Tokyo 160-0022',
+                jpAddress: '東京都新宿区新宿3-26-11',
+                michelin: false,
+                localFavorite: true,
+                tags: ['균일가이자카야', '하이볼', '닭꼬치전문', '야식스폿'],
+                description: '모든 메뉴가 균일가로 제공되는 2030 필수 가성비 이자카야. 불향이 살아있는 숯불 닭꼬치와 얼음 잔 하이볼의 조화.',
+                signatureDishes: ['귀족 닭꼬치 타레/시오 (貴族焼)', '생맥주 & 산토리 하이볼'],
+                phrases: [
+                    { jp: 'ハイボールと焼き鳥をお願いします', romaji: 'Haiboru to yakitori o onegaishimasu', ko: '하이볼과 닭꼬치 부탁합니다' }
+                ]
+            },
+            {
+                id: 'osaka-1',
+                name: '쿠쿠루 도톤보리 본점',
+                jpName: 'たこ家道頓堀くくる 本店',
+                city: '오사카',
+                district: '도톤보리 (道頓堀)',
+                category: '타코야키',
+                rating: 4.6,
+                reviewCount: 3120,
+                price: '¥800 - ¥1,500',
+                priceLevel: 1,
+                hours: '11:00 - 22:00',
+                address: '1 Chome-10-5 Dotonbori, Chuo Ward, Osaka, 542-0071',
+                jpAddress: '大阪府大阪市中央区道頓堀1-10-5',
+                michelin: false,
+                localFavorite: true,
+                tags: ['도톤보리상징', '대왕문어', '겉바속촉', '테이크아웃'],
+                description: '큼직하게 썰어 넣은 통문어 다리가 박혀있는 오사카 명물 타코야키. 화이트 와인을 첨가한 수제 반죽의 부드러운 속살.',
+                signatureDishes: ['대왕 문어 타코야키 8구 (びっくりたこ焼き)'],
+                phrases: [
+                    { jp: 'たこ焼き8個、持ち帰りでお願いします', romaji: 'Takoyaki hachiko, mochikaeri de onegaishimasu', ko: '타코야키 8개 포장해주세요' }
+                ]
+            },
+            {
+                id: 'osaka-2',
+                name: '미즈노 오코노미야키',
+                jpName: '美津の (みずの)',
+                city: '오사카',
+                district: '난바 (難波)',
+                category: '오코노미야키',
+                rating: 4.7,
+                reviewCount: 2980,
+                price: '¥1,500 - ¥3,000',
+                priceLevel: 2,
+                hours: '11:00 - 21:30',
+                address: '1 Chome-4-15 Dotonbori, Chuo Ward, Osaka, 542-0071',
+                jpAddress: '大阪府大阪市中央区道頓堀1-4-15',
+                michelin: true,
+                localFavorite: true,
+                tags: ['미슐랭빕구르망', '마100%반죽', '줄서는맛집', '카운터철판'],
+                description: '밀가루를 사용하지 않고 100% 마 반죽만으로 부쳐내는 미슐랭 인정 오코노미야키 노포. 폭신한 식감과 카라멜라이징 소스.',
+                signatureDishes: ['야마이모 야키 (山芋焼)', '미즈노 야키 (美津の焼)'],
+                phrases: [
+                    { jp: '山芋焼のおすすめのトッピングは何ですか', romaji: 'Yamaimoyaki no osusume no toppingu wa nan desu ka', ko: '야마이모야키 추천 토핑은 무엇인가요?' }
+                ]
+            },
+            {
+                id: 'kyoto-1',
+                name: '나카무라 토키치 우지 본점',
+                jpName: '中村藤吉 本店',
+                city: '교토',
+                district: '우지 (宇治)',
+                category: '디저트',
+                rating: 4.8,
+                reviewCount: 2890,
+                price: '¥1,200 - ¥2,500',
+                priceLevel: 2,
+                hours: '10:00 - 17:30',
+                address: '10 Ichiban, Uji, Kyoto 611-0021',
+                jpAddress: '京都府宇治市宇治一番10',
+                michelin: false,
+                localFavorite: true,
+                tags: ['170년전통', '말차파페', '일본정원뷰', '교토필수코스'],
+                description: '1854년 창업한 전통 차 명가. 대나무 통에 담겨 나오는 말차 젤리와 깊고 고소한 유기농 우지 말차 파페의 독보적 풍미.',
+                signatureDishes: ['생말차 젤리 파페 (生茶ゼリイ)', '우지 말차 세트'],
+                phrases: [
+                    { jp: '抹茶パフェと抹茶のセットをお願いします', romaji: 'Matcha pafe to matcha no setto o onegaishimasu', ko: '말차 파페와 말차 세트로 주세요' }
+                ]
+            },
+            {
+                id: 'fukuoka-1',
+                name: '신신 라멘 텐진 본점',
+                jpName: '博多らーめん ShinShin 天神本店',
+                city: '후쿠오카',
+                district: '텐진 (天神)',
+                category: '라멘',
+                rating: 4.7,
+                reviewCount: 5120,
+                price: '¥800 - ¥1,500',
+                priceLevel: 1,
+                hours: '11:00 - 03:00 (새벽 영업)',
+                address: '3 Chome-2-19 Tenjin, Chuo Ward, Fukuoka, 810-0001',
+                jpAddress: '福岡県福岡市中央区天神3-2-19',
+                michelin: false,
+                localFavorite: true,
+                tags: ['하카타돈코츠', '극세면', '야식스폿', '유명인단골'],
+                description: '잡내 없이 깔끔하면서도 깊은 돼지사골+닭육수의 잡탕 베이스. 술자리 마무리에 최고로 꼽히는 후쿠오카 넘버원 심야 라멘.',
+                signatureDishes: ['하카타 신신 라멘 (博多ShinShinラーメン)', '야키교자 (焼き餃子)'],
+                phrases: [
+                    { jp: '麺のかたさはバリカタでお願いします', romaji: 'Men no katasa wa barikata de onegaishimasu', ko: '면 꼬들함은 바리카타(매우 꼬들하게)로 해주세요' }
+                ]
+            },
+            {
+                id: 'fukuoka-2',
+                name: '하카타 모츠나베 오오야마',
+                jpName: '博多もつ鍋 おおやま',
+                city: '후쿠오카',
+                district: '하카타역 (博多駅)',
+                category: '모츠나베',
+                rating: 4.6,
+                reviewCount: 2310,
+                price: '¥2,500 - ¥4,500',
+                priceLevel: 2,
+                hours: '11:00 - 23:00',
+                address: '1-1 Hakataekichuogai, Hakata Ward, Fukuoka, 812-0012',
+                jpAddress: '福岡県福岡市博多区博多駅中央街1-1',
+                michelin: false,
+                localFavorite: true,
+                tags: ['소곱창전골', '비법미소육수', '1인식사가능', '하카타역직결'],
+                description: '큐슈산 엄선 소 곱창과 창업주 비법 3종 미소(된장) 블렌딩의 깊은 감칠맛. 짬뽕면 사리로 마무리하는 미식의 정수.',
+                signatureDishes: ['모츠나베 미소맛 (みそ味もつ鍋)', '말고기 육회 (馬刺し)'],
+                phrases: [
+                    { jp: 'みそ味のもつ鍋を二人前お願いします', romaji: 'Misoaji no motsunabe o hitorimae onegaishimasu', ko: '된장 맛 곱창전골 2인분 부탁합니다' }
+                ]
+            },
+            {
+                id: 'sapporo-1',
+                name: '스프카레 가라쿠',
+                jpName: 'Soup Curry GARAKU 札幌本店',
+                city: '삿포로',
+                district: '스스키노 (すすきの)',
+                category: '카레',
+                rating: 4.8,
+                reviewCount: 4100,
+                price: '¥1,300 - ¥2,200',
+                priceLevel: 2,
+                hours: '11:30 - 21:00',
+                address: '7 Chome-2 Minami 3 Jonishi, Chuo Ward, Sapporo, Hokkaido 060-0063',
+                jpAddress: '北海道札幌市中央区南3条西7丁目2',
+                michelin: false,
+                localFavorite: true,
+                tags: ['삿포로명물', '21가지스파이스', '바삭한닭다리', '웨이팅필수'],
+                description: '천연 부시 육수와 21가지 한방 향신료가 어우러진 삿포로 대표 향토 카레. 겉바속촉 구운 야채와 훈제 닭다리의 조화.',
+                signatureDishes: ['부드러운 치킨 스프카레 (やわらかチキン野菜)'],
+                phrases: [
+                    { jp: '辛さは3番、ご飯にチーズトッピングで', romaji: 'Karasa wa sanban, gohan ni chizu toppingu de', ko: '맵기 3단계, 밥 위에 치즈 토핑으로 주세요' }
+                ]
+            }
+        ];
 
-            const dismissKeyboard = () => document.activeElement?.blur();
+        const DINING_PHRASEBOOK = [
+            { category: '입장 & 인원', jp: '二人です (Futari desu)', ko: '두 명입니다.', tip: '손가락으로 인원수를 함께 보여주면 더 정확합니다.' },
+            { category: '메뉴판 요청', jp: '韓国語のメニューはありますか？ (Kankokugo no menyu wa arimasu ka?)', ko: '한국어 메뉴판이 있나요?' },
+            { category: '주문 시', jp: 'これとこれをください (Kore to kore o kudasai)', ko: '이것과 이것으로 주세요 (메뉴판 가리키며).' },
+            { category: '추천 요청', jp: '一番人気は何ですか？ (Ichiban ninki wa nan desu ka?)', ko: '가장 인기 있는 메뉴는 무엇인가요?' },
+            { category: '와사비 조절', jp: 'ワサビ抜きでお願いします (Wasabi nuki de onegaishimasu)', ko: '와사비 빼고 부탁드립니다.' },
+            { category: '물/얼음물', jp: 'お冷をふたつお願いします (Ohiya o futatsu onegaishimasu)', ko: '시원한 물 두 잔 부탁합니다.' },
+            { category: '계산 시', jp: 'お会計をお願いします (Okaikei o onegaishimasu)', ko: '계산 부탁드립니다 (손가락 X 표시 가능).' },
+            { category: '식사 후 감사', jp: 'ごちそうさまでした (Gochisosama deshita)', ko: '잘 먹었습니다 (미소 지으며 점원에게).' }
+        ];
 
-            const searchRestaurants = async (e) => {
-                if (e) e.preventDefault();
-                dismissKeyboard();
+        const speakJapanese = (text) => {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text.split('(')[0]);
+                utterance.lang = 'ja-JP';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        };
 
-                if (!city.trim() || !food.trim()) {
-                    setError('도시와 메뉴를 모두 입력해주세요.');
-                    return;
-                }
+        function App() {
+            const [isDarkMode, setIsDarkMode] = useState(true);
+            const [selectedCity, setSelectedCity] = useState('전체');
+            const [selectedCategory, setSelectedCategory] = useState('전체');
+            const [searchKeyword, setSearchKeyword] = useState('');
+            const [minRating, setMinRating] = useState(0);
+            const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'phrases' | 'passport' | 'calc'
+            const [selectedSpot, setSelectedSpot] = useState(null);
+            const [showTaxiModal, setShowTaxiModal] = useState(false);
+            const [toast, setToast] = useState('');
+            const [copiedId, setCopiedId] = useState(null);
 
-                setLoading(true);
-                setError('');
-                setStep('loading');
-                setResults([]);
+            // Yen Calculator State
+            const [yenInput, setYenInput] = useState('1000');
+            const yenRate = 8.95; // Approximate 100 Yen = 895 KRW
 
+            // LocalStorage Bookmarks
+            const [bookmarks, setBookmarks] = useState(() => {
                 try {
-                    const res = await fetch('/api/search', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ city: city.trim(), food: food.trim() }),
-                    });
+                    const saved = localStorage.getItem('tabi_2030_bookmarks_v2');
+                    return saved ? JSON.parse(saved) : ['tokyo-1', 'osaka-2'];
+                } catch { return ['tokyo-1']; }
+            });
 
-                    const data = await res.json();
+            useEffect(() => {
+                try {
+                    localStorage.setItem('tabi_2030_bookmarks_v2', JSON.stringify(bookmarks));
+                } catch (e) { console.error(e); }
+            }, [bookmarks]);
 
-                    if (!res.ok) {
-                        const msg = data.detail
-                            ? `${data.error} (${data.detail})`
-                            : (data.error || '검색 중 오류가 발생했습니다.');
-                        throw new Error(msg);
-                    }
+            const toggleTheme = () => {
+                setIsDarkMode(!isDarkMode);
+                document.documentElement.classList.toggle('dark');
+            };
 
-                    if (!data.results?.length) {
-                        setError(`'${city}'의 '${food}' 맛집을 찾을 수 없습니다.`);
-                        setStep('input');
-                        return;
-                    }
+            const triggerToast = (msg) => {
+                setToast(msg);
+                setTimeout(() => setToast(''), 2500);
+            };
 
-                    setResults(data.results);
-                    setFilterStatus(data.filterStatus || '');
-                    setStep('results');
-
-                } catch (err) {
-                    setError(err.message || '일시적인 오류가 발생했습니다.');
-                    setStep('input');
-                } finally {
-                    setLoading(false);
+            const toggleBookmark = (id, e) => {
+                if (e) e.stopPropagation();
+                if (bookmarks.includes(id)) {
+                    setBookmarks(bookmarks.filter(bId => bId !== id));
+                    triggerToast('🔖 미식 여권에서 삭제되었습니다.');
+                } else {
+                    setBookmarks([...bookmarks, id]);
+                    triggerToast('🌸 미식 여권에 저장되었습니다!');
                 }
             };
 
-            const handleReset = () => { setCity(''); setFood(''); setStep('input'); setError(''); };
+            const filteredSpots = useMemo(() => {
+                return JAPAN_GOURMET_DB.filter(spot => {
+                    const matchCity = selectedCity === '전체' || spot.city === selectedCity;
+                    const matchCategory = selectedCategory === '전체' || spot.category === selectedCategory;
+                    const matchRating = spot.rating >= minRating;
+                    const matchKeyword = !searchKeyword.trim() || 
+                        spot.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+                        spot.jpName.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+                        spot.district.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+                        spot.tags.some(t => t.toLowerCase().includes(searchKeyword.toLowerCase()));
 
-            if (step === 'loading') return (
-                <div class="page">
-                    <div class="loading-wrap">
-                        <div class="loading-symbol">
-                            <div class="loading-ring loading-ring-1"></div>
-                            <div class="loading-ring loading-ring-2"></div>
-                            <div class="loading-kanji">食</div>
-                        </div>
-                        <div>
-                            <div class="loading-title">맛집을 찾고 있어요</div>
-                            <div class="loading-sub">{city}의 {food} 분석 중</div>
-                            <div style={{display:'flex',justifyContent:'center'}}>
-                                <div class="loading-dots">
-                                    <div class="loading-dot"></div>
-                                    <div class="loading-dot"></div>
-                                    <div class="loading-dot"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
+                    return matchCity && matchCategory && matchRating && matchKeyword;
+                });
+            }, [selectedCity, selectedCategory, searchKeyword, minRating]);
 
-            if (step === 'results') return (
-                <div class="page fade-in">
-                    <div class="results-header">
-                        <div>
-                            <div class="results-eyebrow">Search Results</div>
-                            <div class="results-title">{city}의 {food}</div>
-                            <div class="results-meta">
-                                <span class="results-sub">맛집 {results.length}곳 발견</span>
-                                {filterStatus && <span class="results-badge">{filterStatus}</span>}
-                            </div>
-                        </div>
-                        <button class="btn-back" onClick={handleReset}>←</button>
-                    </div>
-                    <div class="card-list">
-                        {results.map((item, index) => (
-                            <div key={index} class="card" style={{animationDelay:`${index*0.06}s`}}
-                                 onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${city} ${item.name}`)}`, '_blank')}>
-                                <div class="card-inner">
-                                    <div class="card-rank">{String(index+1).padStart(2,'0')}</div>
-                                    <div class="card-body">
-                                        <div class="card-name">{item.name}</div>
-                                        <div class="card-address">{item.address}</div>
-                                    </div>
-                                    <div class="card-arrow">→</div>
-                                </div>
-                                <div class="card-footer">
-                                    <div class="rating-pill">
-                                        <span class="rating-star">★</span>
-                                        <span class="rating-val">{item.rating.toFixed(1)}</span>
-                                    </div>
-                                    <span class="review-count">리뷰 {item.reviewCount.toLocaleString()}개</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
+            const savedSpotObjects = useMemo(() => {
+                return JAPAN_GOURMET_DB.filter(spot => bookmarks.includes(spot.id));
+            }, [bookmarks]);
+
+            const copyToClipboard = (text, id) => {
+                navigator.clipboard.writeText(text);
+                setCopiedId(id);
+                triggerToast('📋 일본어 주소가 클립보드에 복사되었습니다.');
+                setTimeout(() => setCopiedId(null), 2000);
+            };
 
             return (
-                <div class="page fade-in">
-                    <div class="header">
-                        <div class="header-lantern"></div>
-                        <span class="header-label">Japan Food Finder</span>
-                    </div>
-                    <div class="hero">
-                        <div class="hero-eyebrow">일본여행 정보공유</div>
-                        <h1 class="hero-title">일본 어디서<br /><em>드시나요?</em></h1>
-                        <p class="hero-desc">
-                            구글 평점으로 검증된 <strong>진짜 맛집</strong>만 찾아드려요.
-                        </p>
-                    </div>
-                    <div class="divider">
-                        <div class="divider-line"></div>
-                        <div class="divider-kanji">検索</div>
-                        <div class="divider-line"></div>
-                    </div>
-                    <form class="form" onSubmit={searchRestaurants}>
-                        <div class="input-group">
-                            <span class="input-icon">📍</span>
-                            <input type="text" class="form-input" value={city} onChange={e=>setCity(e.target.value)} placeholder="도시 (예: 도쿄, 오사카)" enterKeyHint="next" />
+                <div className={`max-w-4xl mx-auto px-4 sm:px-6 pt-6 relative z-10 min-h-screen flex flex-col ${isDarkMode ? 'dark' : 'light'}`}>
+                    
+                    {/* Toast Alert Notification */}
+                    {toast && (
+                        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-night-surface dark:bg-night-surface light:bg-white border border-gold/40 text-washi dark:text-washi light:text-stone-900 text-xs sm:text-sm font-bold px-5 py-3 rounded-full shadow-neon-gold backdrop-blur-xl flex items-center space-x-2.5 animate-bounce">
+                            <i className="fa-solid fa-sparkles text-gold"></i>
+                            <span>{toast}</span>
                         </div>
-                        <div class="input-group">
-                            <span class="input-icon">🍜</span>
-                            <input type="text" class="form-input" value={food} onChange={e=>setFood(e.target.value)} placeholder="메뉴 (예: 라멘, ramen)" enterKeyHint="search" />
-                        </div>
-                        {error && (
-                            <div class="error-box">
-                                <div class="error-title">⚠️ 검색 오류</div>
-                                <div class="error-msg">{error}</div>
-                                <button type="button" class="btn-refresh" onClick={() => window.location.reload()}>↺ 새로고침</button>
+                    )}
+
+                    <header className="flex items-center justify-between pb-6 border-b border-stone-800/60 dark:border-stone-800/60 light:border-stone-200 mb-8">
+                        <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => { setActiveTab('explore'); setSelectedCity('전체'); }}>
+                            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-vermilion via-red-600 to-amber-600 text-white flex items-center justify-center shadow-neon-vermilion group-hover:scale-105 active-scale">
+                                <i className="fa-solid fa-torii-gate text-lg"></i>
                             </div>
-                        )}
-                        <button type="submit" class="btn-submit">
-                            <span>맛집 검색하기</span>
-                            <span class="btn-arrow">→</span>
+                            <div>
+                                <div className="flex items-center space-x-2">
+                                    <span className="font-black text-xl tracking-tight text-washi dark:text-washi light:text-stone-900 font-serif">일여방</span>
+                                    <span className="text-[10px] font-bold tracking-widest text-gold bg-gold-soft border border-gold/30 px-2 py-0.5 rounded-full uppercase">
+                                        日旅食 3.0
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-stone-400 dark:text-stone-400 light:text-stone-500 font-medium">일본 미식 여행 실시간 가이드</p>
+                            </div>
+                        </div>
+
+                        {/* Top Controls: Theme Toggle & Quick Badge */}
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={toggleTheme}
+                                className="w-10 h-10 rounded-xl bg-stone-900/80 dark:bg-stone-900/80 light:bg-stone-100 text-gold border border-stone-800 dark:border-stone-800 light:border-stone-200 flex items-center justify-center active-scale"
+                                title="테마 변경 (다크/라이트)"
+                            >
+                                <i className={`fa-solid ${isDarkMode ? 'fa-sun text-amber-400' : 'fa-moon text-indigo-600'}`}></i>
+                            </button>
+
+                            <button
+                                onClick={() => setActiveTab('passport')}
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-2 active-scale ${
+                                    activeTab === 'passport'
+                                        ? 'bg-vermilion text-white shadow-neon-vermilion'
+                                        : 'bg-stone-900/80 dark:bg-stone-900/80 light:bg-stone-100 text-stone-300 dark:text-stone-300 light:text-stone-700 border border-stone-800 dark:border-stone-800 light:border-stone-200'
+                                }`}
+                            >
+                                <i className="fa-solid fa-passport"></i>
+                                <span className="hidden sm:inline">미식 여권</span>
+                                {bookmarks.length > 0 && (
+                                    <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-gold text-night font-black">
+                                        {bookmarks.length}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+                    </header>
+
+                    {activeTab === 'explore' && (
+                        <div className="space-y-8 animate-slide-up">
+                            
+                            {/* Trendy Hero Banner */}
+                            <div className="relative overflow-hidden rounded-3xl glass-card p-6 sm:p-10 border border-stone-800/80">
+                                <div className="absolute -top-8 -right-8 text-[160px] font-serif font-black text-white/5 dark:text-white/5 light:text-black/5 pointer-events-none select-none">
+                                    食
+                                </div>
+                                <div className="relative z-10 max-w-xl space-y-3">
+                                    <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-vermilion-soft border border-vermilion/30 text-vermilion text-xs font-bold">
+                                        <i className="fa-solid fa-fire text-vermilion"></i>
+                                        <span>2030 JAPAN GOURMET CURATION</span>
+                                    </div>
+                                    <h1 className="text-3xl sm:text-4xl font-black text-washi dark:text-washi light:text-stone-900 leading-tight tracking-tight font-serif">
+                                        일본 미식 여행,<br />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-light via-gold to-amber-200">
+                                            실시간 구글 4.5+ 노포 탐색
+                                        </span>
+                                    </h1>
+                                    <p className="text-xs sm:text-sm text-stone-400 dark:text-stone-400 light:text-stone-600 leading-relaxed pt-1">
+                                        현지 일본인 리뷰로 검증된 맛집. 1초 일어 음성 지원, 택시 기사님 전용 빅폰트 화면, 미식 여권 보관함이 준비되어 있습니다.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Search & Filter Dashboard */}
+                            <div className="glass-card p-5 sm:p-7 rounded-3xl space-y-6">
+                                
+                                {/* Keyword Search Bar */}
+                                <div className="relative">
+                                    <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-stone-500"></i>
+                                    <input 
+                                        type="text"
+                                        value={searchKeyword}
+                                        onChange={e => setSearchKeyword(e.target.value)}
+                                        placeholder="도시, 식당 이름, 시그니처 메뉴, 태그 검색 (예: 신주쿠, 츠케멘, 스시)"
+                                        className="w-full bg-stone-900/90 dark:bg-stone-900/90 light:bg-stone-100 border border-stone-800 dark:border-stone-800 light:border-stone-200 rounded-2xl py-3.5 pl-11 pr-10 text-sm text-washi dark:text-washi light:text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-vermilion focus:ring-1 focus:ring-vermilion/30 transition-all font-medium"
+                                    />
+                                    {searchKeyword && (
+                                        <button onClick={() => setSearchKeyword('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300">
+                                            <i className="fa-solid fa-circle-xmark"></i>
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* City Chips Filter */}
+                                <div className="space-y-2">
+                                    <span className="text-xs font-bold text-stone-400 dark:text-stone-400 light:text-stone-500 tracking-wider uppercase block">
+                                        <i className="fa-solid fa-location-dot text-vermilion mr-1.5"></i> 여행 지역 선택
+                                    </span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {['전체', '도쿄', '오사카', '교토', '후쿠오카', '삿포로'].map(c => (
+                                            <button
+                                                key={c}
+                                                onClick={() => setSelectedCity(c)}
+                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all active-scale ${
+                                                    selectedCity === c
+                                                        ? 'bg-vermilion text-white shadow-neon-vermilion scale-105'
+                                                        : 'bg-stone-900/80 dark:bg-stone-900/80 light:bg-stone-100 text-stone-400 dark:text-stone-400 light:text-stone-600 border border-stone-800 dark:border-stone-800 light:border-stone-200'
+                                                }`}
+                                            >
+                                                {c}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Category Chips Filter */}
+                                <div className="space-y-2">
+                                    <span className="text-xs font-bold text-stone-400 dark:text-stone-400 light:text-stone-500 tracking-wider uppercase block">
+                                        <i className="fa-solid fa-utensils text-gold mr-1.5"></i> 미식 카테고리
+                                    </span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            { name: '전체', icon: 'fa-globe' },
+                                            { name: '라멘', icon: 'fa-bowl-food' },
+                                            { name: '스시', icon: 'fa-fish' },
+                                            { name: '돈카츠', icon: 'fa-drumstick-bite' },
+                                            { name: '이자카야', icon: 'fa-beer-mug-empty' },
+                                            { name: '타코야키', icon: 'fa-circle-dot' },
+                                            { name: '오코노미야키', icon: 'fa-stroopwafel' },
+                                            { name: '디저트', icon: 'fa-mug-hot' },
+                                            { name: '모츠나베', icon: 'fa-fire-burner' },
+                                            { name: '카레', icon: 'fa-pepper-hot' }
+                                        ].map(cat => (
+                                            <button
+                                                key={cat.name}
+                                                onClick={() => setSelectedCategory(cat.name)}
+                                                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 active-scale ${
+                                                    selectedCategory === cat.name
+                                                        ? 'bg-gold text-night font-extrabold shadow-neon-gold scale-105'
+                                                        : 'bg-stone-900/80 dark:bg-stone-900/80 light:bg-stone-100 text-stone-400 dark:text-stone-400 light:text-stone-600 border border-stone-800 dark:border-stone-800 light:border-stone-200'
+                                                }`}
+                                            >
+                                                <i className={`fa-solid ${cat.icon}`}></i>
+                                                <span>{cat.name}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Rating Filter Bar */}
+                                <div className="flex items-center justify-between pt-3 border-t border-stone-800/80 dark:border-stone-800/80 light:border-stone-200 text-xs">
+                                    <span className="text-stone-400 dark:text-stone-400 light:text-stone-600 font-semibold">최소 구글 평점:</span>
+                                    <div className="flex items-center space-x-1.5">
+                                        {[0, 4.5, 4.7, 4.8].map(r => (
+                                            <button
+                                                key={r}
+                                                onClick={() => setMinRating(r)}
+                                                className={`px-2.5 py-1 rounded-lg font-bold border transition-all ${
+                                                    minRating === r
+                                                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                                                        : 'bg-stone-900 dark:bg-stone-900 light:bg-stone-100 text-stone-500 border-stone-800 dark:border-stone-800 light:border-stone-200'
+                                                }`}
+                                            >
+                                                {r === 0 ? '전체' : `★ ${r}+`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between text-xs text-stone-400 px-1">
+                                    <span className="font-bold tracking-wider">
+                                        검색 결과 <strong className="text-gold">{filteredSpots.length}</strong>곳
+                                    </span>
+                                    <span className="text-[11px] text-stone-500">Google Real-Time Certified Spots</span>
+                                </div>
+
+                                {filteredSpots.length === 0 ? (
+                                    <div className="glass-card rounded-3xl p-12 text-center space-y-4">
+                                        <i className="fa-solid fa-circle-exclamation text-4xl text-stone-600"></i>
+                                        <p className="text-sm text-stone-400">조건에 일치하는 일본 맛집을 찾지 못했습니다.</p>
+                                        <button 
+                                            onClick={() => { setSelectedCity('전체'); setSelectedCategory('전체'); setSearchKeyword(''); setMinRating(0); }}
+                                            className="px-5 py-2.5 bg-vermilion text-white text-xs font-bold rounded-xl shadow-neon-vermilion"
+                                        >
+                                            필터 초기화
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {filteredSpots.map((spot) => {
+                                            const isSaved = bookmarks.includes(spot.id);
+                                            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${spot.name} ${spot.address}`)}`;
+
+                                            return (
+                                                <div 
+                                                    key={spot.id}
+                                                    onClick={() => setSelectedSpot(spot)}
+                                                    className="glass-card rounded-3xl p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden"
+                                                >
+                                                    <div>
+                                                        {/* Header Pill & Heart */}
+                                                        <div className="flex items-start justify-between gap-2 mb-2">
+                                                            <div className="flex items-center space-x-1.5">
+                                                                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-md bg-stone-800 dark:bg-stone-800 light:bg-stone-200 text-stone-300 dark:text-stone-300 light:text-stone-700">
+                                                                    {spot.city} • {spot.district}
+                                                                </span>
+                                                                {spot.michelin && (
+                                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-950/80 text-red-400 border border-red-800/60">
+                                                                        <i className="fa-solid fa-award mr-1"></i>미슐랭
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <button
+                                                                onClick={(e) => toggleBookmark(spot.id, e)}
+                                                                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors active-scale ${
+                                                                    isSaved 
+                                                                        ? 'bg-vermilion/20 text-vermilion border border-vermilion/40' 
+                                                                        : 'bg-stone-900 dark:bg-stone-900 light:bg-stone-100 text-stone-500 hover:text-stone-300 border border-stone-800 dark:border-stone-800 light:border-stone-200'
+                                                                }`}
+                                                                title={isSaved ? '북마크 취소' : '북마크 추가'}
+                                                            >
+                                                                <i className={`fa-solid fa-heart ${isSaved ? 'text-vermilion' : ''}`}></i>
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Spot Title & Japanese Name */}
+                                                        <h3 className="text-lg font-bold text-washi dark:text-washi light:text-stone-900 group-hover:text-gold transition-colors font-serif leading-snug">
+                                                            {spot.name}
+                                                        </h3>
+                                                        <p className="text-xs text-stone-500 font-serif mb-3">{spot.jpName}</p>
+
+                                                        {/* Rating & Price */}
+                                                        <div className="flex items-center space-x-3 mb-3 text-xs">
+                                                            <div className="flex items-center bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-xl text-amber-400 font-extrabold">
+                                                                <i className="fa-solid fa-star text-amber-400 mr-1.5"></i>
+                                                                <span>{spot.rating.toFixed(1)}</span>
+                                                            </div>
+                                                            <span className="text-stone-400 font-medium">리뷰 {spot.reviewCount.toLocaleString()}개</span>
+                                                            <span className="text-stone-400 font-semibold bg-stone-900 dark:bg-stone-900 light:bg-stone-100 px-2 py-0.5 rounded-md border border-stone-800 dark:border-stone-800 light:border-stone-200">
+                                                                {spot.price}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Description */}
+                                                        <p className="text-xs text-stone-400 dark:text-stone-400 light:text-stone-600 leading-relaxed line-clamp-2 mb-3">
+                                                            {spot.description}
+                                                        </p>
+
+                                                        {/* Tags */}
+                                                        <div className="flex flex-wrap gap-1.5 mb-4">
+                                                            {spot.tags.map((tag, tIdx) => (
+                                                                <span key={tIdx} className="text-[10px] text-stone-400 dark:text-stone-400 light:text-stone-600 bg-stone-900/90 dark:bg-stone-900/90 light:bg-stone-100 border border-stone-800 dark:border-stone-800 light:border-stone-200 px-2 py-0.5 rounded-md">
+                                                                    #{tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Card Actions */}
+                                                    <div className="pt-3 border-t border-stone-800/80 dark:border-stone-800/80 light:border-stone-200 flex items-center justify-between gap-2 text-xs">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); speakJapanese(spot.jpName); }}
+                                                            className="p-2.5 rounded-xl bg-stone-900 dark:bg-stone-900 light:bg-stone-100 hover:bg-stone-800 text-stone-300 dark:text-stone-300 light:text-stone-700 border border-stone-800 dark:border-stone-800 light:border-stone-200 active-scale"
+                                                            title="일본어 이름 오디오 발음 듣기"
+                                                        >
+                                                            <i className="fa-solid fa-volume-high text-gold"></i>
+                                                        </button>
+
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); copyToClipboard(spot.jpAddress, spot.id); }}
+                                                            className="flex-1 py-2.5 px-3 rounded-xl bg-stone-900 dark:bg-stone-900 light:bg-stone-100 hover:bg-stone-800 text-stone-300 dark:text-stone-300 light:text-stone-700 font-semibold border border-stone-800 dark:border-stone-800 light:border-stone-200 flex items-center justify-center space-x-1.5 transition-colors active-scale"
+                                                        >
+                                                            <i className="fa-regular fa-copy text-stone-500"></i>
+                                                            <span>{copiedId === spot.id ? '복사 완료' : '일어 주소 복사'}</span>
+                                                        </button>
+
+                                                        <a
+                                                            href={mapUrl}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="flex-1 py-2.5 px-3 rounded-xl bg-vermilion hover:bg-vermilion-hover text-white font-bold flex items-center justify-center space-x-1.5 shadow-neon-vermilion transition-colors active-scale"
+                                                        >
+                                                            <span>구글 맵</span>
+                                                            <i className="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                                        </a>
+                                                    </div>
+
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
+                        </div>
+                    )}
+
+                    {activeTab === 'phrases' && (
+                        <div className="space-y-6 animate-slide-up">
+                            <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-3">
+                                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-gold-soft border border-gold/30 text-gold text-xs font-semibold">
+                                    <i className="fa-solid fa-language"></i>
+                                    <span>JAPANESE DINING HELPER</span>
+                                </div>
+                                <h2 className="text-2xl font-bold text-washi dark:text-washi light:text-stone-900 font-serif">일본 현지 식당 필수 회화 가이드</h2>
+                                <p className="text-xs text-stone-400 dark:text-stone-400 light:text-stone-600 leading-relaxed">
+                                    스피커 아이콘을 누르면 브라우저의 원어민 일본어 오디오 발음이 재생됩니다. 식당 점원에게 직접 보여주거나 들려주세요.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {DINING_PHRASEBOOK.map((phrase, pIdx) => (
+                                    <div key={pIdx} className="glass-card rounded-2xl p-5 space-y-3 border border-stone-800 dark:border-stone-800 light:border-stone-200">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-gold-soft text-gold border border-gold/30">
+                                                {phrase.category}
+                                            </span>
+                                            <button 
+                                                onClick={() => speakJapanese(phrase.jp)}
+                                                className="w-8 h-8 rounded-full bg-stone-900 dark:bg-stone-900 light:bg-stone-100 hover:bg-gold text-gold hover:text-night border border-gold/30 flex items-center justify-center transition-all active-scale"
+                                                title="발음 듣기"
+                                            >
+                                                <i className="fa-solid fa-volume-high text-xs"></i>
+                                            </button>
+                                        </div>
+
+                                        <p className="text-base font-extrabold text-washi dark:text-washi light:text-stone-900 font-serif leading-snug">{phrase.jp}</p>
+                                        <p className="text-xs text-vermilion font-bold">{phrase.ko}</p>
+                                        <p className="text-[11px] text-stone-400 dark:text-stone-400 light:text-stone-600 bg-stone-900/80 dark:bg-stone-900/80 light:bg-stone-100 p-2.5 rounded-xl border border-stone-800/80 dark:border-stone-800/80 light:border-stone-200">
+                                            💡 {phrase.tip}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'passport' && (
+                        <div className="space-y-6 animate-slide-up">
+                            <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-3 border border-gold/30">
+                                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-gold-soft border border-gold/30 text-gold text-xs font-semibold">
+                                    <i className="fa-solid fa-stamp"></i>
+                                    <span>GOURMET PASSPORT</span>
+                                </div>
+                                <h2 className="text-2xl font-bold text-washi dark:text-washi light:text-stone-900 font-serif">나의 일본 미식 여권</h2>
+                                <p className="text-xs text-stone-400 dark:text-stone-400 light:text-stone-600">
+                                    총 <strong className="text-gold font-bold">{savedSpotObjects.length}곳</strong>의 레스토랑이 내 보관함에 저장되어 있습니다.
+                                </p>
+                            </div>
+
+                            {savedSpotObjects.length === 0 ? (
+                                <div className="glass-card rounded-3xl p-12 text-center space-y-4">
+                                    <i className="fa-solid fa-passport text-4xl text-stone-600"></i>
+                                    <p className="text-sm text-stone-400">아직 저장한 미식 스폿이 없습니다.</p>
+                                    <button
+                                        onClick={() => setActiveTab('explore')}
+                                        className="px-5 py-2.5 bg-gold text-night font-bold text-xs rounded-xl shadow-neon-gold active-scale"
+                                    >
+                                        맛집 탐색하러 가기
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {savedSpotObjects.map((spot) => (
+                                        <div key={spot.id} className="glass-card rounded-3xl p-5 space-y-4">
+                                            <div className="flex items-start justify-between">
+                                                <div>
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-stone-800 text-stone-300">
+                                                        {spot.city} • {spot.district}
+                                                    </span>
+                                                    <h3 className="text-lg font-bold text-washi dark:text-washi light:text-stone-900 font-serif mt-1">{spot.name}</h3>
+                                                    <p className="text-xs text-stone-500 font-serif">{spot.jpName}</p>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => toggleBookmark(spot.id, e)}
+                                                    className="text-vermilion p-2 hover:bg-vermilion/10 rounded-full active-scale"
+                                                >
+                                                    <i className="fa-solid fa-heart"></i>
+                                                </button>
+                                            </div>
+
+                                            <div className="text-xs text-stone-400 dark:text-stone-400 light:text-stone-600 space-y-1 bg-stone-900/80 dark:bg-stone-900/80 light:bg-stone-100 p-3 rounded-2xl border border-stone-800 dark:border-stone-800 light:border-stone-200">
+                                                <p>📍 {spot.jpAddress}</p>
+                                                <p>⏰ {spot.hours}</p>
+                                            </div>
+
+                                            <div className="flex items-center space-x-2 pt-1 text-xs">
+                                                <button
+                                                    onClick={() => { setSelectedSpot(spot); setShowTaxiModal(true); }}
+                                                    className="flex-1 py-2.5 bg-stone-900 dark:bg-stone-900 light:bg-stone-100 hover:bg-stone-800 text-gold font-bold rounded-xl border border-stone-800 dark:border-stone-800 light:border-stone-200 flex items-center justify-center space-x-1 active-scale"
+                                                >
+                                                    <i className="fa-solid fa-taxi"></i>
+                                                    <span>택시 보드</span>
+                                                </button>
+                                                <a
+                                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${spot.name} ${spot.address}`)}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="flex-1 py-2.5 bg-vermilion text-white font-bold rounded-xl text-center shadow-neon-vermilion active-scale"
+                                                >
+                                                    구글 맵 연결
+                                                </a>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'calc' && (
+                        <div className="space-y-6 animate-slide-up">
+                            <div className="glass-card rounded-3xl p-6 sm:p-8 space-y-4">
+                                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-gold-soft border border-gold/30 text-gold text-xs font-semibold">
+                                    <i className="fa-solid fa-calculator"></i>
+                                    <span>YEN TO KRW CONVERTER</span>
+                                </div>
+                                <h2 className="text-2xl font-bold text-washi dark:text-washi light:text-stone-900 font-serif">엔화 ↔ 원화 1초 자동 계산기</h2>
+                                <p className="text-xs text-stone-400">기준 환율 약 100엔 = 895원 적용</p>
+
+                                {/* Calculator Input Form */}
+                                <div className="space-y-4 pt-2">
+                                    <div>
+                                        <label className="text-xs font-bold text-stone-400 block mb-1.5">일본 엔화 (엔, ¥)</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gold font-bold text-lg">¥</span>
+                                            <input 
+                                                type="number"
+                                                value={yenInput}
+                                                onChange={e => setYenInput(e.target.value)}
+                                                className="w-full bg-stone-900 dark:bg-stone-900 light:bg-stone-100 border border-stone-800 dark:border-stone-800 light:border-stone-200 rounded-2xl py-3.5 pl-10 pr-4 text-xl font-bold text-washi dark:text-washi light:text-stone-900 focus:outline-none focus:border-gold"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 rounded-2xl bg-gold-soft border border-gold/30 text-center space-y-1">
+                                        <span className="text-xs text-stone-400 block">예상 원화 결제 금액</span>
+                                        <p className="text-3xl font-black text-gold font-serif">
+                                            ₩ {Math.round((parseFloat(yenInput) || 0) * (yenRate / 10)).toLocaleString()} 원
+                                        </p>
+                                    </div>
+
+                                    {/* Quick Yen Buttons */}
+                                    <div className="grid grid-cols-4 gap-2 pt-2">
+                                        {[500, 1000, 3000, 5000].map(val => (
+                                            <button
+                                                key={val}
+                                                onClick={() => setYenInput(val.toString())}
+                                                className="py-2.5 rounded-xl bg-stone-900 dark:bg-stone-900 light:bg-stone-100 text-stone-300 dark:text-stone-300 light:text-stone-700 text-xs font-bold border border-stone-800 dark:border-stone-800 light:border-stone-200 active-scale"
+                                            >
+                                                + ¥{val.toLocaleString()}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedSpot && !showTaxiModal && (
+                        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-slide-up" onClick={() => setSelectedSpot(null)}>
+                            <div className="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto rounded-3xl p-6 sm:p-8 space-y-6 border border-gold/40 shadow-glass-dark relative" onClick={e => e.stopPropagation()}>
+                                
+                                <button 
+                                    onClick={() => setSelectedSpot(null)}
+                                    className="absolute top-5 right-5 w-9 h-9 rounded-full bg-stone-900 text-stone-400 hover:text-white border border-stone-800 flex items-center justify-center active-scale"
+                                >
+                                    <i className="fa-solid fa-xmark"></i>
+                                </button>
+
+                                <div>
+                                    <span className="text-xs font-bold text-gold bg-gold-soft px-2.5 py-1 rounded-md border border-gold/30">
+                                        {selectedSpot.city} • {selectedSpot.district}
+                                    </span>
+                                    <h2 className="text-2xl font-extrabold text-washi dark:text-washi light:text-stone-900 font-serif mt-2">{selectedSpot.name}</h2>
+                                    <div className="flex items-center space-x-2 mt-1">
+                                        <p className="text-sm text-stone-400 font-serif">{selectedSpot.jpName}</p>
+                                        <button onClick={() => speakJapanese(selectedSpot.jpName)} className="text-gold text-xs p-1 active-scale">
+                                            <i className="fa-solid fa-volume-high"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Spot Info Grid */}
+                                <div className="grid grid-cols-2 gap-3 text-xs">
+                                    <div className="bg-stone-900/90 dark:bg-stone-900/90 light:bg-stone-100 p-3 rounded-2xl border border-stone-800 dark:border-stone-800 light:border-stone-200">
+                                        <span className="text-stone-500 block mb-0.5">구글 평점</span>
+                                        <span className="text-amber-400 font-bold text-sm">★ {selectedSpot.rating} ({selectedSpot.reviewCount}개)</span>
+                                    </div>
+                                    <div className="bg-stone-900/90 dark:bg-stone-900/90 light:bg-stone-100 p-3 rounded-2xl border border-stone-800 dark:border-stone-800 light:border-stone-200">
+                                        <span className="text-stone-500 block mb-0.5">예산 대</span>
+                                        <span className="text-washi dark:text-washi light:text-stone-900 font-bold text-sm">{selectedSpot.price}</span>
+                                    </div>
+                                </div>
+
+                                {/* Hours & Address */}
+                                <div className="space-y-2 text-xs text-stone-300 dark:text-stone-300 light:text-stone-700">
+                                    <div className="bg-stone-900/90 dark:bg-stone-900/90 light:bg-stone-100 p-3.5 rounded-2xl border border-stone-800 dark:border-stone-800 light:border-stone-200 space-y-1">
+                                        <p className="font-bold text-stone-400">⏰ 영업시간</p>
+                                        <p>{selectedSpot.hours}</p>
+                                    </div>
+
+                                    <div className="bg-stone-900/90 dark:bg-stone-900/90 light:bg-stone-100 p-3.5 rounded-2xl border border-stone-800 dark:border-stone-800 light:border-stone-200 space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <p className="font-bold text-stone-400">📍 현지 일어 주소</p>
+                                            <button 
+                                                onClick={() => copyToClipboard(selectedSpot.jpAddress, 'modal-addr')}
+                                                className="text-gold font-bold hover:underline"
+                                            >
+                                                복사
+                                            </button>
+                                        </div>
+                                        <p className="text-washi dark:text-washi light:text-stone-900 font-serif">{selectedSpot.jpAddress}</p>
+                                    </div>
+                                </div>
+
+                                {/* Signature Menu */}
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider">대표 시그니처 메뉴</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedSpot.signatureDishes.map((dish, dIdx) => (
+                                            <span key={dIdx} className="text-xs bg-gold-soft text-gold px-3 py-1.5 rounded-xl border border-gold/30 font-semibold">
+                                                {dish}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Ordering Phrases */}
+                                {selectedSpot.phrases && selectedSpot.phrases.length > 0 && (
+                                    <div className="space-y-2">
+                                        <h4 className="text-xs font-bold text-stone-400 uppercase tracking-wider">이 매장 추천 주문 한마디</h4>
+                                        <div className="space-y-2">
+                                            {selectedSpot.phrases.map((ph, phIdx) => (
+                                                <div key={phIdx} className="bg-stone-900/90 dark:bg-stone-900/90 light:bg-stone-100 p-3.5 rounded-2xl border border-stone-800 dark:border-stone-800 light:border-stone-200 flex items-start justify-between gap-2">
+                                                    <div>
+                                                        <p className="text-xs font-bold text-washi dark:text-washi light:text-stone-900 font-serif">{ph.jp}</p>
+                                                        <p className="text-[11px] text-vermilion mt-0.5">{ph.ko}</p>
+                                                    </div>
+                                                    <button onClick={() => speakJapanese(ph.jp)} className="text-gold p-1.5 shrink-0 active-scale">
+                                                        <i className="fa-solid fa-volume-high"></i>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Modal Footer Actions */}
+                                <div className="pt-2 flex items-center gap-2">
+                                    <button
+                                        onClick={() => setShowTaxiModal(true)}
+                                        className="py-3 px-4 bg-stone-900 dark:bg-stone-900 light:bg-stone-100 text-gold text-xs font-bold rounded-2xl border border-stone-800 dark:border-stone-800 light:border-stone-200 flex items-center space-x-1.5 active-scale"
+                                    >
+                                        <i className="fa-solid fa-taxi"></i>
+                                        <span>택시 보드</span>
+                                    </button>
+
+                                    <a
+                                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${selectedSpot.name} ${selectedSpot.address}`)}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex-1 py-3 px-4 bg-vermilion hover:bg-vermilion-hover text-white text-xs font-bold rounded-2xl text-center shadow-neon-vermilion flex items-center justify-center space-x-2 active-scale"
+                                    >
+                                        <span>구글 맵으로 길찾기</span>
+                                        <i className="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </div>
+
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAXI DRIVER DISPLAY BOARD OVERLAY */}
+                    {showTaxiModal && selectedSpot && (
+                        <div className="fixed inset-0 z-50 bg-black flex flex-col justify-between p-8 text-center animate-slide-up">
+                            <div className="flex justify-end">
+                                <button 
+                                    onClick={() => setShowTaxiModal(false)}
+                                    className="px-6 py-3 bg-stone-800 text-white rounded-2xl font-bold text-sm active-scale"
+                                >
+                                    닫기 ✕
+                                </button>
+                            </div>
+
+                            <div className="space-y-6 my-auto max-w-xl mx-auto">
+                                <span className="text-sm font-bold text-amber-400 tracking-widest uppercase">運転手さん、ここまでお願いします</span>
+                                <h1 className="text-3xl sm:text-5xl font-black text-white font-serif border-b border-stone-800 pb-6 leading-tight">
+                                    {selectedSpot.jpName}
+                                </h1>
+                                <div className="bg-stone-950 p-6 rounded-3xl border border-stone-800 space-y-2">
+                                    <span className="text-xs text-stone-500">住所 (주소)</span>
+                                    <p className="text-xl sm:text-3xl font-bold text-amber-300 font-serif leading-relaxed">
+                                        {selectedSpot.jpAddress}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <p className="text-xs text-stone-500">기사님께 이 화면을 보여주시면 목적지까지 손쉽게 이동할 수 있습니다.</p>
+                        </div>
+                    )}
+
+                    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-stone-900/90 dark:bg-stone-900/90 light:bg-white/90 backdrop-blur-2xl border border-stone-800/90 dark:border-stone-800/90 light:border-stone-200/90 rounded-full px-6 py-3.5 shadow-glass-dark dark:shadow-glass-dark light:shadow-glass-light flex items-center space-x-7 sm:space-x-9">
+                        <button 
+                            onClick={() => setActiveTab('explore')}
+                            className={`flex flex-col items-center space-y-1 transition-transform ${activeTab === 'explore' ? 'text-gold font-bold scale-110' : 'text-stone-500 hover:text-stone-300'}`}
+                        >
+                            <i className="fa-solid fa-compass text-lg"></i>
+                            <span className="text-[10px]">탐색</span>
                         </button>
-                    </form>
+
+                        <button 
+                            onClick={() => setActiveTab('phrases')}
+                            className={`flex flex-col items-center space-y-1 transition-transform ${activeTab === 'phrases' ? 'text-gold font-bold scale-110' : 'text-stone-500 hover:text-stone-300'}`}
+                        >
+                            <i className="fa-solid fa-comments text-lg"></i>
+                            <span className="text-[10px]">회화집</span>
+                        </button>
+
+                        <button 
+                            onClick={() => setActiveTab('passport')}
+                            className={`flex flex-col items-center space-y-1 transition-transform ${activeTab === 'passport' ? 'text-vermilion font-bold scale-110' : 'text-stone-500 hover:text-stone-300'}`}
+                        >
+                            <i className="fa-solid fa-passport text-lg"></i>
+                            <span className="text-[10px]">여권</span>
+                        </button>
+
+                        <button 
+                            onClick={() => setActiveTab('calc')}
+                            className={`flex flex-col items-center space-y-1 transition-transform ${activeTab === 'calc' ? 'text-gold font-bold scale-110' : 'text-stone-500 hover:text-stone-300'}`}
+                        >
+                            <i className="fa-solid fa-calculator text-lg"></i>
+                            <span className="text-[10px]">엔화계산</span>
+                        </button>
+                    </nav>
+
                 </div>
             );
-        };
+        }
 
-        createRoot(document.getElementById('root')).render(React.createElement(App));
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
+
 </body>
 </html>
