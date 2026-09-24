@@ -2,8 +2,8 @@
 <html lang="ko" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>일여방 맛집검색기</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>일본여행 맛집검색기</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,27 +14,27 @@
                 extend: {
                     colors: {
                         vermilion: {
-                            DEFAULT: '#D93829',
-                            hover: '#B8281A',
+                            DEFAULT: '#E26047',
+                            hover: '#C74832',
                             glow: 'rgba(217, 56, 41, 0.35)',
                             soft: 'rgba(217, 56, 41, 0.12)'
                         },
                         japandi: {
-                            bg: '#FAF7F2',
+                            bg: '#F3F4EF',
                             card: '#FFFFFF',
-                            border: '#EAE4D8',
+                            border: '#DCE2DB',
                             text: '#1C1A17',
-                            muted: '#78716A',
+                            muted: '#66736D',
                             accent: '#C5A059'
                         },
                         tokyonight: {
-                            bg: '#0D0C0B',
-                            surface: '#171513',
-                            card: '#1F1C18',
-                            border: '#332E27',
+                            bg: '#101617',
+                            surface: '#192224',
+                            card: '#202B2C',
+                            border: '#344243',
                             text: '#F5F0EB',
-                            muted: '#9E958C',
-                            gold: '#E5BF65'
+                            muted: '#A8B8B8',
+                            gold: '#EABE8C'
                         }
                     },
                     fontFamily: {
@@ -94,7 +94,69 @@
             50% { transform: scale(1.15); opacity: 0.7; }
         }
         .pulse-lantern { animation: pulseLantern 3s ease-in-out infinite; }
-    </style>
+    
+/* Liquid Glass / progressive enhancement. No additional rendering libraries. */
+:root { color-scheme:light; --canvas:#f3f4ef; --ink:#24312c; --glass:rgba(255,255,255,.70); --edge:rgba(255,255,255,.9); --shade:0 16px 50px -28px #334f463f; --muted:#62736a; --soft:rgba(232,238,230,.7); }
+html.dark {color-scheme:dark; --canvas:#101617; --ink:#f3f5ef; --glass:rgba(33,45,45,.68); --edge:rgba(214,242,227,.15); --shade:0 22px 65px -32px #000a; --muted:#acbbb4; --soft:rgba(16,26,25,.55);}
+html {scroll-behavior:smooth; scrollbar-gutter:stable;}
+body {background:var(--canvas)!important;color:var(--ink)!important; background-image:radial-gradient(ellipse at 90% 0%, #71978224, transparent 60%),radial-gradient(ellipse at 0% 60%, #d3a48414, transparent 60%)!important;}
+body::before{opacity:.26;z-index:0;}
+body > .fixed {display:none!important;}
+*, *::before, *::after {box-sizing:border-box;}
+button,a,input { -webkit-tap-highlight-color:transparent; }
+button {cursor:pointer;} button:disabled {cursor:wait;opacity:.65;}
+button:focus-visible,a:focus-visible,[role=button]:focus-visible {outline:3px solid #e89470;outline-offset:4px;}
+.app-shell {max-width:1160px!important;padding-top:30px!important;}
+.site-header {border:0!important;margin-bottom:32px!important;padding-bottom:16px!important;gap:12px;}
+.site-header > div:first-child > div:first-child {border-radius:16px;background:linear-gradient(145deg,#ef987a,#bd4b35);box-shadow:0 5px 20px #d3654430,inset 0 1px 1px #ffd6c2;}
+.site-header > div:first-child > div:nth-child(2) > div {flex-wrap:wrap;row-gap:4px;}
+.site-header button {min-width:44px;min-height:44px;border-radius:50px!important;background:var(--glass);border-color:var(--edge);box-shadow:none!important;}
+.site-header p {letter-spacing:.09em;margin-top:4px;font-size:10px;}
+.explore-layout {display:grid;grid-template-columns:1.12fr 1fr;gap:24px;align-items:stretch;}
+.explore-layout > * {margin:0!important;min-width:0;}
+.hero-panel {padding:40px 30px!important;border:0!important;background:transparent!important;box-shadow:none!important;min-height:440px;overflow:visible!important;}
+.hero-panel h1 {font-size:clamp(32px,3.5vw,47px);line-height:1.27;letter-spacing:-.055em;margin-top:24px;word-break:keep-all;}
+.hero-panel h1 span {color:var(--ink)!important;}
+.hero-panel p {font-size:13px!important;line-height:1.9;margin-top:17px!important;color:var(--muted);}
+.hero-panel .inline-flex {background:transparent;border:0;padding:0;color:#ab644b;font-size:9px;letter-spacing:.18em;}
+.dark .hero-panel .inline-flex {color:#e4af93;}
+.hero-art {position:relative;height:185px;position:absolute;bottom:5px;left:30px;right:10px;overflow:hidden;pointer-events:none;}
+.sun-disc {width:120px;height:120px;border-radius:50%;position:absolute;left:24px;top:30px;background:linear-gradient(130deg,#eeab89,#b74832);box-shadow:inset 0 1px 5px #ffd0ae88,0 10px 40px #b9653720;}
+.art-word {position:absolute;left:48px;top:28px;font-size:95px;font-family:serif;color:#fff8ebc9;line-height:1.2;}
+.art-ticket {position:absolute;left:122px;right:25px;top:20px;padding:19px 22px;transform:rotate(-5deg);border:1px solid var(--edge);background:var(--glass);border-radius:20px;backdrop-filter:blur(14px);box-shadow:var(--shade);}
+.art-ticket span {display:block;font-size:7px;letter-spacing:.16em;color:var(--muted);}
+.art-ticket strong {display:block;font-family:serif;font-size:24px;font-weight:500;margin:7px 0;letter-spacing:.06em;}
+.art-ticket small {font-size:9px;color:var(--muted);}.ticket-line{height:1px;background:var(--edge);margin:13px 0;}
+.art-caption {position:absolute;bottom:0;left:35px;font-size:7px;letter-spacing:.22em;color:var(--muted);}
+.art-orbit {position:absolute;border:1px solid #bd95702b;border-radius:50%;width:380px;height:110px;top:50px;left:-15px;transform:rotate(-18deg);}.orbit-two{transform:rotate(15deg);}
+.search-panel {padding:32px!important;align-self:center;border-radius:32px!important;background:var(--glass)!important;border:1px solid var(--edge)!important;box-shadow:var(--shade),inset 0 1px 0 #ffffff20!important;backdrop-filter:blur(24px) saturate(140%);-webkit-backdrop-filter:blur(24px) saturate(140%);}
+.search-panel::before {content:'여행의 다음 한 끼';display:block;font-size:20px;letter-spacing:-.04em;font-weight:800;margin-bottom:28px;}
+.search-panel form > .grid {grid-template-columns:1fr;gap:20px;}
+.search-panel input {font-size:14px!important;padding-top:16px;padding-bottom:16px;background:var(--soft)!important;border-color:transparent!important;box-shadow:inset 0 1px 3px #00000008;}
+.search-panel input:focus {box-shadow:0 0 0 3px #e2604730;border-color:#e2604770!important;}
+.search-panel label {font-size:11px;margin-bottom:9px;}
+.search-panel button[type=button] {border-radius:100px!important;min-height:36px;padding:7px 14px;font-size:11px;box-shadow:none!important;}
+.search-panel button[type=submit] {margin-top:26px;min-height:54px;border-radius:18px;background:linear-gradient(120deg,#da644c,#bd4935);box-shadow:0 8px 22px #bc48352b,inset 0 1px 0 #ffffff40;}
+.results-section {grid-column:1/-1;padding-top:10px;}
+.empty-state {padding:25px!important;background:transparent!important;box-shadow:none!important;border-style:dashed!important;border-color:#8b9b8c40!important;border-radius:22px!important;display:flex;align-items:center;justify-content:center;gap:16px;}
+.empty-state i {font-size:17px!important;opacity:.65;}.empty-state p {margin:0!important;line-height:1.7;font-size:12px!important;}
+#root .shadow-washi:not(.hero-panel):not(.search-panel):not(.empty-state) {background:var(--glass);border-color:var(--edge);box-shadow:var(--shade);}
+#root .cursor-pointer.group {transition:transform .25s,border-color .25s,box-shadow .25s;}
+.glass-dock {padding:7px!important;gap:4px!important;width:380px;max-width:calc(100vw - 30px)!important;background:var(--glass)!important;border:1px solid var(--edge)!important;box-shadow:0 14px 45px #0003,inset 0 1px 0 #ffffff36!important;backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);bottom:max(18px,env(safe-area-inset-bottom))!important;}
+.glass-dock > button {margin:0!important;flex:1;min-height:55px;justify-content:center;border-radius:50px;gap:3px;transition:background .25s,color .25s;}
+.glass-dock > button[aria-current=page] {background:linear-gradient(150deg,#e9b59830,#d4866720);color:#bf573e;box-shadow:inset 0 1px 1px #ffffff30;}
+.dark .glass-dock > button[aria-current=page] {color:#f2b898;background:linear-gradient(140deg,#f1bf9330,#e8a17510);}
+.glass-dock span {font-size:10px!important;}.glass-dock i {font-size:17px!important;}
+.spot-dialog {max-height:calc(100dvh - 32px);overflow-y:auto;background:var(--canvas)!important;}
+.app-toast {animation:slideUpFade .25s ease-out!important;max-width:calc(100vw - 30px);width:max-content;}
+@media(hover:hover){.search-panel button[type=submit]:hover{filter:brightness(1.08);transform:translateY(-2px);}#root .cursor-pointer.group:hover{transform:translateY(-4px);}.glass-dock button:hover{background-color:#98ab9b18;}}
+@media(max-width:767px){.app-shell{padding-top:20px!important;}.site-header{margin-bottom:8px!important;}.site-header > div:first-child > div:nth-child(2) > div > span:nth-child(2){display:none;}.site-header > div:last-child{gap:6px;}.site-header button{padding:10px!important;margin:0!important;}.explore-layout{grid-template-columns:1fr;gap:22px;}.hero-panel{padding:20px 10px 0!important;min-height:auto;}.hero-panel h1{font-size:35px;margin-top:18px;}.hero-panel p{font-size:12px!important;}.hero-art{position:relative;height:150px;left:0;right:0;bottom:auto;margin-top:15px;max-width:410px;}.art-ticket{top:12px;padding:14px 20px;left:119px;}.art-ticket strong{font-size:21px;}.sun-disc{width:104px;height:104px;top:20px;}.art-word{font-size:80px;top:19px;}.search-panel{padding:24px!important;border-radius:26px!important;}.search-panel::before{font-size:18px;margin-bottom:22px;}.search-panel input{font-size:16px!important;}.results-section{padding-top:0;}.empty-state{padding:20px!important;text-align:left;}.glass-dock{bottom:max(12px,env(safe-area-inset-bottom))!important;}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.search-panel,.glass-dock,.art-ticket{background:var(--canvas)!important;}}
+@media(prefers-reduced-transparency:reduce){.search-panel,.glass-dock,.art-ticket{background:var(--canvas)!important;backdrop-filter:none!important;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}
+
+    @media(max-width:380px){.site-header > div:first-child{gap:8px;}.site-header > div:first-child > div:first-child{width:36px;height:36px;}.site-header > div:first-child > div:nth-child(2) > div > span:first-child{font-size:14px;}.site-header > div:first-child{column-gap:8px;}.site-header > div:first-child > div{margin-left:0!important;}}
+</style>
 </head>
 <body class="bg-japandi-bg text-japandi-text dark:bg-tokyonight-bg dark:text-tokyonight-text min-h-screen selection:bg-vermilion selection:text-white relative overflow-x-hidden pb-36 sm:pb-32 transition-colors duration-300">
 
@@ -216,7 +278,11 @@
         };
 
         function App() {
-            const [isDarkMode, setIsDarkMode] = useState(true);
+            const [isDarkMode, setIsDarkMode] = useState(() => { try { return localStorage.getItem('tabi_theme') !== 'light'; } catch { return true; } });
+            useEffect(() => {
+                document.documentElement.classList.toggle('dark', isDarkMode);
+                try { localStorage.setItem('tabi_theme', isDarkMode ? 'dark' : 'light'); } catch {}
+            }, [isDarkMode]);
             const [city, setCity] = useState('');
             const [food, setFood] = useState('');
             const [results, setResults] = useState([]);
@@ -250,6 +316,26 @@
                 } catch (e) { console.error(e); }
             }, [savedSpots]);
 
+            useEffect(() => {
+                if (!selectedSpot) return;
+                const previous = document.activeElement;
+                const previousOverflow = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+                const dialog = document.querySelector('[role="dialog"]');
+                dialog?.querySelector('button')?.focus();
+                const close = e => {
+                    if (e.key === 'Escape') { if (showTaxiModal) setShowTaxiModal(false); else setSelectedSpot(null); }
+                    if (e.key === 'Tab' && dialog) {
+                        const items = [...dialog.querySelectorAll('button, a[href], input, [tabindex="0"]')];
+                        const first = items[0], last = items[items.length - 1];
+                        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+                        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+                    }
+                };
+                document.addEventListener('keydown', close);
+                return () => { document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', close); previous?.focus(); };
+            }, [selectedSpot, showTaxiModal]);
+
             const fetchExchangeRate = async (showToastMsg = false) => {
                 setRateLoading(true);
                 try {
@@ -276,7 +362,7 @@
 
             const toggleTheme = () => {
                 setIsDarkMode(!isDarkMode);
-                document.documentElement.classList.toggle('dark');
+
             };
 
             const triggerToast = (msg) => {
@@ -342,11 +428,11 @@
 
                     const fallbacks = generateFallbackSpots(city.trim(), food.trim());
                     setResults(fallbacks);
-                    setFilterStatus('추천 데모 데이터');
+                    setFilterStatus('미리보기 · 실제 매장 정보가 아닙니다');
                 } catch (err) {
                     const fallbacks = generateFallbackSpots(city.trim(), food.trim());
                     setResults(fallbacks);
-                    setFilterStatus('추천 데모 데이터');
+                    setFilterStatus('미리보기 · 실제 매장 정보가 아닙니다');
                 } finally {
                     setLoading(false);
                 }
@@ -369,23 +455,23 @@
             };
 
             return (
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 relative z-10 min-h-screen flex flex-col">
+                <div className="app-shell max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 relative z-10 min-h-screen flex flex-col">
                     
                     {toast && (
-                        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-japandi-text dark:bg-tokyonight-card text-japandi-bg dark:text-tokyonight-text text-xs sm:text-sm font-bold px-5 py-3 rounded-full shadow-2xl flex items-center space-x-2.5 border border-japandi-accent/40 dark:border-tokyonight-gold/40 animate-bounce">
+                        <div role="status" className="app-toast fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-japandi-text dark:bg-tokyonight-card text-japandi-bg dark:text-tokyonight-text text-xs sm:text-sm font-bold px-5 py-3 rounded-full shadow-2xl flex items-center space-x-2.5 border border-japandi-accent/40 dark:border-tokyonight-gold/40 animate-bounce">
                             <i className="fa-solid fa-wand-magic-sparkles text-japandi-accent dark:text-tokyonight-gold"></i>
                             <span>{toast}</span>
                         </div>
                     )}
 
-                    <header className="flex items-center justify-between pb-6 border-b border-japandi-border/80 dark:border-tokyonight-border/80 mb-8">
+                    <header className="site-header flex items-center justify-between pb-6 border-b border-japandi-border/80 dark:border-tokyonight-border/80 mb-8">
                         <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => { setActiveTab('explore'); setCity(''); setFood(''); setResults([]); setError(''); }}>
                             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-vermilion via-red-600 to-amber-600 text-white flex items-center justify-center shadow-lg group-hover:scale-105 active-scale shrink-0">
                                 <i className="fa-solid fa-torii-gate text-base sm:text-lg"></i>
                             </div>
                             <div>
                                 <div className="flex items-center space-x-2">
-                                    <span className="font-extrabold text-base sm:text-xl tracking-tight">일여방 맛집검색기</span>
+                                    <span className="font-extrabold text-base sm:text-xl tracking-tight">일본여행 맛집검색기</span>
                                     <span className="text-[9px] sm:text-[10px] font-extrabold tracking-wider text-vermilion bg-vermilion-soft border border-vermilion/30 px-2 py-0.5 rounded-full uppercase">
                                         By. Gongta
                                     </span>
@@ -396,11 +482,11 @@
 
                         <div className="flex items-center space-x-2">
                             <button
-                                onClick={toggleTheme}
+                                aria-label={isDarkMode ? "밝은 테마로 전환" : "어두운 테마로 전환"} onClick={toggleTheme}
                                 className="px-3.5 py-2 rounded-xl bg-japandi-card dark:bg-tokyonight-card text-japandi-text dark:text-tokyonight-gold border border-japandi-border dark:border-tokyonight-border flex items-center space-x-2 active-scale text-xs font-bold shadow-washi dark:shadow-night"
                             >
                                 <i className={`fa-solid ${isDarkMode ? 'fa-sun text-amber-400' : 'fa-moon text-indigo-600'}`}></i>
-                                <span className="hidden sm:inline">{isDarkMode ? '도쿄 야경' : '료칸 와시'}</span>
+                                <span className="hidden sm:inline">{isDarkMode ? '다크 모드' : '라이트 모드'}</span>
                             </button>
 
                             <button
@@ -424,31 +510,34 @@
 
                     {}
                     {activeTab === 'explore' && (
-                        <div className="space-y-8 animate-slide-up">
+                        <div className="explore-layout space-y-8 animate-slide-up">
                             
-                            <div className="relative overflow-hidden rounded-3xl bg-japandi-card dark:bg-tokyonight-card p-5 sm:p-10 border border-japandi-border/80 dark:border-tokyonight-border/80 shadow-washi dark:shadow-night">
-                                <div className="absolute -top-10 -right-8 text-[120px] sm:text-[180px] font-black text-japandi-text/5 dark:text-white/5 pointer-events-none select-none">
-                                    食
+                            <div className="hero-panel relative overflow-hidden rounded-3xl bg-japandi-card dark:bg-tokyonight-card p-5 sm:p-10 border border-japandi-border/80 dark:border-tokyonight-border/80 shadow-washi dark:shadow-night">
+                                <div className="hero-art" aria-hidden="true">
+                                    <div className="art-orbit orbit-one"></div><div className="art-orbit orbit-two"></div>
+                                    <div className="sun-disc"></div><div className="art-word">味</div>
+                                    <div className="art-ticket"><span>JAPAN / FOOD JOURNAL</span><strong>おいしい旅へ。</strong><small>맛있는 순간을 찾아 떠나는 여행</small><div className="ticket-line"></div><span>東京 · 大阪 · 京都 · 福岡 · 札幌</span></div>
+                                    <span className="art-caption">A LITTLE TASTE OF JAPAN</span>
                                 </div>
                                 <div className="relative z-10 max-w-2xl space-y-2.5 sm:space-y-3">
                                     <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full bg-vermilion-soft border border-vermilion/30 text-vermilion text-[10px] sm:text-xs font-extrabold">
                                         <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-vermilion pulse-lantern"></div>
-                                        <span>Search with Google Maps</span>
+                                        <span>YOUR NEXT DELICIOUS STOP</span>
                                     </div>
                                     <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold leading-tight tracking-tight">
-                                        일본 어디서<br />
+                                        이번 여행,<br />
                                         <span className="text-vermilion dark:text-tokyonight-gold">
-                                            미식을 즐기시나요?
+                                            어떤 맛을 만날까요?
                                         </span>
                                     </h1>
                                     <p className="text-[11px] sm:text-xs lg:text-sm text-japandi-muted dark:text-tokyonight-muted leading-relaxed font-medium">
-                                        도시와 음식 키워드를 입력해 구글 실시간 맛집을 검색해 보세요.
+                                        골목 속 라멘 한 그릇부터 오래 기억할 한 끼까지.<br />도시와 메뉴로 나만의 미식 여행을 시작하세요.
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="bg-japandi-card dark:bg-tokyonight-card p-5 sm:p-7 rounded-3xl space-y-6 border border-japandi-border/80 dark:border-tokyonight-border/80 shadow-washi dark:shadow-night">
-                                <form onSubmit={searchRestaurants} className="space-y-5">
+                            <div className="search-panel bg-japandi-card dark:bg-tokyonight-card p-5 sm:p-7 rounded-3xl space-y-6 border border-japandi-border/80 dark:border-tokyonight-border/80 shadow-washi dark:shadow-night">
+                                <form aria-label="맛집 검색" onSubmit={searchRestaurants} className="space-y-5">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-bold text-japandi-muted dark:text-tokyonight-muted flex items-center space-x-1.5">
@@ -458,9 +547,9 @@
                                             <div className="relative">
                                                 <input 
                                                     type="text"
-                                                    value={city}
+                                                    aria-label="여행 도시" value={city}
                                                     onChange={e => setCity(e.target.value)}
-                                                    placeholder="도시 (예: 도쿄, 오사카, 후쿠오카)"
+                                                    placeholder="어느 도시로 떠나세요?"
                                                     className="w-full bg-japandi-bg dark:bg-tokyonight-bg border border-japandi-border dark:border-tokyonight-border rounded-2xl py-3.5 pl-11 pr-4 text-sm font-semibold focus:outline-none focus:border-vermilion transition-all"
                                                 />
                                                 <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-japandi-muted dark:text-tokyonight-muted text-xs"></i>
@@ -475,9 +564,9 @@
                                             <div className="relative">
                                                 <input 
                                                     type="text"
-                                                    value={food}
+                                                    aria-label="메뉴 또는 음식" value={food}
                                                     onChange={e => setFood(e.target.value)}
-                                                    placeholder="메뉴 (예: 라멘, 스시, 돈카츠)"
+                                                    placeholder="무엇이 먹고 싶으세요?"
                                                     className="w-full bg-japandi-bg dark:bg-tokyonight-bg border border-japandi-border dark:border-tokyonight-border rounded-2xl py-3.5 pl-11 pr-4 text-sm font-semibold focus:outline-none focus:border-vermilion transition-all"
                                                 />
                                                 <i className="fa-solid fa-bowl-food absolute left-4 top-1/2 -translate-y-1/2 text-japandi-muted dark:text-tokyonight-muted text-xs"></i>
@@ -487,7 +576,7 @@
 
                                     <div className="space-y-2 pt-1">
                                         <span className="text-[11px] font-bold text-japandi-muted dark:text-tokyonight-muted tracking-wider uppercase block">
-                                            ⚡ 주요 도시 빠른 선택
+                                            인기 여행 도시
                                         </span>
                                         <div className="flex flex-wrap gap-2">
                                             {['도쿄', '오사카', '교토', '후쿠오카', '삿포로'].map(c => (
@@ -520,7 +609,7 @@
                                         ) : (
                                             <>
                                                 <i className="fa-solid fa-magnifying-glass"></i>
-                                                <span>맛집 검색하기</span>
+                                                <span>나의 맛집 찾기</span>
                                                 <i className="fa-solid fa-arrow-right text-xs"></i>
                                             </>
                                         )}
@@ -529,7 +618,7 @@
                             </div>
 
                             {}
-                            <div className="space-y-4">
+                            <div className="results-section space-y-4">
                                 {error && (
                                     <div className="p-4 rounded-2xl bg-vermilion-soft border border-vermilion/30 text-vermilion text-xs font-bold text-center">
                                         ⚠️ {error}
@@ -546,10 +635,10 @@
                                 )}
 
                                 {results.length === 0 && !loading && !error && (
-                                    <div className="bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-10 text-center space-y-3 border border-japandi-border dark:border-tokyonight-border shadow-washi dark:shadow-night">
+                                    <div className="empty-state bg-japandi-card dark:bg-tokyonight-card rounded-3xl p-10 text-center space-y-3 border border-japandi-border dark:border-tokyonight-border shadow-washi dark:shadow-night">
                                         <i className="fa-solid fa-utensils text-3xl text-japandi-muted dark:text-tokyonight-muted"></i>
                                         <p className="text-xs text-japandi-muted dark:text-tokyonight-muted font-medium">
-                                            원하는 여행 도시와 메뉴를 입력하고 검색 버튼을 눌러주세요.
+                                            아직 정하지 못했다면, 도쿄의 라멘부터 어떨까요?
                                         </p>
                                     </div>
                                 )}
@@ -562,7 +651,7 @@
                                         return (
                                             <div 
                                                 key={spot.id}
-                                                onClick={() => setSelectedSpot(spot)}
+                                                tabIndex={0} role="button" aria-label={`${spot.name} 상세 보기`} onKeyDown={e => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setSelectedSpot(spot); } }} onClick={() => setSelectedSpot(spot)}
                                                 className="bg-japandi-card dark:bg-tokyonight-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden border border-japandi-border/90 dark:border-tokyonight-border/90 shadow-washi dark:shadow-night active-scale hover:border-vermilion/50 transition-all"
                                             >
                                                 <div>
@@ -572,7 +661,7 @@
                                                         </span>
 
                                                         <button
-                                                            onClick={(e) => toggleBookmark(spot, e)}
+                                                            aria-label={isSaved ? "저장 취소" : "맛집 저장"} aria-pressed={isSaved} onClick={(e) => toggleBookmark(spot, e)}
                                                             className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors active-scale shrink-0 ${
                                                                 isSaved 
                                                                     ? 'bg-vermilion/15 text-vermilion border border-vermilion/30' 
@@ -730,7 +819,7 @@
                                                             {spot.city} • {spot.district || spot.category}
                                                         </span>
                                                         <button
-                                                            onClick={(e) => toggleBookmark(spot, e)}
+                                                            aria-label={isSaved ? "저장 취소" : "맛집 저장"} aria-pressed={isSaved} onClick={(e) => toggleBookmark(spot, e)}
                                                             className="w-8 h-8 rounded-full bg-vermilion/15 text-vermilion border border-vermilion/30 flex items-center justify-center active-scale shrink-0"
                                                         >
                                                             <i className="fa-solid fa-trash-can text-xs"></i>
@@ -844,7 +933,7 @@
                                             {[
                                                 { label: '라멘 1잔', val: '1000' },
                                                 { label: '돈카츠 정식', val: '1800' },
-                                                { label: '이자카야 2인', val: '4500' },
+                                                { label: '정식 2인', val: '4500' },
                                                 { label: '고급 오마카세', val: '12000' }
                                             ].map((preset) => (
                                                 <button
@@ -874,8 +963,8 @@
                     {}
                     {selectedSpot && !showTaxiModal && (
                         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-slide-up" onClick={() => setSelectedSpot(null)}>
-                            <div className="bg-japandi-card dark:bg-tokyonight-card max-w-lg w-full rounded-3xl p-6 sm:p-8 space-y-6 border border-japandi-border dark:border-tokyonight-border relative shadow-2xl" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => setSelectedSpot(null)} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-japandi-bg dark:bg-tokyonight-bg flex items-center justify-center font-bold text-xs">
+                            <div role="dialog" aria-modal="true" aria-label="맛집 상세" className="spot-dialog bg-japandi-card dark:bg-tokyonight-card max-w-lg w-full rounded-3xl p-6 sm:p-8 space-y-6 border border-japandi-border dark:border-tokyonight-border relative shadow-2xl" onClick={e => e.stopPropagation()}>
+                                <button aria-label="상세 닫기" onClick={() => setSelectedSpot(null)} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-japandi-bg dark:bg-tokyonight-bg flex items-center justify-center font-bold text-xs">
                                     ✕
                                 </button>
 
@@ -913,7 +1002,7 @@
                     )}
 
                     {showTaxiModal && selectedSpot && (
-                        <div className="fixed inset-0 z-50 bg-black flex flex-col justify-between p-6 text-center animate-slide-up">
+                        <div role="dialog" aria-modal="true" aria-label="택시 보드" className="fixed inset-0 z-50 bg-black flex flex-col justify-between p-6 text-center animate-slide-up">
                             <div className="flex justify-end">
                                 <button onClick={() => setShowTaxiModal(false)} className="px-5 py-2.5 bg-stone-800 text-white rounded-xl font-bold text-xs">
                                     닫기 ✕
@@ -935,16 +1024,16 @@
                     )}
 
                     {}
-                    <nav className="fixed bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-japandi-card/95 dark:bg-tokyonight-card/95 backdrop-blur-2xl border border-japandi-border/80 dark:border-tokyonight-border/80 rounded-full px-4 sm:px-6 py-2 sm:py-3 shadow-2xl flex items-center space-x-5 sm:space-x-8 max-w-[92vw] sm:max-w-none justify-around">
-                        <button onClick={() => setActiveTab('explore')} className={`flex flex-col items-center space-y-0.5 active-scale ${activeTab === 'explore' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
+                    <nav aria-label="주요 메뉴" className="glass-dock fixed bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-japandi-card/95 dark:bg-tokyonight-card/95 backdrop-blur-2xl border border-japandi-border/80 dark:border-tokyonight-border/80 rounded-full px-4 sm:px-6 py-2 sm:py-3 shadow-2xl flex items-center space-x-5 sm:space-x-8 max-w-[92vw] sm:max-w-none justify-around">
+                        <button aria-current={activeTab === 'explore' ? 'page' : undefined} onClick={() => setActiveTab('explore')} className={`flex flex-col items-center space-y-0.5 active-scale ${activeTab === 'explore' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
                             <i className="fa-solid fa-compass text-sm sm:text-lg"></i>
                             <span className="text-[9px] sm:text-[10px]">탐색</span>
                         </button>
-                        <button onClick={() => setActiveTab('phrases')} className={`flex flex-col items-center space-y-0.5 active-scale ${activeTab === 'phrases' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
+                        <button aria-current={activeTab === 'phrases' ? 'page' : undefined} onClick={() => setActiveTab('phrases')} className={`flex flex-col items-center space-y-0.5 active-scale ${activeTab === 'phrases' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
                             <i className="fa-solid fa-comments text-sm sm:text-lg"></i>
                             <span className="text-[9px] sm:text-[10px]">회화</span>
                         </button>
-                        <button onClick={() => setActiveTab('passport')} className={`flex flex-col items-center space-y-0.5 active-scale relative ${activeTab === 'passport' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
+                        <button aria-current={activeTab === 'passport' ? 'page' : undefined} onClick={() => setActiveTab('passport')} className={`flex flex-col items-center space-y-0.5 active-scale relative ${activeTab === 'passport' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
                             <i className="fa-solid fa-passport text-sm sm:text-lg"></i>
                             <span className="text-[9px] sm:text-[10px]">여권</span>
                             {savedSpots.length > 0 && (
@@ -953,7 +1042,7 @@
                                 </span>
                             )}
                         </button>
-                        <button onClick={() => setActiveTab('calc')} className={`flex flex-col items-center space-y-0.5 active-scale ${activeTab === 'calc' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
+                        <button aria-current={activeTab === 'calc' ? 'page' : undefined} onClick={() => setActiveTab('calc')} className={`flex flex-col items-center space-y-0.5 active-scale ${activeTab === 'calc' ? 'text-vermilion font-black' : 'text-japandi-muted dark:text-tokyonight-muted'}`}>
                             <i className="fa-solid fa-calculator text-sm sm:text-lg"></i>
                             <span className="text-[9px] sm:text-[10px]">엔화계산</span>
                         </button>
